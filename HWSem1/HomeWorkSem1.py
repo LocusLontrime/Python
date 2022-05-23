@@ -19,7 +19,7 @@ def count_overlapping_substrings(s1, s2):  # Пользователь вводи
         counter += 1
 
 
-def get_factorial_list(length):  # Сформировать программу, получающую набр произведений чисел от 1 до N. Для N = 4: [1, 2, 6, 24]
+def get_factorial_list(length):  # Сформировать программу, получающую набор произведений чисел от 1 до N. Для N = 4: [1, 2, 6, 24]
     list = []
     curr_fact = 1
 
@@ -31,16 +31,90 @@ def get_factorial_list(length):  # Сформировать программу, 
 
 
 def get_digit_sum(number):  # Посчитать сумму цифр в вещественном числе
-    while (number % 1 != 0):
+    while number % 1 != 0:
         number *= 10
+    print(f'number = {number}')
 
     sum = 0
 
-    while (number > 0):
+    while number > 0:
         sum += number % 10
         number //= 10
 
     return sum
+
+def write_in_morse(str):
+    char_to_dots = {
+        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+        'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+        'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+        'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+        'Y': '-.--', 'Z': '--..', ' ': ' ', '0': '-----',
+        '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+        '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+        '&': '.-...', "'": '.----.', '@': '.--.-.', ')': '-.--.-', '(': '-.--.',
+        ':': '---...', ',': '--..--', '=': '-...-', '!': '-.-.--', '.': '.-.-.-',
+        '-': '-....-', '+': '.-.-.', '"': '.-..-.', '?': '..--..', '/': '-..-.'
+    }
+
+    result = ''
+
+    for symbol in str.upper():
+        result += char_to_dots[symbol]
+
+    return result
+
+
+def get_palindrome(number, flag):
+
+    def reverse(n):
+        new_n = 0
+
+        while n > 0:
+            new_n *= 10
+            new_n += n % 10
+            n //= 10
+
+        return new_n
+
+    def is_palindrome(num):
+        return reverse(num) == num
+
+    counter = 0
+
+    while not is_palindrome(number):
+        number = number + reverse(number)
+        counter += 1
+        if flag:
+            print(f'current number: {number}, counter: {counter}')
+
+    return f'final number {number}'
+
+
+def guess_what_num(left, right):
+    counter = 0
+
+    print(f'The game begins!\n\nPlease pick a number between {left} and {right} then let the computer guess it')
+
+    while left < right:
+        pivot = (left + right) // 2
+
+        print(f'{counter}-th try: is number equal to {pivot}? (enter: less, more or yes)')
+
+        str = input()
+
+        if str == "more":
+            counter += 1
+            left = pivot
+        elif str == "less":
+            counter += 1
+            right = pivot
+        elif str == "yes":
+            print(f'number is {pivot} - right, been found in {counter} steps!')
+            return
+        else:
+            print("enter: less, more or yes")
+
 
 
 print(count_overlapping_substrings('avarnikabcdefabcdefabc', 'abcdefabc')) # an example for 1st task
@@ -52,4 +126,12 @@ print(get_first_n_members_of_seq(8))  # an example for 2nd task
 
 print(get_factorial_list(9))  # an example for 3rd task
 
-print(get_digit_sum(0.123))  # an example for 4th task
+print(get_digit_sum(987.123))  # an example for 4th task
+
+print(write_in_morse('Ruslan is strange person'))
+
+print(get_palindrome(21136698629, True))
+
+# print(get_palindrome(988999888899999))  # -->> eternal cycle
+
+guess_what_num(0, 127)
