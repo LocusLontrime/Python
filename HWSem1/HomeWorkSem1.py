@@ -1,4 +1,5 @@
-def get_first_n_members_of_seq(length):  # Сформировать список из N членов последовательности. Для N = 5: 1, -3, 9, -27, 81 и т.д.
+# Сформировать список из N членов последовательности. Для N = 5: 1, -3, 9, -27, 81 и т.д.
+def get_first_n_members_of_seq(length):
     list = []
     pow = 1
 
@@ -9,7 +10,8 @@ def get_first_n_members_of_seq(length):  # Сформировать список
     return list
 
 
-def count_overlapping_substrings(s1, s2):  # Пользователь вводит две строки, определить количество вхождений одной строки s2 в другую s1
+# Пользователь вводит две строки, определить количество вхождений одной строки s2 в другую s1
+def count_overlapping_substrings(s1, s2):
     counter = 0
     i = -1
     while True:
@@ -19,18 +21,19 @@ def count_overlapping_substrings(s1, s2):  # Пользователь вводи
         counter += 1
 
 
-def get_factorial_list(length):  # Сформировать программу, получающую набор произведений чисел от 1 до N. Для N = 4: [1, 2, 6, 24]
-    list = []
+ # Сформировать программу, получающую набор произведений чисел от 1 до N. Для N = 4: [1, 2, 6, 24]
+def get_factorial_list(length):
+    factorials_list = []
     curr_fact = 1
-
     for i in range(1, length + 1):
         curr_fact *= i
-        list.append(curr_fact)
+        factorials_list.append(curr_fact)
 
-    return list
+    return factorials_list
 
 
-def get_digit_sum(number):  # Посчитать сумму цифр в вещественном числе
+# Посчитать сумму цифр в вещественном числе
+def get_digit_sum(number):
     while number % 1 != 0:
         number *= 10
     print(f'number = {number}')
@@ -43,7 +46,8 @@ def get_digit_sum(number):  # Посчитать сумму цифр в веще
 
     return sum
 
-def write_in_morse(str):
+
+def write_in_morse(string_given):
     char_to_dots = {
         'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
         'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
@@ -59,7 +63,7 @@ def write_in_morse(str):
 
     result = ''
 
-    for symbol in str.upper():
+    for symbol in string_given.upper():
         result += char_to_dots[symbol]
 
     return result
@@ -114,7 +118,6 @@ def guess_what_num(left, right):  # computer try to guess what number we picked
             return
         else:
             print("enter: less, more or yes")
-
 
 
 print(count_overlapping_substrings('avarnikabcdefabcdefabc', 'abcdefabc')) # an example for 1st task
