@@ -1,4 +1,4 @@
-# Найти сумму чисел списка стоящих на нечетной позиции
+# Найти сумму чисел списка стоящих на нечетной позиции (Locus_Lontrime HW)
 def get_sum(numbers_list):
     """
     :param numbers_list: numbers
