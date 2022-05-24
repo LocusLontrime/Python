@@ -5,7 +5,7 @@ def get_sum(numbers_list):
     :return: sum of elements with odd indexes
     """
     sum = 0
-    for i in range(1, len(list), 2):
+    for i in range(1, len(numbers_list), 2):
         sum += numbers_list[i]
     return sum
 
@@ -113,8 +113,8 @@ def bulls_and_cows():
         if number == 0:
             return digits_list
         else:
-            digits_list.insert(0, num % 10)
-            return get_digits(num // 10, digits_list)
+            digits_list.insert(0, number % 10)
+            return get_digits(number // 10, digits_list)
 
     n = random.randint(1000, 9999)  # a random generation of 4-digit number
     digits = get_digits(n, [])  # list of digits of picked number
