@@ -222,7 +222,10 @@ print(600851475143 / 6857)
 # 5. 2520 - самое маленькое число, которое делится без остатка на все числа от 1 до 10.
 # Какое самое маленькое число делится нацело на все числа от 1 до 20?
 def min_number(n):
-
+    """
+    :param n: max_number
+    :return: the min_number for which: min_number % i = 0, i from 1 to max_number
+    """
     primes = get_primes(int(n ** 0.5) + 1)
 
     def get_factors(number):
