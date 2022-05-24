@@ -82,7 +82,7 @@ def get_palindrome(number, flag):
 
     counter = 0
 
-    while not is_palindrome(number):
+    while not is_palindrome(number):  # an easy optimization -->> one call of reverse and then comparison
         number = number + reverse(number)
         counter += 1
         if flag:
@@ -91,7 +91,7 @@ def get_palindrome(number, flag):
     return f'final number {number}'
 
 
-def guess_what_num(left, right):
+def guess_what_num(left, right):  # computer try to guess what number we picked
     counter = 0
 
     print(f'The game begins!\n\nPlease pick a number between {left} and {right} then let the computer guess it')
