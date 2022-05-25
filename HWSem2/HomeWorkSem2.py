@@ -5,7 +5,7 @@ def get_sum(numbers_list):
     :return: sum of elements with odd indexes
     """
     sum = 0
-    for i in range(1, len(numbers_list), 2):
+    for i in range(0, len(numbers_list), 2):
         sum += numbers_list[i]
     return sum
 
@@ -121,10 +121,20 @@ def bulls_and_cows():
     flag = True  # flag of game being on
     counter = 0  # counter of tries
 
+    print('THE GAME "BULLS AND COWS" BEGINS!' )
+
     while flag:  # the main game-cycle
         counter += 1
         print('Enter a 4-digit number')
-        num = int(input())
+
+        str_number = input()
+
+        if str_number == 'Exit' or 'exit':  # stop-game condition
+            print('The game is ended')
+            break
+
+        num = int(str_number)
+
         if num < 1000 or num > 9999:
             continue
         bulls, cows = 0, 0  # bulls and cows counters
