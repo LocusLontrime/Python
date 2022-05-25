@@ -2,6 +2,7 @@ def consecutive(arr, a, b):  # accepted on codewars
     # Do some magic
     for i in range(0, len(arr) - 1):
         if arr[i] == a and arr[i + 1] == b:
+
             return True
         elif arr[i] == b and arr[i + 1] == a:
             return True

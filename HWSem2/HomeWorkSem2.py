@@ -1,4 +1,7 @@
 # Найти сумму чисел списка стоящих на нечетной позиции (Locus_Lontrime HW)
+import math
+
+
 def get_sum(numbers_list):
     """
     :param numbers_list: numbers
@@ -129,7 +132,7 @@ def bulls_and_cows():
 
         str_number = input()
 
-        if str_number == 'Exit' or 'exit':  # stop-game condition
+        if str_number == 'Exit' or str_number == 'exit':  # stop-game condition
             print('The game is ended')
             break
 
@@ -142,10 +145,16 @@ def bulls_and_cows():
             flag = False
             print(f'you won, steps done: {counter}')
         curr_digits = get_digits(num, [])
+        digits_clone = digits.copy()
+
+        print(f'init_num: {digits}')
+
         for i in range(0, 4):
-            if curr_digits[i] == digits[i]:
+            if curr_digits[i] == digits_clone[i]:
                 cows += 1
-            if curr_digits[i] in digits:
+        for i in range(0, 4):
+            if curr_digits[i] in digits_clone:
+                digits_clone.remove(curr_digits[i])
                 bulls += 1
         bulls -= cows
         print(f'bulls = {bulls}, cows = {cows}')
@@ -170,7 +179,7 @@ def get_fib_list(n):
     return fibs_list
 
 
-print(get_fib_list(989))
+print(get_fib_list(15))
 
 
 # 4. Простые делители числа 13195 - это 5, 7, 13 и 29.
@@ -281,6 +290,8 @@ def min_number(n):
 print(min_number(10))
 print(min_number(20))
 print(min_number(100))
-# print(min_number(100000)) # optimization checking
+# print(min_number(100000))  # optimization checking
 
 # print(get_factors(9366))
+
+print(math.factorial(10))
