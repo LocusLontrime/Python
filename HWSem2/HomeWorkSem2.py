@@ -1,7 +1,5 @@
 # Найти сумму чисел списка стоящих на нечетной позиции (Locus_Lontrime HW)
 import math
-
-
 def get_sum(numbers_list):
     """
     :param numbers_list: numbers
@@ -69,7 +67,6 @@ def dec_to_bin(dec_number):
 
 
 f = lambda dec_number: 0 if dec_number == 0 else f(dec_number // 2) * 10 + (0 if dec_number % 2 == 0 else 1)  # just a way to solve
-
 print(dec_to_bin(98))
 print(f(98))
 
@@ -147,7 +144,7 @@ def bulls_and_cows():
         curr_digits = get_digits(num, [])
         digits_clone = digits.copy()
 
-        print(f'init_num: {digits}')
+        # print(f'init_num: {digits}')
 
         for i in range(0, 4):
             if curr_digits[i] == digits_clone[i]:

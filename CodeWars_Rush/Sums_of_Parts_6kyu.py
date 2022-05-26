@@ -1,4 +1,4 @@
-def parts_sums(ls):
+def parts_sums(ls):  # accepted on codewars.com
     # your code
     result = [0]
     part_sum = 0
