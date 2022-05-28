@@ -51,5 +51,8 @@ def get_factors(number: int):
 
 
 print(get_factors(3*3*3*3*3*11*17*199))
+print(get_factors(640320))
+print(get_factors(6670))
+print(get_factors(640320 // (32 * 3)))
 
 

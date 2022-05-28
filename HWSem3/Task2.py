@@ -22,7 +22,7 @@ def calc_pi_precision_alt(precision: float) -> float:  # not co fast converges
         i += 2
 
 
-getcontext().prec = 350
+getcontext().prec = 10000
 
 
 def newton_arcsine_series(precision: Decimal) -> Decimal:  # converges almost instantly
@@ -42,8 +42,22 @@ def newton_arcsine_series(precision: Decimal) -> Decimal:  # converges almost in
         i += 1
 
 
-print(calc_pi_precision_alt(0.00000001))
-print(newton_arcsine_series(Decimal(1/10**300)))  # precision of a default Decimal type is out of range for such calculations...
+def chudnovskii_series(n) -> Decimal:
+    pi = Decimal(0)
+    delta = Decimal(10005).sqrt() / Decimal(4270934400)
+    for i in range(0, n + 1):
+        multiplier = (13591409 + 545140134 * i)
+        if i != 0:
+            delta *= -Decimal((6 * i - 5) * (2 * i - 1) * (6 * i - 1) / Decimal(26680 * 640320 * 640320 * i * i * i))
+        multiplier *= delta
+        pi += multiplier
+        print(f'iteration: {i}, pi = {(pi ** -1)}, current delta = {delta}')
+    return pi ** -1
 
+
+# print(calc_pi_precision_alt(0.00000001))
+# print(newton_arcsine_series(Decimal(1/10**300)))  # precision of a default Decimal type is out of range for such calculations...
+
+print(chudnovskii_series(706))  # 10k right digits
 
 
