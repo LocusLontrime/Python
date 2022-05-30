@@ -19,13 +19,14 @@ def get_diff(n):  # a mega-slow one
     return diff
 
 
-def get_diff_alt(n):  # a super-ultra-fast one
-    diff = n * (n + 1) / 2
-    diff *= (n * n / 2 - (n + 2) / 6)
+def get_diff_alt(n: int) -> int:  # a super-ultra-fast one
+    diff = n * (n + 1) // 2
+    diff *= (3 * n * n - (n + 2))
+    diff //= 6
     return diff
 
 
-# print(get_diff(100000))
-print(get_diff_alt(100000))
+# print(get_diff(10000))
+print(get_diff_alt(100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000))
 
 

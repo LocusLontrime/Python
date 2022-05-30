@@ -15,3 +15,4 @@ def get_digit_sum(number):
 
 
 print(get_digit_sum(987.123))  # an example for 4th task
+print(98)

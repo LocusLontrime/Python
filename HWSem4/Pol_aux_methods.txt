@@ -1,0 +1,12 @@
+ def remainder(self, divisor):
+        if max(self.coefficients.keys()) < max(divisor.coefficients.keys()):
+            return self.copy()
+        quotient = Polynomial('')
+        remainder = self.copy()
+        temporal_pol = Polynomial('')
+
+        while max(remainder.coefficients.keys()) >= max(divisor.coefficients.keys()):
+            rem_max_power = max(remainder.coefficients.keys())
+            divisor_max_power = max(divisor.coefficients.keys())
+
+            coefficient = remainder.coefficients[rem_max_power] / 

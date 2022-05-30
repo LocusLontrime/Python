@@ -1,6 +1,4 @@
-# Составить список простых множителей натурального числа N
-
-import math
+from functools import reduce
 
 
 def get_primes(n):  # Eratosthenes' sieve
@@ -35,25 +33,5 @@ def get_primes(n):  # Eratosthenes' sieve
     return a
 
 
-def get_factors(number: int):
-    primes = get_primes(int(math.sqrt(number)))
-    factorization_dictionary = {}
-    for prime in primes:
-        power_counter = 0
-        while number % prime == 0:
-            number //= prime
-            power_counter += 1
-        if power_counter >= 1:
-            factorization_dictionary[prime] = power_counter
-    if number > 1:
-        factorization_dictionary[number] = 1
-    return factorization_dictionary
-
-
-print(get_factors(3*3*3*3*3*11*17*199))
-print(get_factors(640320))
-print(get_factors(6670))
-print(get_factors(640320 // (32 * 3)))
-print(get_factors(13717421))
-print(get_factors(36758392918475747))
+print(sum(get_primes(20000000)))
 
