@@ -24,3 +24,7 @@ print(k)
 print(f'min = {min_el}, max =  {max_el}')
 
 print(do_smth)
+
+coord = 2
+coefficients = {3: 1, 0: -1}
+print(reduce(lambda x, y: x + coefficients[y], coefficients) if len(coefficients) > 0 else 0)

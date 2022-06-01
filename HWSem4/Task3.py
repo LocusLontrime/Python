@@ -1,36 +1,35 @@
-# Вот вам файл с тысячей чисел. https://cloud.mail.ru/public/DQgN/LqoQzPEec
-# Задача: найти триплеты и просто выводить их на экран. Триплетом называются три числа,
-# которые в сумме дают 0. (решение будет долгим, ибо является демонстрационным при теме многопоточного программирования).
-import time
+# Дан список чисел. Создать список в который попадают числа, описывающие возрастающую последовательность и содержащие максимальное количество элементов.
+# Пример: [1, 5, 2, 3, 4, 6, 1, 7] => [1, 2, 3, 4, 6, 7]
+# [5, 2, 3, 4, 6, 1, 7] => [2, 3, 4, 6, 7]
+# Порядок элементов менять нельзя
 
-def get_pairs(elements: list, target: int) -> set:  # runtime -> O(n)
-    set_elements = set(elements)
-    distinct_elements = set()
-    for set_element in set_elements:
-        if target - set_element in set_elements:
-            if target - set_element not in distinct_elements:
-                distinct_elements.add(set_element)
-    return distinct_elements
-
-
-def get_triplets(elements: list) -> list:
-    triplets = []
+def get_longest_increasing_subsequence(elements: list) -> list:  # Runtime O(n*log(n)), where n = len(elements)
+    result = []
+    print('Building of the longest increasing subsequence (LIS):')
     for i in range(len(elements)):
-        curr_set = get_pairs(elements[i + 1:], -elements[i])
-        for pair in curr_set:
-            if elements[i] != pair != -elements[i] - pair:
-                triplets.append((elements[i], pair, -elements[i] - pair))
-    return triplets
+        expected_index = bin_search(0, len(result) - 1, elements[i], result)  # expected place of element in the resulting set
+        if expected_index == len(result):  # if the elements lies outside of current set
+            result.append(elements[i])
+        else:  # inside case -> we change the greater element by the less one at th position found with the binary search above
+            result[expected_index] = elements[i]
+        print(f'index = {i}, el[i] = {elements[i]}, expected index = {expected_index}, res: {result}')
+    print('LIS: ', end='')
+    return result
 
 
-def get_triplets_from_file(file_path: str) -> list:
-    with open(file_path, "r") as file:
-        numbers_str_list = file.readlines()
-        numbers_int_list = [int(i) for i in numbers_str_list]
-        return get_triplets(numbers_int_list)
+def bin_search(left_border: int, right_border: int, target: int, elems: list) -> int:
+    if right_border == -1:  # border case -> when there is no elements in elems list
+        return 0
+
+    if left_border == right_border:  # ending case -> the searching is finished
+        return left_border + (1 if target > elems[left_border] else 0)  # the element is not found, and consequently it can be located inside the set or outside
+    pivot_index = (left_border + right_border) // 2  # median index
+    if elems[pivot_index] < target:  # here we decide in which part of current interval the target should be distributed
+        return bin_search(pivot_index + 1, right_border, target, elems)
+    elif elems[pivot_index] > target:
+        return bin_search(left_border, pivot_index, target, elems)
+    else:
+        return pivot_index  # the case of finding the target amongst the elements given
 
 
-tic = time.perf_counter()
-print(get_triplets_from_file('1000_of_numbers.txt'))
-toc = time.perf_counter()
-print(f"Time elapsed: {toc - tic:0.4f} seconds")
+print(get_longest_increasing_subsequence([1, 5, 2, 3, 4, 6, 1, 7]))

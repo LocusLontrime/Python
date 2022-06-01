@@ -46,6 +46,8 @@ def min_number(n):
     for i in res_factor_dict:  # here we're building the product
         product *= int(i ** res_factor_dict[i])
 
+    print(res_factor_dict)
+
     # print(res_factor_dict) # dictionary checking
 
     return product
@@ -54,4 +56,5 @@ def min_number(n):
 print(min_number(10))
 print(min_number(20))
 print(min_number(100))
-# print(min_number(100000))  # optimization checking
+
+print(min_number(100000))  # optimization checking

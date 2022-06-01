@@ -24,7 +24,7 @@ class Polynomial:
         return random_pol
 
     def get_coefficients_from_string(self, pol_str):
-        if pol_str == '':
+        if pol_str == '' or pol_str == '0':
             self.coefficients = {}
             return
 
@@ -198,4 +198,17 @@ class Polynomial:
 
     def __str__(self):
         return self.to_string()
+
+    def __repr__(self):
+        return self.to_string()
+
+    @classmethod
+    def min_polynomial(cls, p, q):
+        pass
+
+    @classmethod
+    def max_polynomial(cls, p, q):
+        pass
+
+
 
