@@ -1,7 +1,9 @@
+# Создать функцию, которая из списка чисел возвращает число, являющее суммой двух или нескольких других элементов, либо возвращающее None, если такого числа нет.
 import time
 from functools import reduce
 
 
+# gets all the partitions of initial array, counts diff indexes as diff values (special condition)
 def get_list_partitions(elements: list) -> list:
     partitions = []
 
@@ -23,25 +25,28 @@ def get_list_partitions(elements: list) -> list:
     return partitions
 
 
-def get_sums(elements: list) -> None:
+# get the numbers needed if they exist or None if not
+def get_sums(elements: list) -> list or None:
     partitions = get_list_partitions(elements)
-
+    result_list = []
     for partition in partitions:
-        curr_partition_sum = sum(partition)
-        if curr_partition_sum in elements:
-            print(f'element {curr_partition_sum} = {reduce(lambda x, y: str(x) + " + " + str(y), partition)}')
+        if len(partition) >= 2:
+            curr_partition_sum = sum(partition)
+            if curr_partition_sum in elements:
+                result_list.append(f'{curr_partition_sum} = {reduce(lambda x, y: str(x) + " + " + str(y), partition)}')
+    return result_list if len(result_list) else None
 
 
 print(get_list_partitions([1, 2, 3]))
 print(get_list_partitions([1, 2, 3, 4, 5]))
 print(get_list_partitions([1, 2, 3, 4, 5, 6, 7, 8, 9]))
+
 get_list_partitions([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
+print(get_sums([5, 6, 7]))  # answer is None
+
 tic = time.perf_counter()
-
-
-get_sums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
-
+print(get_sums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]))  # there are many answers
 # get_list_partitions([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25])
 toc = time.perf_counter()
 print(f"Time elapsed: {toc - tic:0.4f} seconds")

@@ -13,7 +13,7 @@ def get_pairs(elements: list, target: int) -> set:  # runtime -> O(n)
     return distinct_elements
 
 
-def get_triplets(elements: list) -> list:
+def get_triplets(elements: list) -> list:  # runtime -> n*O(n) = o(n * n)
     triplets = []
     for i in range(len(elements)):
         curr_set = get_pairs(elements[i + 1:], -elements[i])
