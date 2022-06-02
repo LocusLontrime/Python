@@ -49,7 +49,7 @@ print(dyn_prog([5, 2, 3, 4, 6, 1, 7]))
 print(dyn_prog([1, 1, 1, 1, 1, 5, 2, 1, 3, 4, 6, 1, 2, 2, 7]))
 
 
-# СВЕРХ БЫСТРОЕ решенике для нахождения ДЛИННЫ LIS, НЕ ГАРАНТИРУЕТ верную последовательность, НО ВЗАМЕН ГАРАНТИРУЕТ верную длинну, скорость: O(N*log(N))
+# СВЕРХ БЫСТРОЕ решение для нахождения ДЛИННЫ LIS, НЕ ГАРАНТИРУЕТ верную последовательность, НО ВЗАМЕН ГАРАНТИРУЕТ верную длинну, скорость: O(N*log(N))
 def get_longest_increasing_subsequence(elements: list) -> list:  # Runtime O(n*log(n)), where n = len(elements)
     result = []
     print('Building of the longest increasing subsequence (LIS):')

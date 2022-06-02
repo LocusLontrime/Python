@@ -1,7 +1,7 @@
 from collections import deque
 
 
-def evaluate_math_expr(math_expression: str) -> float:  #
+def evaluate_math_expr(math_expression: str) -> float:  # accepted on codewars
     m_smbls, op_prs, cl_pars = get_symbols(math_expression)
 
     return evaluate_parentheses_in_depth(0, len(m_smbls) - 1, m_smbls, op_prs, cl_pars)
@@ -98,7 +98,7 @@ def calculate(simplified_expressions: list) -> float:
     def recursive_seeker(curr_index: int, curr_mult_div: float, result: float, last_operation_is_mult_div: bool) -> float or None:
         print(f'curr_index: {curr_index}, curr_mult_div: {curr_mult_div}, result: {result}')
 
-        # base case
+        # base case:
         if len(simplified_expressions) == 0:
             return None
 
@@ -106,6 +106,7 @@ def calculate(simplified_expressions: list) -> float:
         if curr_index >= len(simplified_expressions):
             return result + curr_mult_div
 
+        # recurrent relation:
         if simplified_expressions[curr_index] == '+':
             return recursive_seeker(curr_index + 1, 1.0, result + curr_mult_div, False)
 
