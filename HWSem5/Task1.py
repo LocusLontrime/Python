@@ -3,6 +3,7 @@
 from functools import reduce
 
 
+# working on list
 def delete_char_sequence(text: list[str]) -> list:
     return list(filter(lambda x: x.lower().find('абв') == -1, text))  # just a base filter using on a list
 
@@ -19,6 +20,7 @@ test1 = 'абвал,'
 signs = [',', '.', ':', ';', '!', '?', '-', '"', '(', ')']
 
 
+# working on the text given
 def filter_text(text_in: str):
     parts = text.split(' ')
     print(parts)
@@ -30,6 +32,7 @@ def filter_text(text_in: str):
 
         new_part = part
 
+        # checks the beginning signs
         if len(part) >= 2 and part[0] == '(' and part[1] == '"':
             new_parts.append(part[:-(len(part) - 2)])
             new_part = part[-(len(part) - 2):]
@@ -37,6 +40,7 @@ def filter_text(text_in: str):
             new_parts.append(part[:-(len(part) - 1)])
             new_part = part[-(len(part) - 1):]
 
+        # checks the ending signs
         for index_of_character in range(len(new_part)):
             if new_part[index_of_character] in signs:
                 new_parts.append(new_part[:-(len(new_part) - index_of_character)])
@@ -48,8 +52,10 @@ def filter_text(text_in: str):
 
     print(new_parts)
 
+    # getting rid of non-needed words
     result_parts = delete_char_sequence(new_parts)
 
+    # shaping the resulting text
     return reduce(lambda x, y: x + y + ' ', result_parts, '')
 
 

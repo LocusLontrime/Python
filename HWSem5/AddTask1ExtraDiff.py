@@ -71,11 +71,11 @@ def get_sum_of_factors(number):  # sum of factors excluding the number itself
     if number != 1:  # the last factor that is bigger than sqrt(number) is the prime factor (like in 2*3*17: 17 is the one)
         factor_dict[number] = 1
 
-    for key, value in factor_dict.items():
+    for key, value in factor_dict.items():  # math formula for factors sum
         if key != 1:
             sum_of_factors *= (key ** (value + 1) - 1) // (key - 1)
 
-    return sum_of_factors - saved_number
+    return sum_of_factors - saved_number  # the nuber itself should be subtracted from the factors sum
 
 
 def get_non_abundant_sum():
@@ -83,10 +83,10 @@ def get_non_abundant_sum():
     non_abundant_sum = 28123 * (28123 + 1) // 2  # sum of all numbers not exceeding 28123
 
     for num in range(1, 28123 + 1):
-        if get_sum_of_factors(num) > num:
+        if get_sum_of_factors(num) > num:  # condition of abundant number
             abundant_numbers.add(num)
         for ab_num in abundant_numbers:
-            if num - ab_num in abundant_numbers:
+            if num - ab_num in abundant_numbers:  # checking for 2-abundants representation
                 non_abundant_sum -= num
                 break
 

@@ -13,7 +13,7 @@
 
 def get_diagonal_spiral_sum(length: int) -> int:
     iterations = (length - 1) // 2
-    return (16 * iterations ** 3 + 30 * iterations ** 2 + 26 * iterations + 3) // 3  # elementary math
+    return (16 * iterations ** 3 + 30 * iterations ** 2 + 26 * iterations + 3) // 3  # elementary math, at first polynomials for all 4th diagonal elements are found then they are added
 
 
 print(get_diagonal_spiral_sum(1000001))

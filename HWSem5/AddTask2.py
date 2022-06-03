@@ -16,16 +16,20 @@ def get_value(border: int) -> (int, int):
     max_length = 1
     best_d = 1
 
+    # cycling over all d-values to find the max fraction's cycle length
     for d in range(3, border):
-        if d % 2 != 0 and d % 5 != 0:
+        if d % 2 != 0 and d % 5 != 0:  # this kind of fractions has the same cycle length as the fractions with denominator equals
+            # to multiplication of prime factors (counting their powers) excluding 2 and 5 ->
+            # they might not be counted
             curr_length = get_periodic_length(d)
             if max_length < curr_length:
-                max_length = curr_length
-                best_d = d
+                max_length = curr_length  # maximal fraction's cycle length
+                best_d = d  # denominator d relative to max length
             print(f'd = {d}, curr_cycling_length = {curr_length}')
     return best_d, max_length
 
 
+# counting the fraction's cycle length
 def get_periodic_length(n) -> int:
     currVal = 1
 
