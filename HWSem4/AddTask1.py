@@ -12,13 +12,15 @@ def get_levels(ref_money: int, one_can_cost: int) -> int:
     print(f'beer_cans_quantity = {beer_cans_quantity}')
     levels_done = []
     counter = 0
+
+    # it counts levels until the building of new full-level is possible
     while True:
-        beer_cans_quantity -= (counter + 1) ** 2
-        if beer_cans_quantity < 0:
+        beer_cans_quantity -= (counter + 1) ** 2  # if the building of the next level is possible then we increase the counter
+        if beer_cans_quantity < 0:  # the break condition
             break
         else:
-            counter += 1
-            levels_done.append(counter ** 2)
+            counter += 1  # count's increasing
+            levels_done.append(counter ** 2)  # adding the cans' quantity for the current level
     print(f'levels done: {levels_done}')
     return counter
 

@@ -1,3 +1,8 @@
+# Seminar work
+
+# Посчитать сумму простых чисел, не превосходящих 2000000
+
+
 from functools import reduce
 
 

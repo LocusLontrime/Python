@@ -15,7 +15,7 @@ class Quick:
         if left_border == right_border:
             return
 
-        pivotElement = (array[left_border] + array[right_border]) // 2  # At first we define the pivotElement(median)
+        pivotElement = (array[left_border] + array[right_border]) // 2  # at first, we define the pivotElement(median)
 
         # Hoare's Partition
         pivotIndex = Quick.hoare_partition(array, left_border, right_border, pivotElement)  # here we're finding the pivotIndex
@@ -28,11 +28,11 @@ class Quick:
 
         while True:
 
-            while array[left_border] < pivot_element:  # skipping the elements that stayed at their place in the left side
+            while array[left_border] < pivot_element:  # skipping the elements that stayed at their place on the left side
                 left_border += 1
                 Quick.recCounter += 1
 
-            while array[right_border] > pivot_element:  # skippint the elements that stayed at their place in the right side
+            while array[right_border] > pivot_element:  # skipping the elements that stayed at their place on the right side
                 right_border -= 1
                 Quick.recCounter += 1
 
@@ -44,7 +44,7 @@ class Quick:
                 return right_border
 
     @staticmethod
-    def ints_permutation(array: list[int],  i: int, j: int) -> None:  # swappint two array's elements
+    def ints_permutation(array: list[int],  i: int, j: int) -> None:  # swapping two array's elements
         temp = array[i]
         array[i] = array[j]
         array[j] = temp

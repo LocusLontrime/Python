@@ -24,6 +24,7 @@ def dyn_prog(elements: list) -> list:
                         max_length = rec_sec_val
                         best_ind = inner_index
 
+            # here we save the new calculated values of dp and best index
             dp[index] = max_length
             best_indexes[index] = best_ind
 
@@ -32,10 +33,10 @@ def dyn_prog(elements: list) -> list:
     rec_seeker(len(elements))
 
     # back motion to capture the right numbers
-    result = []
+    result = []  # resulting LIS
     ind = len(elements)
     while True:
-        ind = best_indexes[ind]
+        ind = best_indexes[ind]  # the best way's steps -> here we get the longest increasing subsequence char by char
         if ind != -1:
             result.insert(0, str(elements[ind]))
         else:
@@ -49,7 +50,7 @@ print(dyn_prog([5, 2, 3, 4, 6, 1, 7]))
 print(dyn_prog([1, 1, 1, 1, 1, 5, 2, 1, 3, 4, 6, 1, 2, 2, 7]))
 
 
-# СВЕРХ БЫСТРОЕ решение для нахождения ДЛИННЫ LIS, НЕ ГАРАНТИРУЕТ верную последовательность, НО ВЗАМЕН ГАРАНТИРУЕТ верную длинну, скорость: O(N*log(N))
+# СВЕРХ БЫСТРОЕ решение для нахождения ДЛИННЫ LIS, НЕ ГАРАНТИРУЕТ верную последовательность, НО ВЗАМЕН ГАРАНТИРУЕТ верную длину, скорость: O(N*log(N))
 def get_longest_increasing_subsequence(elements: list) -> list:  # Runtime O(n*log(n)), where n = len(elements)
     result = []
     print('Building of the longest increasing subsequence (LIS):')

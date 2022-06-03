@@ -1,5 +1,6 @@
 # Создать и заполнить файл случайными целыми значениями.
 # Выполнить сортировку содержимого файла по возрастанию.
+
 import random
 import time
 from functools import reduce
@@ -26,22 +27,23 @@ def sort():
 
 
 fill_in_random(25, 100)
+
 sort()
 
 array_to_be_merged = [99, 87, 5, 7, 17, 87, 4, 3, 2, 1, 11, 111, 1, 98, 989, 2, 3, 36, 366, 989, 1, 5, 55, 7, 989, 67, 78, 3, 54, 45, 35, 36, 73, 1, 11, 111, 1001, 971, 97, 99, 198, 999]
 
 
-def get_array(length: int, abs: int) -> list:
+def get_array(length: int, abs_val: int) -> list:
     result_list = []
     for i in range(length):
-        result_list.append(random.randint(-abs, abs))
+        result_list.append(random.randint(-abs_val, abs_val))
     return result_list
 
 
+# random array for speed-test
 array_to_be_merged_new = get_array(1000000, 1000000000)
 
 # comparison of two sorts
-
 tic = time.perf_counter()
 
 sorted_sort = Merge.merge_sort(array_to_be_merged_new)

@@ -7,16 +7,19 @@
 
 
 def get_scores():
+    # the dictionary of letters' scores
     names_dictionary = dict([(chr(i), i - 65) for i in range(65, 91)])  # 36 98 989
     names = []
     result_scores = 0
 
+    # method for calculation the name's scores
     def get_name_score(curr_name: str):
         result_sum = 0
         for character in curr_name:
             result_sum += names_dictionary[character]
         return result_sum
 
+    # working with file
     with open("english_names.txt", "r") as file:
         str_names = file.readline()
         names_quote = str_names.split(',')
@@ -24,11 +27,9 @@ def get_scores():
             names.append(name.strip('"'))
     names = sorted(names)
 
-    for name_index in range(len(names)):
+    for name_index in range(len(names)):  # getting the final sum
         result_scores += name_index * get_name_score(names[name_index])
-
     return result_scores
 
 
 print(get_scores())
-

@@ -29,10 +29,11 @@ class Merge:
         rightLength = len(right_array)
 
         result = []
-        lP, rP = 0, 0  # two pointers
+        lP, rP = 0, 0  # two pointers strategy
 
-        while lP < leftLength and rP < rightLength:
+        while lP < leftLength and rP < rightLength:  # while no array is finished
 
+            # the least one is added to the final array
             if left_array[lP] < right_array[rP]:
                 result.append(left_array[lP])
                 Merge.recCounter += 1
@@ -42,10 +43,14 @@ class Merge:
                 rP += 1
                 Merge.recCounter += 1
 
+        # now we're adding the elements remained in one of arrays to the resulting one
+
+        # the case in which the elements remained in the left array
         for i in range(lP, leftLength):
             result.append(left_array[i])
             Merge.recCounter += 1
 
+        # the case in which the elements remained in the right array
         for i in range(rP, rightLength):
             result.append(right_array[i])
             Merge.recCounter += 1

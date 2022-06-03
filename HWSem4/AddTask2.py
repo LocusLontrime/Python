@@ -27,12 +27,12 @@ def get_list_partitions(elements: list) -> list:
 
 # get the numbers needed if they exist or None if not
 def get_sums(elements: list) -> list or None:
-    partitions = get_list_partitions(elements)
+    partitions = get_list_partitions(elements)  # here we get all the partitions
     result_list = []
     for partition in partitions:
         if len(partition) >= 2:
-            curr_partition_sum = sum(partition)
-            if curr_partition_sum in elements:
+            curr_partition_sum = sum(partition)  # checking of the main condition for sum
+            if curr_partition_sum in elements:  # creating a list of possible representations of numbers located in the array given if such exist
                 result_list.append(f'{curr_partition_sum} = {reduce(lambda x, y: str(x) + " + " + str(y), partition)}')
     return result_list if len(result_list) else None
 
