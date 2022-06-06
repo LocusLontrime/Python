@@ -129,4 +129,4 @@ def calculate(simplified_expressions: list) -> float:
 
 
 print(evaluate_math_expr('-7 * -(6 / 3)'))
-print(evaluate_math_expr('35 - (46 * (7.7 - 1.12 / (5 * 97 - 3.36)) - -74 * -(59 + 1 - 98) / -31 + -58) * -61 - 7 * (1 + 2 * 6.6666)'))
+print(evaluate_math_expr('(35 - (46 * (7.7 - 1.12 / (5 * 97 - 3.36)) - -74 * -(59 + 1 - 98) / -31 + -58) * -61 - 7 * (1 + 2 * 6.6666))/(3 * 366.98 / (2 + 2 * 2) + 98.98) + 989'))

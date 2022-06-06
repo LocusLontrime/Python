@@ -41,7 +41,7 @@ def get_array(length: int, abs_val: int) -> list:
 
 
 # random array for speed-test
-array_to_be_merged_new = get_array(1000000, 1000000000)
+array_to_be_merged_new = get_array(1000000, 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
 
 # comparison of two sorts
 tic = time.perf_counter()
