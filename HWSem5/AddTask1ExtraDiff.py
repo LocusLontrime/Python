@@ -102,4 +102,4 @@ tic = time.perf_counter()
 print(get_non_abundant_sum())
 
 toc1 = time.perf_counter()
-print(f"Time elapsed for merged sort: {toc1 - tic:0.4f} seconds")
+print(f"Time elapsed for calculations: {toc1 - tic:0.4f} seconds")
