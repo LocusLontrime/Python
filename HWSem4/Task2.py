@@ -4,6 +4,9 @@
 # Порядок элементов менять нельзя
 
 # dynamic programming with memoization: runtime O(n^2), memory using: O(n)
+from math import ceil
+
+
 def dyn_prog(elements: list) -> list:
     dp = [0] * (len(elements) + 1)  # memoization
     best_indexes = [0] * (len(elements) + 1)  # best indexes list
@@ -50,37 +53,55 @@ print(dyn_prog([5, 2, 3, 4, 6, 1, 7]))
 print(dyn_prog([1, 1, 1, 1, 1, 5, 2, 1, 3, 4, 6, 1, 2, 2, 7]))
 
 
-# СВЕРХ БЫСТРОЕ решение для нахождения ДЛИННЫ LIS, НЕ ГАРАНТИРУЕТ верную последовательность, НО ВЗАМЕН ГАРАНТИРУЕТ верную длину, скорость: O(N*log(N))
+# Линеаритмическое решение с построением LIS, runtime: O(N*log(N))
 def get_longest_increasing_subsequence(elements: list) -> list:  # Runtime O(n*log(n)), where n = len(elements)
-    result = []
+    list_of_min_indexes = [0] * (len(elements) + 1)
+    prev_indexes_list = []  # to build the consecutive LIS
+    max_length = 0
+
     print('Building of the longest increasing subsequence (LIS):')
     for i in range(len(elements)):
-        expected_index = bin_search(0, len(result) - 1, elements[i], result)  # expected place of element in the resulting set
-        if expected_index == len(result):  # if the elements lies outside of current set
-            result.append(elements[i])
-        else:  # inside case -> we change the greater element by the less one at th position found with the binary search above
-            result[expected_index] = elements[i]
-        print(f'index = {i}, el[i] = {elements[i]}, expected index = {expected_index}, res: {result}')
-    print(f'The quick length of LIS = {len(result)}')
-    print('outcome pseudo-LIS: ', end='')
-    return result
+
+        leftPointer = 1
+        rightPointer = max_length
+
+        expected_index = bin_search(leftPointer, rightPointer, elements[i], elements, list_of_min_indexes)  # expected place of element in the resulting set
+
+        prev_indexes_list.append(list_of_min_indexes[expected_index - 1])
+        list_of_min_indexes[expected_index] = i
+
+        if expected_index > max_length:
+            max_length = expected_index
+
+    print(f'Length of LIS = {max_length}')
+    print(f'list_of_min_indexes = {list_of_min_indexes}')
+    print(f'prev_indexes_list = {prev_indexes_list}')
+
+    index = list_of_min_indexes[max_length]
+
+    longest_increasing_subsequence = []
+
+    for iterator in range(max_length):
+        longest_increasing_subsequence.append(elements[index])
+        index = prev_indexes_list[index]
+
+    longest_increasing_subsequence.reverse()
+
+    return longest_increasing_subsequence
 
 
 # Binary search of position the current element to be located at
-def bin_search(left_border: int, right_border: int, target: int, elems: list) -> int:
-    if right_border == -1:  # border case -> when there is no elements in elems list
-        return 0
+def bin_search(left_border: int, right_border: int, target: int, elems: list, min_list: list) -> int:
+    if right_border < left_border:  # border case -> intersection
+        return left_border
 
-    if left_border == right_border:  # ending case -> the searching is finished
-        return left_border + (1 if target > elems[left_border] else 0)  # the element is not found, and consequently it can be located inside the set or outside
-    pivot_index = (left_border + right_border) // 2  # median index
-    if elems[pivot_index] < target:  # here we decide in which part of current interval the target should be distributed
-        return bin_search(pivot_index + 1, right_border, target, elems)
-    elif elems[pivot_index] > target:
-        return bin_search(left_border, pivot_index, target, elems)
+    pivot_index = (left_border + right_border) // 2 + (1 if (left_border + right_border) % 2 != 0 else 0)  # median index, rounded to the nearest integer
+    if elems[min_list[pivot_index]] < target:  # here we decide in which part of current interval the target should be distributed
+        return bin_search(pivot_index + 1, right_border, target, elems, min_list)
     else:
-        return pivot_index  # the case of finding the target amongst the elements given
+        return bin_search(left_border, pivot_index - 1, target, elems, min_list)
 
 
 print(get_longest_increasing_subsequence([1, 5, 2, 3, 4, 6, 1, 7]))
 print(get_longest_increasing_subsequence([5, 2, 3, 4, 6, 1, 7]))
+print(get_longest_increasing_subsequence([9, 8, 7, 8, 9, 1, 1, 1, 4, 3, 2, 7, 1, 2, 3, 5, 6, 7, 8, 9, 1, 2, 3, 6, 9]))

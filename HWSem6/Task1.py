@@ -1,8 +1,9 @@
-# 1 -  Написать программу вычисления арифметического выражения заданного строкой. Используются операции +,-,/,*.
+# 1 - Написать программу вычисления арифметического выражения заданного строкой. Используются операции +,-,/,*.
 # приоритет операций стандартный. Функцию eval не использовать!
 # Пример: 2+2 => 4; 1+2*3 => 7; 1-2*3 => -5;
 # Дополнительно: Добавить возможность использования скобок, меняющих приоритет операций.
 # Пример: 1+2*3 => 7; (1+2)*3 => 9;
+import time
 from collections import deque
 
 
@@ -44,9 +45,9 @@ def get_symbols(math_expression: str):  # 3.6 3,6 36 366 98 989
             math_symbols.append(math_expression[index])  # if the symbol is not a parenthesis or digit -> it will be automatically added to math_symbols list
             index += 1  # iterating
 
-    print(f'all symbols: {math_symbols}')
-    print(f'opening pars -> closing ones dict: {opening_pars}')
-    print(f'closing pars -> opening ones dict: {closing_pars}')
+    # print(f'all symbols: {math_symbols}')
+    # print(f'opening pars -> closing ones dict: {opening_pars}')
+    # print(f'closing pars -> opening ones dict: {closing_pars}')
 
     return math_symbols, opening_pars, closing_pars
 
@@ -66,12 +67,12 @@ def evaluate_parentheses_in_depth(l_pointer, r_pointer, math_symbols: list, open
 
         index += 1  # iterating
 
-    print(f'simplified_expressions: {simplified_expressions}')
+    # print(f'simplified_expressions: {simplified_expressions}')
 
     # what to do with neg operator??? -> implement a special method!!!
     simplified_expressions_without_neg = get_non_negative_expressions(simplified_expressions)
 
-    print(f'no_neg_expression: {simplified_expressions_without_neg}')
+    # print(f'no_neg_expression: {simplified_expressions_without_neg}')
 
     return calculate(simplified_expressions_without_neg)
 
@@ -100,7 +101,7 @@ def get_non_negative_expressions(simplified_expressions: list) -> list:  # here 
 
 def calculate(simplified_expressions: list) -> float:  # base recursive method to calculate mul, div, add and sub in a sequence
     def recursive_seeker(curr_index: int, curr_mult_div: float, result: float, last_operation_is_mult_div: bool) -> float or None:
-        print(f'curr_index: {curr_index}, curr_mult_div: {curr_mult_div}, result: {result}')
+        # print(f'curr_index: {curr_index}, curr_mult_div: {curr_mult_div}, result: {result}')
 
         # base case:
         if len(simplified_expressions) == 0:
@@ -133,4 +134,10 @@ def calculate(simplified_expressions: list) -> float:  # base recursive method t
 
 
 print(f"result1: {evaluate_math_expr('-7 * -(6 / 3)')}")
+
+tic = time.perf_counter()
+
 print(f"result2: {evaluate_math_expr('(35 - (46 * (7.7 - 1.12 / (5 * 97 - 3.36)) - -74 * -(59 + 1 - 98) / -31 + -58) * -61 - 7 * (1 + 2 * 6.6666))/(3 * 366.98 / (2 + 2 * 2) + 98.98) + 989')}")
+
+toc1 = time.perf_counter()
+print(f"Time elapsed for calculations: {toc1 - tic:0.8f} seconds")
