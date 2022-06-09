@@ -1,7 +1,7 @@
 from collections import deque
 
 
-def evaluate_math_expr(math_expression: str) -> float:  # accepted on codewars
+def evaluate_math_expr(math_expression: str) -> float:  # accepted on codewars, powers calculations been added
     m_smbls, op_prs, cl_pars = get_symbols(math_expression)
 
     return evaluate_parentheses_in_depth(0, len(m_smbls) - 1, m_smbls, op_prs, cl_pars)
@@ -67,7 +67,12 @@ def evaluate_parentheses_in_depth(l_pointer, r_pointer, math_symbols: list, open
 
     print(f'no_neg_expression: {simplified_expressions_without_neg}')
 
-    return calculate(simplified_expressions_without_neg)
+    # some powers-cutting
+    simplified_expressions_without_neg_and_powers = evaluate_powers(simplified_expressions_without_neg)
+
+    print(f'no_neg_and_powers_sexpression: {simplified_expressions_without_neg_and_powers}')
+
+    return calculate(simplified_expressions_without_neg_and_powers)
 
 
 def get_non_negative_expressions(simplified_expressions: list) -> list:
@@ -82,7 +87,7 @@ def get_non_negative_expressions(simplified_expressions: list) -> list:
 
     while index < len(simplified_expressions):
         if index + 1 + 1 < len(simplified_expressions) and \
-                simplified_expressions[index] in ['/', '-', '*', '+'] and simplified_expressions[index + 1] == '-':
+                simplified_expressions[index] in ['/', '-', '*', '+', '^'] and simplified_expressions[index + 1] == '-':
             simplified_expressions_without_neg.append(simplified_expressions[index])
             simplified_expressions_without_neg.append(-simplified_expressions[index + 1 + 1])
             index += 3
@@ -91,6 +96,34 @@ def get_non_negative_expressions(simplified_expressions: list) -> list:
             index += 1
 
     return simplified_expressions_without_neg
+
+
+def evaluate_powers(simplified_expressions_without_neg: list) -> list:  # 4 + 7 * 5 + 6 ^ 4 ^ 3 - 69999 + 9 ^ 98
+
+    simplified_expressions_without_neg_and_powers = []
+
+    index = len(simplified_expressions_without_neg) - 1
+    while True:
+
+        while index >= 0 and simplified_expressions_without_neg[index - 1] != '^':
+            simplified_expressions_without_neg_and_powers.insert(0, simplified_expressions_without_neg[index])
+            index -= 1
+
+        if index < 0:
+            break
+
+        exponent_value = 0
+        saved_index = index
+        while simplified_expressions_without_neg[index - 1] == '^':
+            exponent_value = simplified_expressions_without_neg[index - 2] ** exponent_value if index != saved_index\
+                else simplified_expressions_without_neg[index - 2] ** simplified_expressions_without_neg[index]
+            index -= 2
+
+        index -= 1
+
+        simplified_expressions_without_neg_and_powers.insert(0, exponent_value)
+
+    return simplified_expressions_without_neg_and_powers
 
 
 def calculate(simplified_expressions: list) -> float:
@@ -130,3 +163,10 @@ def calculate(simplified_expressions: list) -> float:
 
 print(evaluate_math_expr('-7 * -(6 / 3)'))
 print(evaluate_math_expr('(35 - (46 * (7.7 - 1.12 / (5 * 97 - 3.36)) - -74 * -(59 + 1 - 98) / -31 + -58) * -61 - 7 * (1 + 2 * 6.6666))/(3 * 366.98 / (2 + 2 * 2) + 98.98) + 989'))
+print(evaluate_math_expr('2 + (2 ^ 3 ^ 2 - 1) * 6.88'))
+
+print(evaluate_powers([2, '+', 3, '^', 3, '^', 2, '-', 1]))
+print(evaluate_powers([2, '^', 3, '^', 2, '+', 1]))
+print(evaluate_powers([2, '+', 2]))
+print(evaluate_powers([2]))
+print(3 ** 69)
