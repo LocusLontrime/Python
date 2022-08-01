@@ -33,3 +33,4 @@ def partitions(n):
 
 
 print(partitions(989))
+print(partitions(100))
