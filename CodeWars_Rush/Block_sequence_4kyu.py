@@ -1,4 +1,4 @@
-# accepted on codewars.com (some troubles: 101, 804...)
+# accepted on codewars.com (some troubles: 101, 804...) 36 366 98 989
 import math
 
 preset_str = ''
@@ -131,3 +131,15 @@ print(solve(10))
 print(solve(804))
 print(solve(101))
 
+
+
+
+
+
+
+
+
+
+
+
+# print(get_numbers_in(98))
