@@ -57,4 +57,7 @@ def show(width, height):
 
 show(3, 3)
 show(6, 5)
+show(2, 2)
+show(4, 4)
 show(8, 8)
+show(16, 16)
