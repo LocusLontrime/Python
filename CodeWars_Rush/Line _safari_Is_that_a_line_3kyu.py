@@ -35,23 +35,20 @@ def line(grid) -> bool:
 
         match grid[j][i]:
             case '+':
-                possible_indexes = [(prev_index_of_dir + 1) % len(directions),
-                                    (prev_index_of_dir + 3) % len(directions)]
+                possible_indexes = [(prev_index_of_dir + 1) % len(directions), (prev_index_of_dir + 3) % len(directions)]
             case '-':
                 possible_indexes = [el for el in [1, 3] if el == prev_index_of_dir]
             case '|':
                 possible_indexes = [el for el in [0, 2] if el == prev_index_of_dir]
             case 'X':
-                for el in [1, 3]:
-                    n_coords = [j + directions[el][0], i + directions[el][1]]
-                    if 0 <= n_coords[0] < len(grid) and 0 <= n_coords[1] < len(grid[0]):
-                        if grid[n_coords[0]][n_coords[1]] in ['-', 'X', '+']:
-                            possible_indexes.append(el)
-                for el in [0, 2]:
-                    n_coords = [j + directions[el][0], i + directions[el][1]]
-                    if 0 <= n_coords[0] < len(grid) and 0 <= n_coords[1] < len(grid[0]):
-                        if grid[n_coords[0]][n_coords[1]] in ['|', 'X', '+']:
-                            possible_indexes.append(el)
+                indexes = [[1, 3], [0, 2]]
+                symbols = [['-', 'X', '+'], ['|', 'X', '+']]
+                for ind in range(len(indexes)):
+                    for el in indexes[ind]:
+                        n_coords = [j + directions[el][0], i + directions[el][1]]
+                        if 0 <= n_coords[0] < len(grid) and 0 <= n_coords[1] < len(grid[0]):
+                            if grid[n_coords[0]][n_coords[1]] in symbols[ind]:
+                                possible_indexes.append(el)
 
         for index_of_dir in possible_indexes:
             if prev_index_of_dir == -1 or index_of_dir != (prev_index_of_dir + 2) % len(directions):
@@ -60,16 +57,14 @@ def line(grid) -> bool:
                     if memo_table[new_coords[0]][new_coords[1]] != 1:
                         if grid[new_coords[0]][new_coords[1]] != " ":
                             memo_table[j][i] = 1
-                            res = res or recursive_seeker(k, j + directions[index_of_dir][0],
-                                                          i + directions[index_of_dir][1], index_of_dir, length + 1)
+                            res = res or recursive_seeker(k, j + directions[index_of_dir][0], i + directions[index_of_dir][1], index_of_dir, length + 1)
                             memo_table[j][i] = 0
                             mini_counter += 1
 
         print(f'min counter: {mini_counter}, {j, i}')
         return res if mini_counter == 1 else False
 
-    return (recursive_seeker(0, x_coords[0][0], x_coords[0][1], -1, 1) and path_length == symbols_counter) or (
-                recursive_seeker(1, x_coords[1][0], x_coords[1][1], -1, 1) and path_length == symbols_counter)
+    return (recursive_seeker(0, x_coords[0][0], x_coords[0][1], -1, 1) and path_length == symbols_counter) or (recursive_seeker(1, x_coords[1][0], x_coords[1][1], -1, 1) and path_length == symbols_counter)
 
 
 grid_good = [
