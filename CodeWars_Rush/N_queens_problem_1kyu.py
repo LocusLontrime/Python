@@ -1,4 +1,4 @@
-flag_of_rec_stop = False
+flag_of_rec_stop = False  # 36 366 98 989
 
 
 def total_n_queens(n: int):
@@ -45,5 +45,5 @@ def total_n_queens(n: int):
     return placements if len(placements) > 0 else None
 
 
-print(f'All placements number: {total_n_queens(25)}', end='\n\n')
+print(f'All placements number: {total_n_queens(26)}', end='\n\n')
 
