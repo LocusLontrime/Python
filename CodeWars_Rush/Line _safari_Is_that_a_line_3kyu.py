@@ -8,9 +8,10 @@ def line(grid) -> bool:
     global directions, symbols_counter, path_length
 
     symbols_counter = 0
-    memo_table = [[0] * len(grid[0]) for _ in range(len(grid))]
-    x_coords = list()
+    memo_table = [[0] * len(grid[0]) for _ in range(len(grid))]  # memoization of visited places
+    x_coords = list()  # coordinates of both Xs
 
+    # here we are searching for the coordinates of beginning and ending Xs
     for curr_j in range(len(grid)):
         for curr_i in range(len(grid[0])):
             if grid[curr_j][curr_i] != " ":
@@ -20,10 +21,12 @@ def line(grid) -> bool:
 
     print(f'x coords: {x_coords[0][0], x_coords[0][1]}, {x_coords[1][0], x_coords[1][1]}')
 
+    # recursive method for checking the path's validity
     def recursive_seeker(k: int, j: int, i: int, prev_index_of_dir: int, length: int):
         global directions, path_length
         print(f'{j, i}, {grid[j][i]}')
 
+        # checks if the curr_path is ended at another X point
         if grid[j][i] == 'X' and (j != x_coords[k][0] or i != x_coords[k][1]):
             path_length = length
             print(f'The line is valid, True')
@@ -33,6 +36,7 @@ def line(grid) -> bool:
         mini_counter = 0
         possible_indexes = []
 
+        # different cases of current symbol
         match grid[j][i]:
             case '+':
                 possible_indexes = [(prev_index_of_dir + 1) % len(directions), (prev_index_of_dir + 3) % len(directions)]
@@ -50,6 +54,7 @@ def line(grid) -> bool:
                             if grid[n_coords[0]][n_coords[1]] in symbols[ind]:
                                 possible_indexes.append(el)
 
+        # main cycle of further checking, excludes any ambiguity
         for index_of_dir in possible_indexes:
             if prev_index_of_dir == -1 or index_of_dir != (prev_index_of_dir + 2) % len(directions):
                 new_coords = [j + directions[index_of_dir][0], i + directions[index_of_dir][1]]
@@ -62,8 +67,9 @@ def line(grid) -> bool:
                             mini_counter += 1
 
         print(f'min counter: {mini_counter}, {j, i}')
-        return res if mini_counter == 1 else False
+        return res if mini_counter == 1 else False  # checks whether there is any remote isolated symbol
 
+    # checks two directions 1. from first X to the second X and 2. reversed
     return (recursive_seeker(0, x_coords[0][0], x_coords[0][1], -1, 1) and path_length == symbols_counter) or (recursive_seeker(1, x_coords[1][0], x_coords[1][1], -1, 1) and path_length == symbols_counter)
 
 
