@@ -57,10 +57,12 @@ def doMath(op, op1, op2):
         return op1 - op2
 
 
-print(postfixEval('7 8 + 3 2 + /'))
-print(postfixEval(infixToPostfix("1 - 3 / 3 + 5 * 6 ^ 12 % 5")))
-print(infixToPostfix("5 * 3 ^ ( 4 - 2 )"))
+# print(postfixEval('7 8 + 3 2 + /'))
+# print(postfixEval(infixToPostfix("1 - 3 / 3 + 5 * 6 ^ 12 % 5")))
+# print(infixToPostfix("5 * 3 ^ ( 4 - 2 )"))
+#
+#
+# print(infixToPostfix("A * B + C * D"))
+# print(infixToPostfix("( A + B ) * C - ( D - E ) * ( F + G )"))
 
-
-print(infixToPostfix("A * B + C * D"))
-print(infixToPostfix("( A + B ) * C - ( D - E ) * ( F + G )"))
+print(infixToPostfix('2 ^ 3 ^ 4'))

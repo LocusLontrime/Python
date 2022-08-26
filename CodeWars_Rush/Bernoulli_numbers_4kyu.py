@@ -25,5 +25,5 @@ def bernoulli_number(n):
 
 # print(Fraction(1, 2) * 3)
 
-print(bernoulli_number(2))
+print(bernoulli_number(500))
 
