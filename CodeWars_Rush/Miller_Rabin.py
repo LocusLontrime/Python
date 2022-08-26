@@ -1,5 +1,5 @@
 # Miller-Rabin test for primes, works for mega large n
-MR_THRESHOLD = 55
+MR_THRESHOLD = 1
 
 
 import random
@@ -43,8 +43,15 @@ def is_prime(p):
 # print(is_prime(123426017006182806728593424683999798008235734137469123231828679))
 #
 # print(is_prime(14044103))
-print(is_prime(2047))
+# print(is_prime(2047))
+#
+# print([] + [1, 2, 3])
 
-print([] + [1, 2, 3])
+print(is_prime(5))
+print(is_prime(4))
+print(is_prime(100))
+print(is_prime(1361))
+
+
 
 
