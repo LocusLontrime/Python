@@ -1,4 +1,6 @@
 # accepted on codewars.com
+import math
+
 recursive_counter = 0
 strs = []
 
@@ -92,3 +94,7 @@ def calc_sum_new(left_value: int, right_value: int) -> int:
     return (right_value * (right_value + 1) - (left_value - 1) * left_value) // 2
 
 # print(calc_sum_new(-10, 5))
+
+
+# print(math.log2(35165045587))
+
