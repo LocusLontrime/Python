@@ -1,5 +1,5 @@
-# accepted on codewars.com
-import math
+# accepted on codewars.com 36 366 98 989 98989
+import time
 
 recursive_counter = 0
 strs = []
@@ -85,7 +85,12 @@ def print_log():
 # print(elder_age(8, 5, 1, 100))
 # print(elder_age(25, 31, 0, 100007))
 # print(elder_age(545, 435, 342, 1000007))
+
+start = time.time_ns()
 print(elder_age(28827050410, 35165045587, 7109602, 13719506))
+finish = time.time_ns()
+
+print(f'Time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
 
 def calc_sum_new(left_value: int, right_value: int) -> int:
