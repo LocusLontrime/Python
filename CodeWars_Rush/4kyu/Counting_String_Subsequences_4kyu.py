@@ -7,11 +7,9 @@ def count_subsequences(a, b):  # "hello" in "amhheeyteelltotoo"
     memo_table = dict()
 
     def rec_seeker(needle_index, haystack_index):
-
         # base cases
         if haystack_index > haystack_len:
             return 0
-
         if needle_index == needle_len:
             return 1
 
@@ -19,7 +17,6 @@ def count_subsequences(a, b):  # "hello" in "amhheeyteelltotoo"
         counter = 0
 
         if (needle_index, haystack_index) not in memo_table.keys():
-
             # recursion depth
             for i in range(haystack_index, haystack_len):
                 if a[needle_index] == b[i]:

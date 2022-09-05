@@ -50,10 +50,14 @@ def get_factors(number: int):
     return factorization_dictionary
 
 
-print(get_factors(3*3*3*3*3*11*17*199))
-print(get_factors(640320))
-print(get_factors(6670))
-print(get_factors(640320 // (32 * 3)))
-print(get_factors(13717421))
-print(get_factors(36758392918475747))
+# print(get_factors(3*3*3*3*3*11*17*199))
+# print(get_factors(640320))
+# print(get_factors(6670))
+# print(get_factors(640320 // (32 * 3)))
+# print(get_factors(13717421))
+# print(get_factors(36758392918475747))
+
+l = list(sorted(get_primes(20000)))
+
+print(f'length: {len(l)}, l: {l}')
 
