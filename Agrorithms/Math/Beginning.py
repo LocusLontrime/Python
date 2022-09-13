@@ -79,7 +79,9 @@ def method(x: int) -> int:
     return x ** x
 
 
-print(method(1001))
+print(f'e: {math.e}')
+print(k := method(1001))
+print(f'length of k: {len(str(k))}')
 
 ans = []
 
@@ -87,6 +89,6 @@ for i in range(1000000):
     if i % 2 == 0:
         ans.append(i)
 
-# print(ans)
+print(ans)
 
-print(math.factorial(1000000))
+# print(math.factorial(1000000))

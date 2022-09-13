@@ -98,7 +98,7 @@ t1 = time.perf_counter_ns()
 
 # print(perfect_squares)
 numb = 1000
-for numb in range(1, 25 + 1):
+for numb in range(1, 1098 + 1):
     sums = square_sums(numb)
     if type(sums) is not bool:
         print(f'{numb}, length of sums: {len(sums)}, row: {sums}')

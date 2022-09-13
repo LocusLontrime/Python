@@ -9,12 +9,10 @@ def mix(s1: str, s2: str):  # -> str
                 else:
                     freq_dict[char] = 1
         return freq_dict
-
     fd1, fd2 = get_freq_dict(s1), get_freq_dict(s2)
     print(f'fd1: {fd1}')
     print(f'fd2: {fd2}')
     result = []
-
     for key in (s := set(s1 := fd1.keys()).union(set(s2 := fd2.keys()))):
         if key in s1 and key not in s2:
             if (el := fd1[key]) > 1:
@@ -30,15 +28,13 @@ def mix(s1: str, s2: str):  # -> str
                     result.append(['2:' + key * el, el])
                 else:
                     result.append(['=:' + key * el, el])
-
     result = sorted(result, key=lambda x: (-x[1], x[0]))
     print(result)
-
     return "/".join([string[0] for string in result])
 
 
-mix("A aaaa bb c", "& aaa bbb c d")
+s = mix("A aaaa bb c", "& aaa bbb c d")
 mix("Are they here", "yes, they are here")
-s = mix("Sadus:cpms>orqn3zecwGvnznSgacs", "MynwdKizfd$lvse+gnbaGydxyXzayp")
+mix("Sadus:cpms>orqn3zecwGvnznSgacs", "MynwdKizfd$lvse+gnbaGydxyXzayp")
 
 print(s)
