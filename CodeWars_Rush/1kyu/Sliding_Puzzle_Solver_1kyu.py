@@ -1,15 +1,16 @@
 # accepted on codewars.com
 import time
-
 rec_flag: bool
 rec_seeker_counter: int
 
 
+# starting point
 def slide_puzzle(ar):
     board = SlidingBoard(ar)
     return board.solve_puzzle()
 
 
+# class for representing a sliding board
 class SlidingBoard:
     def __init__(self, puzzle: list[list[int]]) -> None:
         self.max_j, self.max_i = len(puzzle), len(puzzle[0])
@@ -35,6 +36,7 @@ class SlidingBoard:
             # locating the "rightmost" two cells if we look at rotated two rows
             upper, lower = self.sliding_board[-1][i], self.sliding_board[-1][i + 1]
             upper_right_num, lower_right_num = self.solved_board[-2][i], self.solved_board[-1][i]
+            # checks if these two cells are already solved
             if (c1 := self.sliding_board[-2][i]).num == upper_right_num and (
                     c2 := self.sliding_board[-1][i]).num == lower_right_num:
                 c1.is_located_right, c2.is_located_right = True, True
@@ -59,10 +61,10 @@ class SlidingBoard:
             right_num = self.solved_board[j][i]
             # print(f'SOLVING NUM: {right_num}')
             self.locate_cell(right_num)
-
         # locating the rightmost two cells
         last, prev = self.sliding_board[j][-2], self.sliding_board[j + 1][-2]
         prev_right_num, last_right_num = self.solved_board[j][-2], self.solved_board[j][-1]
+        # checks if these two cells are already solved
         if (c1 := self.sliding_board[j][-2]).num == prev_right_num and (
                 c2 := self.sliding_board[j][-1]).num == last_right_num:
             c1.is_located_right, c2.is_located_right = True, True
@@ -77,57 +79,60 @@ class SlidingBoard:
             self.locate_cell(prev_right_num)
 
     def solve_2_x_2_square(self):
-        # checks if the puzzle solvable:
+        # three right values for this square
         a, b, c = (m := (self.max_j - 1) * self.max_i) - 1, m, m + self.max_i - 1
         # print(f'a, b, c: {a, b, c}')
+        # checks if the puzzle solvable:
         if not self.locate_cell(a) or not self.locate_cell(b) or not self.locate_cell(c):
             return False
 
         return True
 
     def locate_cell(self, num: int, goal_cell=None, frieze_or_not=True):
-        # checking for this has been already solved:
-
         # the whole path itself from the zero to the right position of the num
         whole_path = []
         # the right position coordinates
         rj, ri = (num - 1) // self.max_i, (num - 1) % self.max_i
-        # print(f'right j: {rj}, right i: {ri}')
+        print(f'right j: {rj}, right i: {ri}')
         goal = self.sliding_board[rj][ri] if goal_cell is None else goal_cell
-        # print(f'GOAL INITIAL J: {goal.j}, I: {goal.i}')
+        print(f'GOAL INITIAL J: {goal.j}, I: {goal.i}')
         # pathfinding cycle
         while 1 == 1:  # just a fun
+            # if the cell is solved -> break
             if goal.num == num:
                 if frieze_or_not:
                     goal.is_located_right = True
                 break
 
-            # print(f'GOAL NUM: {goal.num}, goal j: {goal.j}, goal i: {goal.i}')
-
+            print(f'GOAL NUM: {goal.num}, goal j: {goal.j}, goal i: {goal.i}')
             zero_cell = self.find_number_cell(0)
             num_cell = self.find_number_cell(num)
             nearest = num_cell.get_nearest_to(goal)
-            # print(f'zero coords: ({zero_cell.j, zero_cell.i})')
-            # print(f'num_cell coords: ({num_cell.j, num_cell.i})')
-            # print(f'nearest coords: ({nearest.j, nearest.i})')
+            print(f'zero coords: ({zero_cell.j, zero_cell.i})')
+            print(f'num_cell coords: ({num_cell.j, num_cell.i})')
+            print(f'nearest coords: ({nearest.j, nearest.i})')
 
+            # find a path of zero-cell to the nearest cell
             a_path = zero_cell.find_the_path_of_zero_to_aim(nearest, num_cell)
-
+            # if there is no path -> the is no solution
             if a_path is None:
                 return False
 
+            # building the full path
             whole_path += (pa := [a_path[index].num for index in range(1, len(a_path))])
 
+            # change the values of the cell on the path
             for ind in range(len(a_path) - 1):
                 a_path[ind].move(a_path[ind + 1])
 
+            # swap the values of zero and num, add num to the path
             whole_path.append(num)
             num_cell.move(nearest)
 
-            # print(f'a_path: {pa + [num]}')
+            print(f'a_path: {pa + [num]}')
+            self.show_puzzle()
 
-            # self.show_puzzle()
-
+        # add the whole path to the solution
         self.solution += whole_path
         return True
 
@@ -142,6 +147,7 @@ class SlidingBoard:
             print(row)
 
 
+# class representing a Cell on the sliding board
 class Cell:  # unmovable
     directions = [[-1, 0], [0, 1], [1, 0], [0, -1]]  # static var for 4 possible directions
 
@@ -153,6 +159,8 @@ class Cell:  # unmovable
     def __init__(self, num: int, j: int, i: int) -> None:
         self.num = num  # number currently located in the cell, starts with initial value
         self.possible_ways: list['Cell'] = list()  # possible directions of further moving, max length is 4
+        self.prev_cell = None
+        self.distance_to = 100000001  # memoization for dp A*
         self.is_located_right = False  # flag of right locating
         self.j, self.i = j, i  # coordinates
 
@@ -188,35 +196,38 @@ class Cell:  # unmovable
         # returning the nearest to the aim adjacent to self cell
         return elements[0][0]
 
-    # a star variation, not the shortest way, but min calls of rec
+    # a star STUPID variation (need to be rewritten), not the shortest way, but min calls of rec
     def find_the_path_of_zero_to_aim(self, aim: 'Cell', pivot_num: 'Cell'):
         global rec_flag, rec_seeker_counter
         rec_flag = True
         rec_seeker_counter += 0
+        self.distance_to = 0
 
-        def rec_seeker(curr_cell: 'Cell', curr_path: list['Cell'], visited_cells: set['Cell']):
-            global rec_flag, rec_seeker_counter
+        def rec_seeker(curr_cell: 'Cell', curr_path: list['Cell']):
+            global rec_seeker_counter
             rec_seeker_counter += 1
+            print(f'curr_Cell: {curr_cell}')
             # border case:
             if curr_cell == aim:
-                rec_flag = False
-                return curr_path
+                return curr_cell.distance_to
             # body of recursion:
+            min_cost = 100000001
             ways_to_be_sorted = list()  # list[tuple['Cell', int]]
+            best_way = None
             for next_call in curr_cell.possible_ways:
-                if next_call not in visited_cells and next_call != pivot_num and not next_call.is_located_right:
-                    ways_to_be_sorted.append((next_call, next_call.calc_manhattan_distance(aim)))
-            # prioritizing the way:
-            ans = None
-            for best_way in sorted(ways_to_be_sorted, key=lambda x: x[1]):
-                if rec_flag:
-                    visited_cells.add(best_way[0])
-                    ans = ans or rec_seeker(best_way[0], curr_path + [best_way[0]], visited_cells)
-                    visited_cells.remove(best_way[0])
+                if next_call != pivot_num and not next_call.is_located_right:
+                    if next_call.distance_to > curr_cell.distance_to + 1:
+                        next_call.distance_to = curr_cell.distance_to + 1
+                        gen_cost = next_call.distance_to + next_call.calc_manhattan_distance(aim)
+                        # prioritizing the way:
+                        if gen_cost < min_cost:
+                            min_cost = gen_cost
+                            next_call.prev_cell = curr_cell
+                            best_way = next_call
 
-            return ans
+            return rec_seeker(best_way, curr_path + [best_way])
 
-        path = rec_seeker(self, [self], {self})
+        path = rec_seeker(self, [self])
 
         return path
 

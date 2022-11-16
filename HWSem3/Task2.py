@@ -1,4 +1,4 @@
-# Вычислить число  c заданной точностью d
+# Вычислить число c заданной точностью d 36 366 98 989
 # Пример: при d = 0.001,  c= 3.141.
 from decimal import Decimal
 from decimal import getcontext
@@ -22,7 +22,7 @@ def calc_pi_precision_alt(precision: float) -> float:  # not co fast converges
         i += 2
 
 
-getcontext().prec = 10000
+getcontext().prec = 10000 + 2
 
 
 def newton_arcsine_series(precision: Decimal) -> Decimal:  # converges almost instantly
@@ -42,22 +42,32 @@ def newton_arcsine_series(precision: Decimal) -> Decimal:  # converges almost in
         i += 1
 
 
-def chudnovskii_series(n) -> Decimal:
+def chudnovskii_series(m) -> Decimal:
     pi = Decimal(0)
     delta = Decimal(10005).sqrt() / Decimal(4270934400)
-    for i in range(0, n + 1):
+    for i in range(0, m + 1):
         multiplier = (13591409 + 545140134 * i)
         if i != 0:
             delta *= -Decimal((6 * i - 5) * (2 * i - 1) * (6 * i - 1) / Decimal(26680 * 640320 * 640320 * i * i * i))
         multiplier *= delta
         pi += multiplier
-        print(f'iteration: {i}, pi = {(pi ** -1)}, current delta = {delta}')
+        # print(f'iteration: {i}, pi = {(pi ** -1)}, current delta = {delta}')
     return pi ** -1
 
 
 # print(calc_pi_precision_alt(0.00000001))
 # print(newton_arcsine_series(Decimal(1/10**300)))  # precision of a default Decimal type is out of range for such calculations...
 
-print(chudnovskii_series(706))  # 10k right digits
+print(pi_str := str(chudnovskii_series(707)))  # 10k right digits
 
+pi_str = pi_str[:1] + pi_str[1 + 1:]
 
+print(f'pi length: {len(str(pi_str))}')
+
+n = 9999
+
+print(f'pi {n}th sign: {pi_str[n]}')
+
+str_ex = '1234567890'
+
+print(f'{str_ex[:1]} {str_ex[2:]}')
