@@ -1,7 +1,7 @@
 # accepted on codewars.com, should be optimized and refactored
 
 import operator
-signs = {'*':  operator.mul, '/': operator.floordiv , '+': operator.add, '--': operator.add, '-': operator.sub}
+signs = {'*':  operator.mul, '/': operator.floordiv, '+': operator.add, '--': operator.add, '-': operator.sub}
 
 
 def solve_runes(runes):
@@ -37,14 +37,29 @@ def solve_runes(runes):
             return -1
 
 
-print(solve_runes("123*45?=5?088"))  # --> answer is '6'
-print(solve_runes("-5?*-1=5?"))  # --> answer is '0'
-print(solve_runes("19--45=5?"))
-
-print(solve_runes("?*11=??"))
-print(solve_runes("-8593-533??=-?1959"))
 
 
 
+def solve_runes_alternative(runes):
+    parts = runes.split('=')
+    for i in range(10):
+        if str(i) not in runes:
+            r_p = parts[1].replace('?', str(i))
+            l_p = parts[0].replace('?', str(i))
+            if not (l_p[0] == '0' and len(l_p) > 1):
+                if eval(l_p) == int(r_p) and not (r_p[0] == '0' and len(r_p) > 1):
+                    return i
+    return -1
 
-print([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11][1:])
+
+# print(solve_runes("123*45?=5?088"))  # --> answer is '6'
+# print(solve_runes("-5?*-1=5?"))  # --> answer is '0'
+# print(solve_runes("19--45=5?"))
+#
+# print(solve_runes("?*11=??"))
+# print(solve_runes("-8593-533??=-?1959"))
+print(solve_runes_alternative("-8593-533??=-?1959"))
+
+# print([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11][1:])
+
+# print(list(signs.keys()) + ['='])
