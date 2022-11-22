@@ -8,18 +8,44 @@ import numpy as np
 
 def find_shortest_path(grid, start_node, end_node):
 
+    def choose_heuristic():
+        def calc_manhattan_heuristic(node_1, node_2):
+            return abs(node_1.position[0] - node_2.position[0]) + abs(node_1.position[1] - node_2.position[1])
+
+        def calc_euclidian_heuristic(node_1, node_2):
+            return math.sqrt((node_1.position[0] - node_2.position[0]) ** 2 + (node_1.position[1] - node_2.position[1]) ** 2)
+
+        def calc_no_heuristic(node_1, node_2):
+            return 0
+
+        heuristics = {1: calc_manhattan_heuristic, 2: calc_euclidian_heuristic, 3: calc_no_heuristic}
+        heur_names = ['Manhattan', 'Euclidian', 'No']
+
+        for i in range(len(heur_names)):
+            print(f'press {i + 1} for <{heur_names[i]} heuristic>')
+
+        string = input()
+        if string in [str(_ + 1) for _ in range(len(heur_names))]:
+            print(f'{heur_names[(i := int(string)) - 1]} heuristic been chosen')
+            return heuristics[i]
+        else:
+            print('Please, press 1, 2, or 3 for heuristic choice')
+            choose_heuristic()
+
+    heuristic = choose_heuristic()
+
     print(f'start_node: {start_node}, end_node: {end_node}')
 
     print(f'grid: {grid}')
 
-    path = a_star(grid, start_node, end_node)
+    path = a_star(grid, start_node, end_node, heuristic)
 
     print(f"The shortest path's length: {len(path)}")
 
     return [node.position for node in path]
 
 
-def a_star(grid, start_node, end_node):
+def a_star(grid, start_node, end_node, heuristic):
 
     vertexes_to_be_visited = [start_node]
     start_node.g = 0
@@ -44,7 +70,7 @@ def a_star(grid, start_node, end_node):
             if not next_possible_node.is_visited:
                 if next_possible_node.g > curr_node.g + 1:
                     next_possible_node.g = curr_node.g + 1
-                    next_possible_node.h = calc_manhattan_heuristic(next_possible_node, end_node)
+                    next_possible_node.h = heuristic(next_possible_node, end_node)
                     next_possible_node.is_visited = True
                     next_possible_node.previously_visited_node = curr_node
                     heapq.heappush(vertexes_to_be_visited, next_possible_node)
@@ -82,14 +108,6 @@ def get_adjacent_ones(grid, node):
         list_of_adj_nodes.append(n)
 
     return list_of_adj_nodes
-
-
-def calc_manhattan_heuristic(node_1, node_2):
-    return abs(node_1.position[0] - node_2.position[0]) + abs(node_1.position[1] - node_2.position[1])
-
-
-def calc_euclidian_heuristic(node_1, node_2):
-    return math.sqrt((node_1.position[0] - node_2.position[0]) ** 2 + (node_1.position[1] - node_2.position[1]) ** 2)
 
 
 # not needed for the time being
