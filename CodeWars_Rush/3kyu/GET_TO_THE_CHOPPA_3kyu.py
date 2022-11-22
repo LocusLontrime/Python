@@ -56,9 +56,8 @@ def a_star(grid, start_node, end_node, heuristic):
 
     while len(vertexes_to_be_visited) > 0:
         curr_node = heapq.heappop(vertexes_to_be_visited)
-
+        # just a number of a-star iterations needed for building the shortest path from starting node to the ending one
         iterations += 1
-
         print(f'curr node x, y: ({curr_node.position[0]}, {curr_node.position[1]}), iteration: {iterations}')
 
         # stop condition, here we reach the ending point
@@ -66,15 +65,18 @@ def a_star(grid, start_node, end_node, heuristic):
             print(f'The path is done in {iterations} iterations')
             break
 
+        # here we're looking for all the adjacent and passable nodes for a current node and pushing them to the heap (priority queue)
         for next_possible_node in get_adjacent_ones(grid, curr_node):
             if not next_possible_node.is_visited:
-                if next_possible_node.g > curr_node.g + 1:
-                    next_possible_node.g = curr_node.g + 1
-                    next_possible_node.h = heuristic(next_possible_node, end_node)
-                    next_possible_node.is_visited = True
-                    next_possible_node.previously_visited_node = curr_node
-                    heapq.heappush(vertexes_to_be_visited, next_possible_node)
+                if next_possible_node.g > curr_node.g + 1:  # a kind of dynamic programming
+                    next_possible_node.g = curr_node.g + 1   # every step distance from one node to an adjacent one is equal to 1
+                    next_possible_node.h = heuristic(next_possible_node, end_node)  # heuristic function,
+                    # needed for sorting the nodes to be visited in priority order
+                    next_possible_node.is_visited = True  # this node has just been visited
+                    next_possible_node.previously_visited_node = curr_node  # constructing the path
+                    heapq.heappush(vertexes_to_be_visited, next_possible_node)  # adding node to the heap
 
+    # the last point of the path found
     node = end_node
     print(f'node: {node.position}')
     reversed_shortest_path = []
@@ -90,6 +92,7 @@ def a_star(grid, start_node, end_node, heuristic):
     return list(reversed(reversed_shortest_path))
 
 
+# looks for all the adjacent and passable nodes
 def get_adjacent_ones(grid, node):
     list_of_adj_nodes = []
 
@@ -115,6 +118,7 @@ def is_position_valid():
     pass
 
 
+# class, describing the node's signature
 class Node:
 
     def __init__(self, x, y, passability=True):
@@ -138,10 +142,13 @@ class Node:
         return self.h < other.h  # the right sigh is "-" for __lt__() method
 
 
+# creates a testing grid
 def create_grid():
 
+    # just a shaped grid with all passable nodes
     grid = [[Node(i, j) for j in range(8)] for i in range(11)]
 
+    # generating obstacles
     grid[1][0].passable = False
     grid[1][1].passable = False
     grid[1][2].passable = False
@@ -183,6 +190,7 @@ def create_grid():
     return grid
 
 
+# the main method call
 print(find_shortest_path((c := create_grid()), c[0][0], c[10][7]))
 
 
