@@ -27,5 +27,5 @@ def insane_inc_or_dec(max_digits):
 
 
 elapsed = time.time() - start
-print("%s found in %s seconds" % (insane_inc_or_dec(), elapsed))
+print("%s found in %s seconds" % (insane_inc_or_dec(1000000), elapsed))
 
