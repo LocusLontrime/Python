@@ -16,7 +16,7 @@ def find_shortest_path(grid, start_node, end_node):
 
     print(f"The shortest path's length: {len(path)}")
 
-    return path
+    return [node.position for node in path]
 
 
 def a_star(grid, start_node, end_node):
@@ -26,14 +26,18 @@ def a_star(grid, start_node, end_node):
 
     heapq.heapify(vertexes_to_be_visited)
 
+    iterations = 0
+
     while len(vertexes_to_be_visited) > 0:
         curr_node = heapq.heappop(vertexes_to_be_visited)
 
-        print(f'curr node x, y: ({curr_node.position[0]}, {curr_node.position[1]})')
+        iterations += 1
+
+        print(f'curr node x, y: ({curr_node.position[0]}, {curr_node.position[1]}), iteration: {iterations}')
 
         # stop condition, here we reach the ending point
         if curr_node == end_node:
-            print(f'The path is done')
+            print(f'The path is done in {iterations} iterations')
             break
 
         for next_possible_node in get_adjacent_ones(grid, curr_node):
@@ -113,7 +117,7 @@ class Node:
 
     # this is needed for using Node objects in priority queue like heapq and so on
     def __lt__(self, other):
-        return self.h > other.h
+        return self.h < other.h  # the right sigh is "-" for __lt__() method
 
 
 def create_grid():
