@@ -66,14 +66,12 @@ def a_star(grid, start_node, end_node, heuristic):
 
         # here we're looking for all the adjacent and passable nodes for a current node and pushing them to the heap (priority queue)
         for next_possible_node in get_adjacent_ones(grid, curr_node):
-            if not next_possible_node.is_visited:
-                if next_possible_node.g > curr_node.g + 1:  # a kind of dynamic programming
-                    next_possible_node.g = curr_node.g + 1  # every step distance from one node to an adjacent one is equal to 1
-                    next_possible_node.h = heuristic(next_possible_node, end_node)  # heuristic function,
-                    # needed for sorting the nodes to be visited in priority order
-                    next_possible_node.is_visited = True  # this node has just been visited
-                    next_possible_node.previously_visited_node = curr_node  # constructing the path
-                    heapq.heappush(vertexes_to_be_visited, next_possible_node)  # adding node to the heap
+            if next_possible_node.g > curr_node.g + 1:  # a kind of dynamic programming
+                next_possible_node.g = curr_node.g + 1  # every step distance from one node to an adjacent one is equal to 1
+                next_possible_node.h = heuristic(next_possible_node, end_node)  # heuristic function,
+                # needed for sorting the nodes to be visited in priority order
+                next_possible_node.previously_visited_node = curr_node  # constructing the path
+                heapq.heappush(vertexes_to_be_visited, next_possible_node)  # adding node to the heap
 
     # the last point of the path found
     node = end_node
@@ -138,7 +136,6 @@ class Node:
     def __init__(self, x, y, passability=True):
         self.position = Point(x, y)  # (2,5)
         self.passable = passability  # says if a cell is a wall or a path
-        self.is_visited = False  # flag of visiting the current node
         self.previously_visited_node = None  # for building the shortest path of Nodes from the starting point to the ending one
 
         self.g = np.Infinity  # aggregated cost of moving from start to the current Node, Infinity chosen for convenience and algorithm's logic
@@ -150,7 +147,7 @@ class Node:
 
     # this is needed for using Node objects in priority queue like heapq and so on
     def __lt__(self, other):
-        return self.h + self.g < other.h + other.g  # the right sigh is "-" for __lt__() method
+        return self.h + self.g < other.h + other.g  # the right sigh is "<" for __lt__() method
 
 
 # converts a grid of nodes from codewars to a convenient grid of Nodes, using extended Node-class
@@ -481,7 +478,7 @@ S0000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000E
 """
 
-g = make_grid_from_blueprint(blueprint_huge)
+g = make_grid_from_blueprint(blueprint_medium)
 
 for k in range(len(g[0])):
     curr_string = g[0][k]

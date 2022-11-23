@@ -32,7 +32,6 @@ def a_star(grid, start_node, end_node, heuristic):
 
     while len(vertexes_to_be_visited) > 0:
         curr_node = heapq.heappop(vertexes_to_be_visited)
-        # just a number of a-star iterations needed for building the shortest path from starting node to the ending one
 
         # stop condition, here we reach the ending point
         if curr_node == end_node:
@@ -40,14 +39,12 @@ def a_star(grid, start_node, end_node, heuristic):
 
         # here we're looking for all the adjacent and passable nodes for a current node and pushing them to the heap (priority queue)
         for next_possible_node in get_adjacent_ones(grid, curr_node):
-            if not next_possible_node.is_visited:
-                if next_possible_node.g > curr_node.g + 1:  # a kind of dynamic programming
-                    next_possible_node.g = curr_node.g + 1  # every step distance from one node to an adjacent one is equal to 1
-                    next_possible_node.h = heuristic(next_possible_node, end_node)  # heuristic function,
-                    # needed for sorting the nodes to be visited in priority order
-                    next_possible_node.is_visited = True  # this node has just been visited
-                    next_possible_node.previously_visited_node = curr_node  # constructing the path
-                    heapq.heappush(vertexes_to_be_visited, next_possible_node)  # adding node to the heap
+            if next_possible_node.g > curr_node.g + 1:  # a kind of dynamic programming
+                next_possible_node.g = curr_node.g + 1  # every step distance from one node to an adjacent one is equal to 1
+                next_possible_node.h = heuristic(next_possible_node, end_node)  # heuristic function,
+                # needed for sorting the nodes to be visited in priority order
+                next_possible_node.previously_visited_node = curr_node  # constructing the path
+                heapq.heappush(vertexes_to_be_visited, next_possible_node)  # adding node to the heap
 
     # the last point of the path found
     node = end_node
@@ -104,7 +101,6 @@ class Node:
     def __init__(self, x, y, passability=True):
         self.position = Point(x, y)  # (2,5)
         self.passable = passability  # says if a cell is a wall or a path
-        self.is_visited = False  # flag of visiting the current node
         self.previously_visited_node = None  # for building the shortest path of Nodes from the starting point to the ending one
 
         self.g = np.Infinity  # aggregated cost of moving from start to the current Node, Infinity chosen for convenience and algorithm's logic
