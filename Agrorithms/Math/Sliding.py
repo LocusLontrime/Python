@@ -228,8 +228,15 @@ ex = [
     [92, 91, 71, 60, 41, 81, 86, 96, 70, 99],
     [75, 93, 54, 68, 84, 53, 64, 37, 78, 48]
 ]
+
+puzzle_x = [
+    [4, 1, 3],
+    [2, 8, 0],
+    [7, 6, 5]
+]
+
 # print(slide_puzzle(simple_example))
 start = time.time_ns()
-print(slide_puzzle(ex))
+print(slide_puzzle(puzzle_x))
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
