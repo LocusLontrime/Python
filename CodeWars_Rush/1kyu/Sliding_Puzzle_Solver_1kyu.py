@@ -1,5 +1,6 @@
 # accepted on codewars.com
 import heapq
+import math
 import time
 
 import numpy as np
@@ -107,7 +108,7 @@ class SlidingBoard:
         rj, ri = (num - 1) // self.max_i, (num - 1) % self.max_i
         print(f'right j: {rj}, right i: {ri}')
         goal = self.sliding_board[rj][ri] if goal_cell is None else goal_cell
-        print(f'GOAL INITIAL J: {goal.j}, I: {goal.i}')
+        print(f'GOAL INITIAL J: {goal.coordinates.j}, I: {goal.coordinates.i}')
         # pathfinding cycle
         while 1 == 1:  # just a fun
             # if the cell is solved -> break
@@ -117,13 +118,13 @@ class SlidingBoard:
                     goal.is_located_right = True
                 break
 
-            print(f'GOAL NUM: {goal.num}, goal j: {goal.j}, goal i: {goal.i}')
+            print(f'GOAL NUM: {goal.num}, goal j: {goal.coordinates.j}, goal i: {goal.coordinates.i}')
             zero_cell = self.find_number_cell(0)
             num_cell = self.find_number_cell(num)
             nearest = num_cell.get_nearest_to(goal)
-            print(f'zero coords: ({zero_cell.j, zero_cell.i})')
-            print(f'num_cell coords: ({num_cell.j, num_cell.i})')
-            print(f'nearest coords: ({nearest.j, nearest.i})')
+            print(f'zero coords: ({zero_cell.coordinates.j, zero_cell.coordinates.i})')
+            print(f'num_cell coords: ({num_cell.coordinates.j, num_cell.coordinates.i})')
+            print(f'nearest coords: ({nearest.coordinates.j, nearest.coordinates.i})')
 
             # find a path of zero-cell to the nearest cell
             a_path = zero_cell.find_the_path_of_zero_to_aim(nearest, num_cell, self)
@@ -171,6 +172,22 @@ class SlidingBoard:
 
 # class representing a Cell on the sliding board:
 class Cell:  # unmovable
+
+    # class describing the coordinate pair of a Cell
+    class Point:
+        def __init__(self, j: int, i: int):
+            self.j = j
+            self.i = i
+
+        def __repr__(self):
+            return f'({self.j},{self.i})'
+
+        def __eq__(self, other: 'Cell.Point'):
+            return self.j == other.j and self.i == other.i
+
+        def euclidian_distance(self, other: 'Cell.Point'):
+            return math.sqrt((self.j - other.j) ** 2 + (self.i - other.i) ** 2)
+
     directions = [[-1, 0], [0, 1], [1, 0], [0, -1]]  # static var for 4 possible directions
 
     # checks if the moving in that direction is valid
@@ -189,7 +206,8 @@ class Cell:  # unmovable
         # f = h + g or total cost of the current Node is not needed here
 
         self.is_located_right = False  # flag of right locating
-        self.j, self.i = j, i  # coordinates of a cell
+        # self.j, self.i = j, i  # coordinates of a cell
+        self.coordinates = Cell.Point(j, i)
 
     def __repr__(self):
         return str(self.num)
@@ -203,14 +221,21 @@ class Cell:  # unmovable
     def move(self, other: 'Cell'):
         self.num, other.num = other.num, self.num
 
-    # heuristic distance from one cell to another
+    # various heuristic distances from one cell to another
     def calc_manhattan_distance(self, other: 'Cell') -> int:
-        return abs(self.j - other.j) + abs(self.i - other.i)
+        return abs(self.coordinates.j - other.coordinates.j) + abs(self.coordinates.i - other.coordinates.i)
+
+    def calc_euclidian_distance(self, other: 'Cell') -> float:
+        return self.coordinates.euclidian_distance(other.coordinates)
+
+    @staticmethod
+    def calc_no_heuristic(self):
+        return 0
 
     # all possible for visiting cells, adjacent to the current one
     def get_ways(self, sliding_board: list[list['Cell']], max_j: int, max_i: int) -> None:
         for direction in Cell.directions:
-            if Cell.is_direction_valid((new_j := self.j + direction[0]), (new_i := self.i + direction[1]), max_j,
+            if Cell.is_direction_valid((new_j := self.coordinates.j + direction[0]), (new_i := self.coordinates.i + direction[1]), max_j,
                                        max_i):
                 self.possible_ways.append(sliding_board[new_j][new_i])
 
@@ -344,6 +369,12 @@ puzzle_non_sol = [
     [8, 6, 3]
 ]
 
+debilnue_pyatnashki = [
+    [3, 6, 5],
+    [2, 4, 8],
+    [7, 1, 0]
+]
+
 puzzle_app = [
     [1, 16, 27, 4, 14, 17, 38],
     [44, 45, 6, 29, 30, 48, 33],
@@ -361,18 +392,17 @@ unsolvable_puzzle = [
     [6, 10, 15, 5]
 ]
 
+puzzle_4x4 = [
+    [7, 1, 2, 13],
+    [11, 0, 10, 6],
+    [14, 8, 4, 9],
+    [12, 3, 15, 5]
+]
+
 start = time.time_ns()
-sb = SlidingBoard(unsolvable_puzzle)  # puzzle_10
+sb = SlidingBoard(puzzle_10)  # puzzle_10
 print(k := sb.solve_puzzle())
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
-# print(None or 98)
-# print(sb.sliding_board)
-# print(sb.solved_board)
-# g = sb.sliding_board[0][0]
-# print(g)
-# sb.sliding_board[0][0].num = 98
-# print(g)
-# print(sb.locate_cell(5))
-# print((n := sb.find_number_cell(99)).j, n.i)
-# print(n.calc_manhattan_distance(sb.find_number_cell(86)))
+
+print(f"Path's length: {len(k)}")

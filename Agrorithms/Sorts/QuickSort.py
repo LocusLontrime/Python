@@ -1,52 +1,56 @@
-class Quick:
+def quick_sort(array: list[int]) -> None:
+    rec_counter = 0
+    length = len(array)
+    recursive_quick_sort(array, 0, length - 1, rec_counter)
+    print(f'Quick sort is finished, {rec_counter} steps done')
 
-    recCounter = 0
 
-    @staticmethod
-    def quick_sort(array: list[int]) -> None:
-        Quick.recCounter = 0
-        length = len(array)
-        Quick.recursive_quick_sort(array, 0, length - 1)
-        print(f'Quick sort is finished, {Quick.recCounter} steps done')
+# the core of sorting method
+def recursive_quick_sort(array: list[int], left_border: int, right_border: int, rec_counter) -> None:
+    rec_counter += 1
 
-    @staticmethod
-    def recursive_quick_sort(array: list[int], left_border: int, right_border: int) -> None:
-        # border case of list of 1 element
-        if left_border == right_border:
-            return
+    # border case of list of 1 element
+    if left_border == right_border:
+        return
 
-        pivotElement = (array[left_border] + array[right_border]) // 2  # at first, we define the pivotElement(median)
+    # at first, we define the pivotElement(median)
+    pivot_element = (array[left_border] + array[right_border]) // 2
 
-        # Hoare's Partition
-        pivotIndex = Quick.hoare_partition(array, left_border, right_border, pivotElement)  # here we're finding the pivotIndex
+    # Hoare's Partition, here we're finding the pivotIndex
+    pivot_index = hoare_partition(array, left_border, right_border, pivot_element)
 
-        Quick.recursive_quick_sort(array, left_border, pivotIndex)  # recursive tree building, divide and conquer tactics
-        Quick.recursive_quick_sort(array, pivotIndex + 1, right_border)
+    # recursive tree building, divide and conquer tactics
+    recursive_quick_sort(array, left_border, pivot_index, rec_counter)
+    recursive_quick_sort(array, pivot_index + 1, right_border, rec_counter)
 
-    @staticmethod
-    def hoare_partition(array: list[int], left_border: int, right_border: int, pivot_element: int) -> int:  # Hoare's partition part, aux to main method
 
-        while True:
+# Hoare's partition part, auxiliary to main method
+def hoare_partition(array: list[int], left_border: int, right_border: int, pivot_element: int) -> int:
 
-            while array[left_border] < pivot_element:  # skipping the elements that stayed at their place on the left side
-                left_border += 1
-                Quick.recCounter += 1
+    while True:
+        # skipping the elements that stayed at their place on the left side
+        while array[left_border] < pivot_element:
+            left_border += 1
+        # skipping the elements that stayed at their place on the right side
+        while array[right_border] > pivot_element:
+            right_border -= 1
+        # we are swapping two elements if they are both stay at wrong places
+        if left_border < right_border:
+            ints_permutation(array, left_border, right_border)
+            left_border += 1
+            right_border -= 1
+        else:
+            return right_border
 
-            while array[right_border] > pivot_element:  # skipping the elements that stayed at their place on the right side
-                right_border -= 1
-                Quick.recCounter += 1
 
-            if left_border < right_border:  # we are swapping two elements if they are both stay at wrong places
-                Quick.ints_permutation(array, left_border, right_border)
-                left_border += 1
-                right_border -= 1
-            else:
-                return right_border
+# swapping two array's elements
+def ints_permutation(array: list[int], i: int, j: int) -> None:
+    temp = array[i]
+    array[i] = array[j]
+    array[j] = temp
 
-    @staticmethod
-    def ints_permutation(array: list[int],  i: int, j: int) -> None:  # swapping two array's elements
-        temp = array[i]
-        array[i] = array[j]
-        array[j] = temp
-        Quick.recCounter += 1
+
+arr = [1, 1, 0, 1, 0, 98, 989, 1, 1, 3, 36, 78, 11, 101, 98989]
+quick_sort(arr)
+print(arr)
 
