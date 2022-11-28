@@ -28,11 +28,13 @@ def swap(array: list[int], i):
     array[i + 1] = temp
 
 
+# Example for bubble sort:
 arr1 = [1, 98, 6, 36, 98989]
 bubble_sort(arr1)
 print(arr1)
 
 
+# Example for rec_bubble sort:
 arr2 = [1, 7, 98, 0, 0, 2, 33, 36, 9, 1, 105, 98989]
 recursive_bubble(arr2)
 print(arr2)
