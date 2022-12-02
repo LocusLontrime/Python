@@ -11,14 +11,18 @@ def bubble_sort(array: list[int]):
 
 
 # recursive method of bubble sort:
-def recursive_bubble(array: list[int], j=0, i=10):
-    if j < len(array) - 2:
-        if i == j - 1:
-            recursive_bubble(array, j + 1, len(array) - 2)
-        else:
-            if array[i] > array[i + 1]:
-                swap(array, i)
-            recursive_bubble(array, j, i - 1)
+def bubble(array: list[int]):  # covering:
+    # core:
+    def recursive_bubble(j, i):
+        if j < len(array) - 2:
+            if i == j - 1:
+                recursive_bubble(j + 1, len(array) - 2)
+            else:
+                if array[i] > array[i + 1]:
+                    swap(array, i)
+                recursive_bubble(j, i - 1)
+
+    recursive_bubble(0, len(array) - 2)
 
 
 # auxiliary method for elements swapping:
@@ -35,8 +39,8 @@ print(arr1)
 
 
 # Example for rec_bubble sort:
-arr2 = [1, 7, 98, 0, 0, 2, 33, 36, 9, 1, 105, 98989]
-recursive_bubble(arr2)
+arr2 = [1, 7, 98, 0, 0, 2, 33, 36, 9, 1, 105, 98989, 98, 9, 98]
+bubble(arr2)
 print(arr2)
 
 

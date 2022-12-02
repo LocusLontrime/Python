@@ -5,8 +5,8 @@ import math
 
 def get_primes(n):  # Eratosthenes' sieve
     """
-    :param n: max number to which we should build the primes list
-    :return: list of primes before or equal to n
+    param n: max number to which we should build the primes list
+    return: list of primes before or equal to n
     """
     # filling the list from 0 to n
     a = []
