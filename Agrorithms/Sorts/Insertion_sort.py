@@ -15,7 +15,8 @@ def insertion_sort(array: list[int]):
         array[j + 1] = current_value
 
 
-arr = [111, 5, 1, 15, 98, 9898, 1, 98989]
-insertion_sort(arr)
-print(arr)
+arr = [1, 1, 111, 5, 1, 15, 98, 9898, 1, 98989]
+arr_x = [1, 1, 11, 1, 0, -1, 1, 9, 98, 7, 77, 6, 5, 4, 3, 2, 1, -1, -11, -111, 989, 98, 99, 97, 96, 0, 1, 11111, 9898989, 98989]
+insertion_sort(arr_x)
+print(arr_x)
 
