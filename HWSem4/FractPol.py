@@ -1,7 +1,7 @@
 from functools import reduce
 
-from HWSem4.Fraction import Fraction
-from HWSem4.Polynomial import Polynomial
+from AmberCode.HWSem4.Fraction import Fraction
+from AmberCode.HWSem4.Polynomial import Polynomial
 
 
 class FractPol:
