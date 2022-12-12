@@ -13,6 +13,7 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
     # time section -->> needed for further testing:
     start_t, potentials_t, deltas_t, getting_cycle_t, cycle_recounting_t = 0, 0, 0, 0, 0
     # now cycling through all the approximating iterations needed until the optimal solution found:
+    main_cycle_iterations = 0
     while True:
         s_t = t.time_ns()
         u, v = find_potentials(costs, sol_table, rows_basis_cells, columns_basis_cells, coords)
@@ -38,12 +39,16 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
         cycle_recounting(path, sol_table, rows_basis_cells, columns_basis_cells)
         c_t = t.time_ns()
         cycle_recounting_t += c_t - g_t
+
+        main_cycle_iterations += 1
+
     # time distribution:
     print(f'time elapsed--------->>>>>>>>>')
-    print(f'finding potentials: {potentials_t // 10 ** 6} milliseconds')
-    print(f'calculating deltas: {deltas_t // 10 ** 6} milliseconds')
-    print(f'getting cycle path: {getting_cycle_t // 10 ** 6} milliseconds')
-    print(f'cycle recounting: {cycle_recounting_t // 10 ** 6} milliseconds')
+    print(f'1. finding potentials: {potentials_t // 10 ** 6} milliseconds')
+    print(f'2. calculating deltas: {deltas_t // 10 ** 6} milliseconds')
+    print(f'3. getting cycle path: {getting_cycle_t // 10 ** 6} milliseconds')
+    print(f'4. cycle recounting: {cycle_recounting_t // 10 ** 6} milliseconds')
+    print(f'optimal solution been found at {main_cycle_iterations}-th iteration')
     # return the aggregated min transportation price:
     return sum([sol_table[j][i] * costs[j][i] for j in range(rows) for i in range(cols) if sol_table[j][i] is not None])
 
@@ -100,6 +105,7 @@ def get_basic_solution_min_price_method(table, suppliers, consumers, costs):
     # degenerated case:
     additional_cell_coords = (0, 0)
     if (s1 := sum([len(cells) for cells in rows_basis_cells])) < (s2 := len(costs) + len(costs[0]) - 1):
+        print(f'degenerated case!')
         delta_rank = s2 - s1
         # adding the missing basis cell:
         aux_queue = sorted(aux_queue, key=lambda x: costs[x[0]][x[1]])
@@ -215,6 +221,19 @@ def get_cycle_path(start_j, start_i, table, row_basis_cells, columns_basis_cells
 
 
 # an example:
+
+# 1. degenerated case:
+suppliers_d = [31, 50, 93, 11, 122, 172]
+consumers_d = [86, 103, 177, 46, 1, 16, 30, 20]
+costs_d = [
+    [41, 1, 96, 37, 33, 80, 27, 68],
+    [88, 22, 94, 90, 29, 87, 74, 19],
+    [6, 12, 88, 21, 29, 83, 88, 82],
+    [73, 94, 17, 77, 13, 95, 94, 77],
+    [0, 71, 93, 21, 52, 61, 99, 37],
+    [21, 23, 24, 44, 54, 29, 50, 97]
+]
+
 suppliers_x = [20, 28, 34, 96, 10, 4, 9, 55, 54, 127, 51, 27, 25, 92, 89, 6, 15, 6, 66, 44, 13, 58, 50, 81, 29, 86, 71, 29, 1, 10, 17, 25, 65, 9, 20, 11, 197, 2, 145, 93, 22, 50, 2, 126, 18, 41, 42, 34, 19, 77, 10, 2, 4, 33, 24, 52, 8, 92, 24, 44, 17, 127, 49, 13, 26, 83, 33, 24, 107, 103, 55, 5, 42, 28, 90, 55, 5, 100, 34, 29, 104, 17, 119, 40, 42, 110, 20, 1, 5, 34, 9, 8, 26, 23, 26, 5, 13, 35, 9, 42, 136, 26, 71, 15, 85, 2, 22, 3, 49, 22, 42, 64, 11, 5, 1, 10, 65, 58, 22, 4, 40, 27, 21, 21, 35, 3, 56, 6, 13, 13, 66, 22, 50, 21, 35, 7, 14, 12, 60, 3, 23, 25, 56, 42, 53, 26, 50, 133, 29, 8]
 consumers_x = [45, 1, 25, 32, 68, 22, 42, 1, 10, 68, 140, 134, 3, 15, 58, 21, 23, 3, 11, 21, 4, 8, 75, 50, 7, 15, 19, 13, 1, 74, 27, 34, 48, 24, 14, 89, 31, 27, 11, 85, 209, 112, 96, 142, 13, 10, 18, 15, 6, 176, 105, 50, 23, 7, 4, 75, 11, 1, 82, 122, 10, 8, 12, 9, 189, 56, 28, 24, 13, 74, 8, 7, 43, 35, 44, 27, 17, 8, 8, 10, 35, 41, 16, 31, 15, 37, 19, 5, 1, 11, 42, 37, 20, 75, 106, 11, 88, 44, 2, 10, 1, 24, 72, 129, 40, 45, 5, 32, 70, 19, 26, 19, 100, 30, 42, 2, 8, 33, 122, 8, 12, 14, 2, 29, 7, 90, 16, 51, 21, 55, 10, 25, 28, 50, 27, 25, 12, 87, 37, 18, 124, 65, 19, 101, 78, 48, 80, 17, 35, 28]
 costs_x = [
@@ -371,6 +390,6 @@ costs_x = [
 ]  # 11360
 
 start = t.time_ns()
-print(minimum_transportation_price(suppliers_x, consumers_x, costs_x))  #
+print(minimum_transportation_price(suppliers_d, consumers_d, costs_d))  #
 finish = t.time_ns()
 print(f'total time: {(finish - start) // 10 ** 6} milliseconds')
