@@ -4,7 +4,7 @@ import random
 import time
 from functools import reduce
 from typing import Tuple
-# SOLVED AT BETA STAGE, then been approved
+# SOLVED IN BETA-TESTING PHASE, then been approved
 MR_THRESHOLD = 1  # only one Miller-Rabin check
 FACTORIZATION_THRESHOLD = 3  # (only 3, 5, 7)
 

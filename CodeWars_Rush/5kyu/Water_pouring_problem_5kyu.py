@@ -68,7 +68,7 @@ class Wpp:
 
 
 threading.stack_size(0x8000000)
-t = threading.Thread(target=Wpp(86350, 99999, 52607))
+t = threading.Thread(target=Wpp(11357, 13560, 11851))
 t.start()
 t.join()
 

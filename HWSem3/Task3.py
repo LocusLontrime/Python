@@ -1,6 +1,6 @@
 # Составить список простых множителей натурального числа N
-
 import math
+import time
 
 
 def get_primes(n):  # Eratosthenes' sieve
@@ -50,14 +50,42 @@ def get_factors(number: int):
     return factorization_dictionary
 
 
-# print(get_factors(3*3*3*3*3*11*17*199))
+# METHOD: PRIME FACTORS, from stackoverflow.com:
+def get_prime_factors(n):
+    num = n
+    count = 0
+    index = 0
+    factors_candidates = [2, 3, 5, 7]
+    factors = []
+    while factors_candidates[index] ** 2 <= n:
+        count += 1
+        if len(factors_candidates) == (index + 1):
+            factors_candidates.append(factors_candidates[-2] + 6)
+        if n % factors_candidates[index]:
+            index += 1
+        else:
+            n = n // factors_candidates[index]
+            factors.append(factors_candidates[index])
+    if n > 1:
+        factors.append(n)
+    print(f't: {factors_candidates}')
+    return num, factors, f'count optimization: {count}'
+
+
+k = 3*3*3*3*3*11*17*199*10017
 # print(get_factors(640320))
 # print(get_factors(6670))
 # print(get_factors(640320 // (32 * 3)))
 # print(get_factors(13717421))
 # print(get_factors(36758392918475747))
+start = time.time_ns()
+print(f'k: {k}')
+# print(get_factors(k))
+print(get_prime_factors(k))
+finish = time.time_ns()
+print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
-l = list(sorted(get_primes(20000)))
-
-print(f'length: {len(l)}, l: {l}')
+# l = list(sorted(get_primes(20000)))
+#
+# print(f'length: {len(l)}, l: {l}')
 
