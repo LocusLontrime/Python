@@ -1,92 +1,61 @@
+# accepted on codewars.com
 import math
-import sys
-import threading
-sys.setrecursionlimit(500000)
-# increase the stack size
-
-water_memoized: set[tuple[int, int]]
-flag = True
-result = []
-counter = 0
 
 
-class Wpp:
+def wpp(a, b, n):
+    # solvability check:
+    if n > max(a, b):
+        return []
+    if n % math.gcd(a, b) != 0:
+        return []
 
-    def __init__(self, a, b, n):
-        self.a = a
-        self.b = b
-        self.n = n
+    # general case (when solvable):
+    # 1 phase -->> solving a diofant equation a * x + b * y = n, let us find x and y:
+    def diophantine_eq_solve():
+        for y in range(a):
+            x = n + b * y
+            if x % a == 0:
+                return x // a, y
 
-    def __call__(self):
-        global water_memoized, result
-        water_memoized = set()
+    def pour_from_a_to_b():
+        if wpp.curr_a < b - wpp.curr_b:
+            wpp.curr_b += wpp.curr_a
+            wpp.curr_a = 0
+        else:
+            wpp.curr_a -= b - wpp.curr_b
+            wpp.curr_b = b
 
-        if self.n < 0 or self.n > self.b:
-            return result
+    def empty_b():
+        wpp.curr_b = 0
 
-        def rec_seeker(curr_a, curr_b, path_done: list[tuple[int, int]]):
-            global flag, result, counter
-            counter += 1
-            print(f'counter: {counter}, length of memo table: {len(water_memoized)}')
-            if self.n in [curr_a, curr_b]:
-                flag = False
-                print(f'Final water volumes: {curr_a, curr_b}')
-                print(f'memo table: {water_memoized}')
-                result = path_done + [(curr_a, curr_b)]
-            elif (curr_a, curr_b) not in water_memoized and flag:
-                new_path_done = [] + path_done
-                new_path_done.append((curr_a, curr_b))
-                print(f'counter: {counter}, curr_a, curr_b: {curr_a, curr_b}')
-                # print(f'water_memoized: {water_memoized}')
-                water_memoized.add((curr_a, curr_b))
-                # step 1:
-                rec_seeker(0, curr_b, new_path_done)
-                rec_seeker(curr_a, 0, new_path_done)
-                # step 2:
-                rec_seeker(self.a, curr_b, new_path_done)
-                rec_seeker(curr_a, self.b, new_path_done)
-                # step 3 & 4:
-                # 1: a -->> b:
+    def full_a():
+        wpp.curr_a = a
 
-                if self.b - curr_b < curr_a:
-                    rec_seeker(curr_a - (self.b - curr_b), self.b, new_path_done)
-                else:
-                    rec_seeker(0, curr_b + curr_a, new_path_done)
-                # 2: b -->> a:
-                if self.a - curr_a < curr_b:
-                    rec_seeker(self.a, curr_b - (self.a - curr_a), new_path_done)
-                else:
-                    rec_seeker(curr_a + curr_b, 0, new_path_done)
+    a_count, b_count = diophantine_eq_solve()
+    wpp.curr_a, wpp.curr_b = 0, 0
+    result_list = []
+    while True:
+        while wpp.curr_b < b and a_count > 0:
+            full_a()
+            result_list.append((wpp.curr_a, wpp.curr_b))
+            pour_from_a_to_b()
+            result_list.append((wpp.curr_a, wpp.curr_b))
+            a_count -= 1
+        if b_count <= 0:
+            break
+        empty_b()
+        result_list.append((wpp.curr_a, wpp.curr_b))
+        pour_from_a_to_b()
+        result_list.append((wpp.curr_a, wpp.curr_b))
+        b_count -= 1
 
-        rec_seeker(0, 0, [])
-
-        res = result[1:]
-
-        print(f'res: {res}')
-
-        return res
+    return result_list
 
 
-threading.stack_size(0x8000000)
-t = threading.Thread(target=Wpp(11357, 13560, 11851))
-t.start()
-t.join()
+print(wpp(7, 15, 6))
+# print(wpp(5, 11, 3))
+# print(wpp(5, 11, 7))
 
-print(f'GCD: {math.gcd(86350, 99999)}')
-
-
-# print(f'path done: {wpp(33, 51, 45000)}')
-# print(f'path done: {Wpp.wpp(86350, 99999, 52607)}')
-# print(f'water_memoized_len: {len(water_memoized)}')
-
-
-# table = {(0, 0)}
-# table.add((98, 989))
-# table.add((0, 0))
-#
-# print(table)
-
-
-
+# print(wpp(59799, 97812, 77127))
 
 

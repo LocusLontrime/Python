@@ -46,7 +46,8 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
     print(f'4. cycle recounting: {cycle_recounting_t // 10 ** 6} milliseconds')
     print(f'optimal solution been found at {main_cycle_iterations}-th iteration')
     # return the aggregated min transportation price:
-    return sum([sol_table[j][i] * costs[j][i] for j in range(rows) for i in range(cols) if sol_table[j][i] is not None])
+    # return sum([sol_table[j][i] * costs[j][i] for j in range(rows) for i in range(cols) if sol_table[j][i] is not None]) -->> optimized:
+    return sum(sum([sol_table[cell[0]][cell[1]] * costs[cell[0]][cell[1]] for cell in row_cells]) for row_cells in rows_basis_cells)
 
 
 def get_basic_solution_min_price_method(table, suppliers, consumers, costs):
