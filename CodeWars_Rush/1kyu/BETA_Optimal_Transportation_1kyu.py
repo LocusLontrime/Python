@@ -1,6 +1,11 @@
 # accepted on codewars.com
+import copy
+import math
+import random
 import time as t
+from functools import reduce
 import numpy as np
+SHOW_FLAG = True
 
 
 def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
@@ -9,8 +14,7 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
     # table for X(j, i) --> optimal (min) total price:
     sol_table = [[None for _ in range(cols)] for _ in range(rows)]
     # building basic solution (it can be not optimal):
-    rows_basis_cells, columns_basis_cells, coords = get_basic_solution_min_price_method(sol_table, suppliers, consumers,
-                                                                                        costs)
+    rows_basis_cells, columns_basis_cells, coords = get_basic_solution_min_price_method(sol_table, suppliers, consumers, costs)
     # time section -->> needed for further testing:
     start_t, potentials_t, deltas_t, getting_cycle_t, cycle_recounting_t = 0, 0, 0, 0, 0
     # now cycling through all the approximating iterations needed until the optimal solution found:
@@ -29,6 +33,8 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
             break
         # finding the cycle:
         path = get_cycle_path(j_max_d, i_max_d, rows_basis_cells, columns_basis_cells)
+        if SHOW_FLAG:
+            show_cycle(sol_table, rows_basis_cells, path)
         g_t = t.time_ns()
         getting_cycle_t += g_t - d_t
         # changing the X-elements (table) along the cycle-path:
@@ -116,11 +122,11 @@ def get_basic_solution_min_price_method(table, suppliers, consumers, costs):
 def deltas_calc(u, v, costs, cols):
     deltas_matrix = np.array(v) + np.array(u)[:, None] - np.array(costs)
     flat_index = np.argmax(deltas_matrix)
-    max_delta = np.amax(deltas_matrix)
+    # max_delta = np.amax(deltas_matrix)
     # double inds from the flat one:
     j_max_d = flat_index // cols
     i_max_d = flat_index - j_max_d * cols
-    return max_delta, j_max_d, i_max_d
+    return deltas_matrix[j_max_d][i_max_d], j_max_d, i_max_d
 
 
 def find_potentials(costs, table, rows_basis_cells, columns_basis_cells, coords):
@@ -149,6 +155,7 @@ def find_potentials(costs, table, rows_basis_cells, columns_basis_cells, coords)
 
     # degenerated case:
     if None in u or None in v:
+        print(f'degenerated case!')
         # potentials that cannot be defined because of degenerated case:
         j_unknowns = [j for j, el in enumerate(u) if el is None]
         i_unknowns = [i for i, el in enumerate(v) if el is None]
@@ -203,7 +210,6 @@ def get_cycle_path(start_j, start_i, row_basis_cells, columns_basis_cells):
     columns_basis_cells[start_i].append((start_j, start_i))
 
     # cycle finding methods:
-
     def row_search(row, curr_path):
         # only the basis elements, not all the cells are counted:
         for cell in row_basis_cells[row]:
@@ -228,7 +234,93 @@ def get_cycle_path(start_j, start_i, row_basis_cells, columns_basis_cells):
     return get_cycle_path.cycle_path
 
 
+# auxiliary method for showing cycles:
+def show_cycle(table, rows_basis_cells, cycle):
+    np_table = reduce(lambda y, x: y + reduce(lambda m, n: m + ([table[n[0]][n[1]]] if table[n[0]][n[1]] is not None else []), x, []), rows_basis_cells, [])
+    # print(f'np_table: {np_table}')
+    # [[table[cell[0]][cell[1]] for cell in cells] for cells in rows_basis_cells]
+    max_el = np.amax(np_table)
+    max_length = max(len(str(max_el)), len('None'))
+    table_copy = []
+    # table copy creating:
+    for j, row in enumerate(table):
+        table_copy.append([])
+        for el in row:
+            table_copy[j].append(el)
+    # cycle elements changing:
+    for i, step in enumerate(cycle):
+        curr_j, curr_i = step
+        if i == 0:
+            table_copy[curr_j][curr_i] = 'S'
+        elif i % 2 == 0:
+            table_copy[curr_j][curr_i] = '+'
+        else:
+            table_copy[curr_j][curr_i] = '-'
+        if i + 1 < len(cycle):
+            connect_two(table_copy, cycle[i], cycle[i + 1])
+        else:
+            connect_two(table_copy, cycle[i], cycle[0])
+    # table with cycle printing:
+    for row in table_copy:
+        for el in row:
+            print(f'{el}{" " * (max_length - len(str(el)) + 1)}', end='')
+        print()
+    print(end='\n')
+
+
+# aux method for connecting two table cells with '=' (horizontal case) or '|' (vertical case):
+def connect_two(table, point1: tuple[int, int], point2: tuple[int, int]):
+    # defines a linking symbol:
+    if point1[0] == point2[0]:
+        symbol = '='
+    else:
+        symbol = '|'
+    # building a neck:
+    for j in range(m := min(point1[0], point2[0]), m + abs(point1[0] - point2[0]) + 1):
+        for i in range(n := min(point1[1], point2[1]), n + abs(point1[1] - point2[1]) + 1):
+            if (j, i) not in [point1, point2]:
+                table[j][i] = symbol
+
+
+# method for creating an example of closed transport task with parameters given:
+def create_an_example(rows: int, columns: int, values_range=100):
+    costs, suppliers, consumers = [], [], []
+    # preparing the supp and cons arrays:
+    suppliers = [None for j in range(rows)]
+    consumers = [None for i in range(columns)]
+    # costs matrix building:
+    costs = [[int(values_range * random.random()) for i in range(columns)] for j in range(rows)]
+    # suppliers list filling:
+    rem = values_range * (rows + columns)
+    shuffled_rows = [row for row in range(rows)]
+    random.shuffle(shuffled_rows)
+    for ind, j in enumerate(shuffled_rows):
+        suppliers[j] = np.random.randint(rem // int(math.sqrt(rows)) + 1) if ind != len(shuffled_rows) - 1 else rem
+        # print(f'j, suppliers[j]: {j, suppliers[j]}')
+        rem -= suppliers[j]
+    # consumers list filling:
+    rem = values_range * (rows + columns)
+    shuffled_columns = [column for column in range(columns)]
+    random.shuffle(shuffled_columns)
+    for ind, i in enumerate(shuffled_columns):
+        consumers[i] = np.random.randint(rem // int(math.sqrt(columns)) + 1) if ind != len(shuffled_columns) - 1 else rem
+        # print(f'i, consumers[i]: {i, consumers[i]}')
+        rem -= consumers[i]
+    # returning the lists built:
+    print(f'suppliers: {suppliers}')
+    print(f'consumers: {consumers}')
+    print(f'costs: ')
+    for costs_row in costs:
+        print(f'{costs_row}')
+
+    return costs, suppliers, consumers
+
+
 # an example:
+costs_b, suppliers_b, consumers_b = create_an_example(35, 50)
+
+
+# examples from codewars.com
 
 # 1. degenerated case:
 suppliers_d = [31, 50, 93, 11, 122, 172]
@@ -242,6 +334,7 @@ costs_d = [
     [21, 23, 24, 44, 54, 29, 50, 97]
 ]
 
+# 2. large case:
 suppliers_x = [20, 28, 34, 96, 10, 4, 9, 55, 54, 127, 51, 27, 25, 92, 89, 6, 15, 6, 66, 44, 13, 58, 50, 81, 29, 86, 71,
                29, 1, 10, 17, 25, 65, 9, 20, 11, 197, 2, 145, 93, 22, 50, 2, 126, 18, 41, 42, 34, 19, 77, 10, 2, 4, 33,
                24, 52, 8, 92, 24, 44, 17, 127, 49, 13, 26, 83, 33, 24, 107, 103, 55, 5, 42, 28, 90, 55, 5, 100, 34, 29,
@@ -1158,6 +1251,28 @@ costs_x = [
 ]  # 11360
 
 start = t.time_ns()
-print(minimum_transportation_price(suppliers_x, consumers_x, costs_x))  #
+print(minimum_transportation_price(suppliers_b, consumers_b, costs_b))  #
 finish = t.time_ns()
 print(f'total time: {(finish - start) // 10 ** 6} milliseconds')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

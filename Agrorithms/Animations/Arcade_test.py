@@ -4,6 +4,7 @@ import arcade
 # screen sizes:
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
+
 # opening a new window with following parameters:
 arcade.open_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Game")
 # defining a back color:
@@ -38,10 +39,56 @@ def rec_tree_builder(starting_x, starting_y, line_length, line_width, prev_angle
 
 rec_tree_builder(960, 0, 256, 2, 0, math.pi * 1.5 * 2 * 15 / 180)
 
+
 # Finishing rendering and showing the result:
 arcade.finish_render()
 # Until the user press 'Esc' button the window will be opened:
 arcade.run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
