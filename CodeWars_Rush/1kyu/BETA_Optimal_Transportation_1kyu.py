@@ -5,7 +5,7 @@ import random
 import time as t
 from functools import reduce
 import numpy as np
-SHOW_FLAG = True
+SHOW_FLAG = False
 
 
 def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
@@ -20,6 +20,7 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
     # now cycling through all the approximating iterations needed until the optimal solution found:
     main_cycle_iterations = 0
     while True:
+        print(f'main_cycle_iterations: {main_cycle_iterations}')
         s_t = t.time_ns()
         u, v = find_potentials(costs, sol_table, rows_basis_cells, columns_basis_cells, coords)
         p_t = t.time_ns()
@@ -317,7 +318,7 @@ def create_an_example(rows: int, columns: int, values_range=100):
 
 
 # an example:
-costs_b, suppliers_b, consumers_b = create_an_example(35, 50)
+costs_b, suppliers_b, consumers_b = create_an_example(100, 100)
 
 
 # examples from codewars.com
@@ -1254,7 +1255,6 @@ start = t.time_ns()
 print(minimum_transportation_price(suppliers_b, consumers_b, costs_b))  #
 finish = t.time_ns()
 print(f'total time: {(finish - start) // 10 ** 6} milliseconds')
-
 
 
 

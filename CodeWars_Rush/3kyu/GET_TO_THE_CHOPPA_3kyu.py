@@ -1,3 +1,4 @@
+# accepted on codewars.com
 import heapq
 import math
 import numpy as np
