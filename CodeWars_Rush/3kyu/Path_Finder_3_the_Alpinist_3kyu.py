@@ -1,10 +1,22 @@
 # accepted on codewars.com
 import heapq
+import random
+import time
+
 import numpy as np
 # direction components:
 directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # max integer among grid heights:
 MAX_VAL = 9
+
+
+def aux_path_finder(area: list[list['Node']]):
+    if len(area) == 0 or len(area[0]) == 0:
+        return []
+    start, finish = (0, 0), (len(area) - 1, len(area[0]) - 1)
+    path, min_rounds = a_star(area, area[finish[0]][finish[1]], area[start[0]][start[1]])
+    print(f'path: {path}')
+    return min_rounds
 
 
 # the main method:
@@ -130,6 +142,15 @@ def make_grid_from_blueprint(blueprint: str):
     return grid, (0, 0), (y_max - 1, x_max - 1 - (1 if enters_q > 0 else 0))
 
 
+def make_grid_of_nodes(j_max, i_max):
+    grid = []
+    for j in range(j_max):
+        grid.append([])
+        for i in range(i_max):
+            grid[j].append(Node(j, i, random.randrange(1, MAX_VAL + 1)))
+    return grid
+
+
 f = "\n".join([
     "777000",
     "007000",
@@ -212,4 +233,11 @@ fail = '\n'.join([
     '436765'
 ])
 
-print(path_finder(big))
+grid_made = make_grid_of_nodes(1000, 1000)
+
+start = time.time_ns()
+print(aux_path_finder(grid_made))
+finish = time.time_ns()
+print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
+
+
