@@ -49,7 +49,7 @@ def a_star(grid: list[list['Node']], start: 'Node', finish: 'Node'):
     while nodes_to_be_visited:
         curr_node = heapq.heappop(nodes_to_be_visited)
         iterations += 1
-        print(f'{iterations}-th iteration, curr_node: {curr_node.position, curr_node.val}')
+        # print(f'{iterations}-th iteration, curr_node: {curr_node.position, curr_node.val}')
         # stop condition:
         if curr_node == finish:
             break

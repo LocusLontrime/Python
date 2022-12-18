@@ -5,7 +5,7 @@ import random
 import time as t
 from functools import reduce
 import numpy as np
-SHOW_FLAG = False
+SHOW_FLAG = True
 
 
 def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
@@ -318,7 +318,7 @@ def create_an_example(rows: int, columns: int, values_range=100):
 
 
 # an example:
-costs_b, suppliers_b, consumers_b = create_an_example(100, 100)
+costs_b, suppliers_b, consumers_b = create_an_example(35, 50)
 
 
 # examples from codewars.com
