@@ -6,7 +6,7 @@ class Polygon:
     def __init__(self, points: list):
         for point in points:
             if type(point) is not Point3D:
-                raise Exception(f'Cannot create polygon with non Point3D elements...')
+                raise Exception(f'Cannot create polygon with non-Point3D elements...')
         # triangle is the minimum possible polygon:
         if len(points) < 3:
             raise Exception(f'Cannot create polygon with two or less vertices...')

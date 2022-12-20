@@ -47,36 +47,32 @@ def square_sums(num):
     def find_hamilton_path(start_num: int):
         global graph_to_be_updated
         path = []
-        visited_vertexes = set([])
-        vertexes_to_visit = [None, start_num]  # used as stack
-
-        while vertexes_to_visit:  # while this set if not empty
-            curr_vertex = vertexes_to_visit.pop()
-
-            if curr_vertex:  # if it is not None
+        # for the better runtime:
+        visited_vertices = set([])
+        # used as stack:
+        vertices_to_visit = [None, start_num]
+        # while this set if not empty:
+        while vertices_to_visit:
+            curr_vertex = vertices_to_visit.pop()
+            # if it is not None:
+            if curr_vertex:
                 path.append(curr_vertex)
                 if len(path) == num:
                     break
-
-                visited_vertexes.add(curr_vertex)  # memoization of visited vertexes
-
-                best_fit_vertexes = []
-
-                def rec_sum(vertex):
-                    priority = 0
-
-                # heuristic itself
-                if len(k := list(graph_to_be_updated[curr_vertex] - visited_vertexes)) != 0:
-                    min_length = min([len(graph_to_be_updated[i] - visited_vertexes) for i in k])
-                    best_fit_vertexes = [el for el in k if len(graph_to_be_updated[el] - visited_vertexes) == min_length]
-
-                    for vertex_remained in best_fit_vertexes:
-                        vertexes_to_visit.append(None)
-                        vertexes_to_visit.append(vertex_remained)
-
+                # memoization of visited vertices:
+                visited_vertices.add(curr_vertex)
+                # heuristic itself:
+                if len(k := list(graph_to_be_updated[curr_vertex] - visited_vertices)) != 0:
+                    min_length = min([len(graph_to_be_updated[i] - visited_vertices) for i in k])
+                    best_fit_vertices = [el for el in k if len(graph_to_be_updated[el] - visited_vertices) == min_length]
+                    # next step:
+                    for vertex_remained in best_fit_vertices:
+                        vertices_to_visit.append(None)
+                        vertices_to_visit.append(vertex_remained)
+            # removing element:
             else:
-                visited_vertexes.remove(path.pop())
-
+                visited_vertices.remove(path.pop())
+        # returning the result:
         return path
 
     # here we are building a graph
