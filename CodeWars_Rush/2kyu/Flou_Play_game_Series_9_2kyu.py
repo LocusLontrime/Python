@@ -1,5 +1,7 @@
 # accepted on codewars.com
-en_alphabet = 'abcdefghijklmnopqrstuvwxyz'
+import random
+
+en_alphabet = 'abcdefghijklmnopqrstuvwxyz123456789!@$%^&*|-+'
 directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 names = ['Up', 'Right', 'Down', 'Left']
 colour_block_symbol = 'B'
@@ -169,10 +171,42 @@ game_map_3 = '''+----+
 +----+'''
 
 
+def create_map_blueprint(j_max: int, i_max: int, inv_freq: int):
+    def create_border_line(length: int):
+        return '+' + '-' * (length - 2) + '+'
+
+    def create_line(length: int):
+        line = ''
+        for i in range(i_max - 2):
+            r = random.randrange(0, 10000)
+            if r > 10000 - 10000 // inv_freq:
+                line += 'B'
+            else:
+                line += '.'
+        return f'|{line}|'
+
+    if j_max < 3:
+        print(f'j_max cannot be less than 3')
+        return None
+    if i_max < 3:
+        print(f'i_max cannot be less than 3')
+        return None
+    map_blueprint = ''
+    s = f'{create_border_line(i_max)}'
+    for j in range(j_max - 2):
+        map_blueprint += f'{create_line(i_max)}\n'
+    return f'{s}\n{map_blueprint}{s}'
+
+
+game_map_huge = f'''{create_map_blueprint(25, 25, 55)}'''
+print(f'{game_map_huge}')
+
+
 # print(play_flou(game_map_1))
 # print(play_flou(game_map_2))
 # print(play_flou(game_map_3))
-print(play_flou(game_map_v))
+# print(play_flou(game_map_v))
+print(play_flou(game_map_huge))
 
 # print(f'{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11][1:-1]}')
 # print(f'{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11][:3]}')
