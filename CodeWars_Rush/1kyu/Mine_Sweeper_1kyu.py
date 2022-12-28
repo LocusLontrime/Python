@@ -9,6 +9,7 @@ class MineSweeper:
         self.grid = self.make_grid_from_blueprint(game_map)
         self.mines_remained = n
         self.groups = []
+        self.j_max, self.i_max = len(self.grid), len(self.grid[0])
 
     def solve(self):
         self.avalanche()   # the core:
@@ -17,37 +18,50 @@ class MineSweeper:
         return '?' if '?' in res else res  # returning the result:
 
     def avalanche(self):
+        avalanche_iters = 0
         while True:
+            avalanche_iters += 1
+            print(f'AVALANCHE iteration: {avalanche_iters}: ')
             self.get_groups()  # get groups list from the current grid state:
             self.transform_groups()  # transforming groups according to the groups-addition rules:
-            self.show_grid()  # showing the grid at the every step of the main avalanche cycle::
-            # cells opening and flagging:
-            if self.check_groups() == 0:
+            actions = self.check_groups()  # cells opening and flagging:
+            # if there have been opened or flagged zero quantity of cells:
+            if actions == 0:
+                print(f'SMART SECTION: ')
+                print(f'mines remained: {self.mines_remained}')
                 # cells groups building:
                 opened_cells = [(j, i) for i in range(len(self.grid[0])) for j in range(len(self.grid)) if '?' in [self.grid[c[0]][c[1]] for c in self.get_neighs((j, i))] and self.grid[j][i].isdigit()]
                 closed_cells = [(j, i) for i in range(len(self.grid[0])) for j in range(len(self.grid)) if self.grid[j][i] == '?']
                 neighbouring_closed_cells = list({cc for oc in opened_cells for cc in self.get_neighs(oc) if cc in closed_cells})
+                print(f'{len(opened_cells)} opened_cells found:\n{opened_cells}')
+                print(f'{len(closed_cells)} closed_cells found:\n{closed_cells}')
+                print(f'{len(neighbouring_closed_cells)} neighbouring_closed_cells found:\n{neighbouring_closed_cells}')
                 # smart combs algorithm starts:
                 cells_to_be_opened = []
                 for ncc in neighbouring_closed_cells:
                     for mines_q in range(max(0, self.mines_remained - 1 - (len(closed_cells) - len(neighbouring_closed_cells))), min(self.mines_remained, len(neighbouring_closed_cells))):
                         poss_partitions = [list(comb) + [ncc] for comb in combs(neighbouring_closed_cells, mines_q) if ncc not in comb]
                         if self.check_combs(poss_partitions): break
-                    else: cells_to_be_opened.append(ncc)  # the cell can be opened!
+                    else:
+                        print(f'the cell: {ncc} is openable!')
+                        cells_to_be_opened.append(ncc)  # the cell can be opened!
                 # stop-condition (if no cell been flagged or opened) and there are no cells to be opened in smart section:
                 cells_to_be_opened += closed_cells if self.mines_remained == 0 else []
                 if self.mines_remained == len(closed_cells): self.flag(closed_cells)
                 if len(cells_to_be_opened) == 0: break
                 # opening phase:
                 self.open(cells_to_be_opened)
+            self.show_grid()  # showing the grid at the every step of the main avalanche cycle:
 
     def open(self, cells):
         for (j, i) in cells:
+            print(f'the cell: {j, i} been opened!')
             value = open(j, i)
             self.grid[j][i] = str(value)
 
     def flag(self, cells):
         for (j, i) in cells:
+            print(f'the cell {j, i} been flagged...')
             self.mines_remained -= 1
             self.grid[j][i] = 'x'
 
@@ -64,10 +78,12 @@ class MineSweeper:
         return 0 <= cell[0] < len(self.grid) and 0 <= cell[1] < len(self.grid[0])
 
     def check_groups(self):
+        print(f'GROUPS CHECKING STARTS...')
         return sum([group.check(self) for group in self.groups])
 
     def transform_groups(self):
         # starting a groups' transformation:
+        print(f'GROUPS TRANSFORMING STARTS...')
         while True:
             actions = 0
             for j in range(0, len(self.groups) - 1):
@@ -81,14 +97,17 @@ class MineSweeper:
             if actions == 0: break # checks if there have been some transformation during the current step if no -->> breaks:
 
     def get_groups(self):
+        print(f'GETTING GROUPS...')
         # getting initials groups list:
         self.groups = []
         for j, row in enumerate(self.grid):
             for i, el in enumerate(row):
                 if el.isdigit():
                     new_group = Group(int(el), (j, i))
-                    new_group.get_closed_neighs(self.grid)
+                    new_group.get_closed_neighs(self)
                     if len(new_group.group) > 0: self.groups.append(new_group)
+        print(f'{len(self.groups)} groups been found')
+
     @staticmethod
     def make_grid_from_blueprint(game_map: str):
         return [[cell for cell in row.split(' ')] for row in game_map.split('\n')]
@@ -99,34 +118,23 @@ class MineSweeper:
     def show_grid(self):
         for row in self.grid:
             for cell in row:
-                if type(cell) == str:
-                    if cell == '?':
-                        print("\033[35m{}".format('?'), end='')
-                        print("\033[0m{}".format(' '), end='')
-                    elif cell == 'x':
-                        print("\033[31m{}".format('x'), end='')
-                        print("\033[0m{}".format(' '), end='')
-                    else:
-                        print("\033[32m{}".format(cell), end='')
-                        print("\033[0m{}".format(' '), end='')
-                else:
-                    print(f'{cell}', end=' ')
+                if cell == '?': print("\033[35m{}".format('? '), end='')
+                elif cell == 'x': print("\033[31m{}".format('x '), end='')
+                else: print("\033[32m{}".format(f'{cell} '), end='')
             print()
-        print()
+        print("\033[0m{}".format(''))
 
 
 class Group:
-    def __init__(self, val: int, cell=None):
+    def __init__(self, val: int, cell=None, group=None):
         self.val = val
-        self.group = set()
+        self.group = set() if group is None else group.copy()
         self.cell = cell
 
-    def get_closed_neighs(self, grid):
-        for direction in MineSweeper.walk:
-            new_j, new_i = self.cell[0] + direction[0], self.cell[1] + direction[1]
-            if 0 <= new_j < len(grid) and 0 <= new_i < len(grid[0]):
-                if grid[new_j][new_i] == '?': self.group.add((new_j, new_i))
-                elif grid[new_j][new_i] == 'x': self.val -= 1
+    def get_closed_neighs(self, mine_sweeper):
+       for neigh in MineSweeper.get_neighs(mine_sweeper, self.cell):
+            if mine_sweeper.grid[neigh[0]][neigh[1]] == '?': self.group.add((neigh[0], neigh[1]))
+            elif mine_sweeper.grid[neigh[0]][neigh[1]] == 'x': self.val -= 1
 
     # check group after groups transformation:
     def check(self, mine_sweeper):
@@ -169,33 +177,12 @@ class Group:
             common_g = self.group.intersection(other.group)
             # the condition of simplifiability:
             if larger_g.val - (len(larger_g.group) - len(common_g)) == less_g.val:
-                new_group = Group(less_g.val)
-                new_group.group = common_g
+                new_group = Group(less_g.val, None, common_g)
                 larger_g -= new_group
                 less_g -= new_group
                 groups.append(new_group)
                 return 3
         return 0
-
-class Cell:
-    def __init__(self, j, i):
-        self.j, self.i = j, i
-        self.neighs = []
-
-    def get_neighs(self):
-        pass
-
-    def __eq__(self, other):
-        return self.j, self.i == other.j, other.i
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __str__(self):
-        return f'{self.j, self.i}'
-
-    def __repr__(self):
-        return str(self)
 
 
 def get_ms(t1, t2):
@@ -262,7 +249,7 @@ x 3 2 1 1 1 1 0 0 0 0 0 0 1 3 3 3 1 1 1 x 2 x 1 0 0 1 1 2 x
 """.strip()
 
 
-g = """
+g2 = """
 0 0 0 ? ? ? 0 0 0 0 0 0 0 0 0 0 ? ? ? ? ? ? ? ? ? ? ? ? 0 0
 ? ? ? ? ? ? ? ? 0 0 ? ? ? 0 0 0 ? ? ? ? ? ? ? ? ? ? ? ? 0 0
 ? ? ? ? ? ? ? ? 0 0 ? ? ? 0 0 0 0 0 0 ? ? ? 0 0 0 ? ? ? ? ?
@@ -275,7 +262,7 @@ g = """
 0 ? ? ? 0 0 0 0 0 0 0 0 0 ? ? ? 0 0 0 0 ? ? ? 0 0 0 0 0 0 0
 """.strip()
 
-s = """
+s2 = """
 0 0 0 1 x 1 0 0 0 0 0 0 0 0 0 0 1 x 1 1 1 1 1 x 1 1 1 1 0 0
 1 1 1 2 2 2 1 1 0 0 1 1 1 0 0 0 1 1 1 1 x 1 1 1 1 1 x 1 0 0
 x 2 1 x 1 1 x 1 0 0 1 x 1 0 0 0 0 0 0 1 1 1 0 0 0 1 1 2 1 1
@@ -288,29 +275,173 @@ x 1 0 0 1 1 1 0 0 1 2 2 1 1 x 1 0 0 0 1 x 2 1 0 0 0 0 0 0 0
 0 1 x 1 0 0 0 0 0 0 0 0 0 1 x 1 0 0 0 0 1 1 1 0 0 0 0 0 0 0
 """.strip()
 
-# g = """
-#
-# """.strip()
-#
-# s = """
-#
-# """.strip()
+g3 = """
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 ? ? ? 0
+0 0 ? ? ? ?
+? ? ? ? ? ?
+? ? ? 0 ? ?
+? ? ? 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 ? ? ?
+0 ? ? ? ? ?
+0 ? ? ? ? ?
+? ? ? ? 0 0
+? ? ? 0 0 0
+? ? ? 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 ? ? ?
+0 0 0 ? ? ?
+? ? ? ? ? ?
+? ? ? ? ? ?
+? ? ? ? ? ?
+""".strip()
 
-# g = """
-#
-# """.strip()
-#
-# s = """
-#
-# """.strip()
+s3 = """
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 1 1 1 0
+0 0 1 x 2 1
+1 1 2 1 2 x
+1 x 1 0 1 1
+1 1 1 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 1 1 1
+0 1 1 2 x 1
+0 1 x 2 1 1
+1 2 2 1 0 0
+1 x 1 0 0 0
+1 1 1 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 1 1 1
+0 0 0 1 x 1
+2 3 2 3 3 3
+x x x 3 x x
+2 3 3 x 3 2
+""".strip()
 
-# g = """
-#
-# """.strip()
-#
-# s = """
-#
-# """.strip()
+g4 = """
+0 0 0 ? ? ? ? ? 0 ? ? ? 0 0 0 0 0 0 0 ? ? ? 0 0 0 0 0 0
+0 0 0 ? ? ? ? ? 0 ? ? ? 0 0 0 0 0 0 0 ? ? ? ? 0 ? ? ? 0
+0 0 0 ? ? ? 0 0 ? ? ? 0 0 0 0 0 0 0 0 ? ? ? ? 0 ? ? ? 0
+0 0 0 0 0 0 0 0 ? ? ? 0 0 0 0 0 ? ? ? ? ? ? ? ? ? ? ? 0
+0 0 ? ? ? 0 0 0 ? ? ? 0 0 0 0 0 ? ? ? ? ? ? ? ? ? 0 0 0
+0 0 ? ? ? 0 0 0 ? ? ? 0 0 0 0 0 ? ? ? ? ? ? ? ? ? ? ? ?
+0 0 ? ? ? 0 0 ? ? ? ? 0 0 0 0 0 ? ? ? 0 ? ? ? 0 0 ? ? ?
+0 0 0 0 0 0 0 ? ? ? ? 0 0 0 0 0 ? ? ? 0 ? ? ? 0 0 ? ? ?
+? ? ? 0 0 0 0 ? ? ? ? 0 ? ? ? 0 0 0 0 ? ? ? 0 0 0 0 0 0
+? ? ? 0 0 0 ? ? ? ? ? 0 ? ? ? 0 0 0 0 ? ? ? ? ? ? 0 0 0
+? ? ? 0 0 0 ? ? ? ? ? 0 ? ? ? 0 0 0 ? ? ? ? ? ? ? 0 0 0
+0 0 0 0 0 0 ? ? ? ? ? 0 0 0 0 0 0 0 ? ? ? ? ? ? ? ? 0 0
+0 0 0 0 0 0 0 ? ? ? ? ? ? ? 0 ? ? ? ? ? ? ? ? ? ? ? ? ?
+0 0 0 0 0 0 0 ? ? ? 0 ? ? ? 0 ? ? ? 0 0 0 ? ? ? ? ? ? ?
+? ? 0 0 0 0 0 0 0 ? ? ? ? ? ? ? ? ? 0 0 0 0 0 0 0 ? ? ?
+? ? 0 0 0 0 0 ? ? ? ? ? ? ? ? ? ? ? ? ? 0 0 0 0 0 ? ? ?
+? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 0 0 0 0 0 0 0 0
+? ? ? ? ? ? ? ? ? ? ? ? 0 0 0 ? ? ? ? ? 0 0 ? ? ? ? ? ?
+? ? ? ? ? ? ? ? 0 ? ? ? 0 0 0 0 ? ? ? 0 0 0 ? ? ? ? ? ?
+? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 0 ? ? ? 0 0 0 ? ? ? ? ? ?
+? ? ? 0 0 ? ? ? ? ? ? ? ? ? ? 0 ? ? ? ? 0 0 0 0 ? ? ? ?
+0 0 0 0 0 ? ? ? ? ? 0 ? ? ? ? 0 ? ? ? ? ? ? ? ? ? ? ? ?
+? ? ? ? ? ? 0 0 0 0 0 0 0 0 0 ? ? ? ? ? ? ? ? ? ? ? ? ?
+? ? ? ? ? ? 0 0 0 ? ? ? 0 0 0 ? ? ? ? ? ? ? ? ? ? ? 0 0
+? ? ? ? ? ? ? ? ? ? ? ? 0 0 0 ? ? ? ? ? 0 0 0 0 0 0 ? ?
+? ? 0 0 0 0 ? ? ? ? ? ? 0 0 ? ? ? ? ? ? 0 0 0 0 0 0 ? ?
+0 0 0 0 ? ? ? ? ? ? ? 0 0 0 ? ? ? ? ? ? ? ? 0 0 0 0 ? ?
+0 0 0 0 ? ? ? ? ? ? ? 0 0 0 ? ? ? 0 0 ? ? ? 0 0 0 0 0 0
+0 0 0 0 ? ? ? ? ? ? ? 0 0 0 0 0 0 0 0 ? ? ? 0 0 0 0 0 0
+""".strip()
+
+s4 = """
+0 0 0 1 1 2 x 1 0 1 x 1 0 0 0 0 0 0 0 1 x 1 0 0 0 0 0 0
+0 0 0 1 x 2 1 1 0 1 1 1 0 0 0 0 0 0 0 2 3 3 1 0 1 1 1 0
+0 0 0 1 1 1 0 0 1 1 1 0 0 0 0 0 0 0 0 1 x x 1 0 1 x 1 0
+0 0 0 0 0 0 0 0 1 x 1 0 0 0 0 0 1 2 2 3 3 3 2 1 2 1 1 0
+0 0 1 1 1 0 0 0 1 1 1 0 0 0 0 0 2 x x 2 x 1 1 x 1 0 0 0
+0 0 1 x 1 0 0 0 1 1 1 0 0 0 0 0 3 x 4 2 2 2 2 1 1 1 1 1
+0 0 1 1 1 0 0 1 2 x 1 0 0 0 0 0 2 x 2 0 1 x 1 0 0 1 x 1
+0 0 0 0 0 0 0 1 x 2 1 0 0 0 0 0 1 1 1 0 1 1 1 0 0 1 1 1
+1 1 1 0 0 0 0 2 3 3 1 0 1 1 1 0 0 0 0 1 1 1 0 0 0 0 0 0
+1 x 1 0 0 0 1 2 x x 1 0 1 x 1 0 0 0 0 1 x 1 1 1 1 0 0 0
+1 1 1 0 0 0 1 x 4 3 2 0 1 1 1 0 0 0 1 2 2 1 1 x 1 0 0 0
+0 0 0 0 0 0 1 2 3 x 1 0 0 0 0 0 0 0 1 x 1 1 2 3 2 1 0 0
+0 0 0 0 0 0 0 1 x 2 1 1 1 1 0 1 1 1 1 1 1 1 x 2 x 1 1 1
+0 0 0 0 0 0 0 1 1 1 0 1 x 1 0 1 x 1 0 0 0 1 1 2 1 2 2 x
+1 1 0 0 0 0 0 0 0 1 1 2 2 2 2 2 2 1 0 0 0 0 0 0 0 1 x 2
+x 2 0 0 0 0 0 1 1 2 x 1 1 x 2 x 2 2 1 1 0 0 0 0 0 1 1 1
+x 3 1 1 1 1 1 1 x 2 1 1 1 1 2 2 x 2 x 1 0 0 0 0 0 0 0 0
+2 3 x 2 2 x 1 1 1 2 1 1 0 0 0 1 1 2 1 1 0 0 1 1 1 1 1 1
+x 3 3 x 2 2 2 1 0 2 x 2 0 0 0 0 1 1 1 0 0 0 1 x 1 1 x 1
+2 x 2 1 1 2 x 3 1 3 x 3 2 2 1 0 1 x 1 0 0 0 1 1 2 2 2 1
+1 1 1 0 0 2 x 3 x 2 1 2 x x 1 0 2 3 3 1 0 0 0 0 1 x 2 1
+0 0 0 0 0 1 1 2 1 1 0 1 2 2 1 0 1 x x 2 1 2 1 2 2 2 2 x
+1 2 1 2 1 1 0 0 0 0 0 0 0 0 0 1 2 3 2 2 x 2 x 2 x 1 1 1
+x 3 x 2 x 1 0 0 0 1 1 1 0 0 0 1 x 2 1 2 1 2 1 2 1 1 0 0
+x 3 1 2 1 1 1 1 1 1 x 1 0 0 0 1 1 3 x 2 0 0 0 0 0 0 1 1
+1 1 0 0 0 0 1 x 2 2 2 1 0 0 1 1 1 2 x 2 0 0 0 0 0 0 1 x
+0 0 0 0 1 1 2 1 3 x 2 0 0 0 1 x 1 1 1 2 1 1 0 0 0 0 1 1
+0 0 0 0 1 x 2 1 2 x 2 0 0 0 1 1 1 0 0 1 x 1 0 0 0 0 0 0
+0 0 0 0 1 2 x 1 1 1 1 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0
+""".strip()
+
+g = """
+0 0 0 0 0 0 0 ? ? ?
+? ? ? ? ? ? 0 ? ? ?
+? ? ? ? ? ? 0 ? ? ?
+? ? ? ? ? ? 0 ? ? ?
+0 0 ? ? ? ? ? ? 0 0
+0 0 ? ? ? ? ? ? ? ?
+0 0 ? ? ? ? ? ? ? ?
+0 0 0 0 ? ? ? ? ? ?
+0 0 0 0 ? ? ? ? ? ?
+0 0 0 ? ? ? ? 0 0 0
+0 0 0 ? ? ? ? 0 0 0
+0 0 0 ? ? ? ? 0 0 0
+0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
+? ? 0 ? ? ? 0 0 0 0
+? ? 0 ? ? ? 0 0 0 0
+? ? ? ? ? ? ? ? ? 0
+? ? ? ? ? ? ? ? ? ?
+? ? ? ? ? ? ? ? ? ?
+0 0 ? ? ? 0 0 ? ? ?
+0 0 ? ? ? ? ? ? ? ?
+0 0 ? ? ? ? ? ? ? ?
+0 0 0 0 0 ? ? ? ? ?
+""".strip()
+
+s = """
+0 0 0 0 0 0 0 1 1 1
+1 1 1 1 1 1 0 2 x 2
+1 x 2 2 x 1 0 2 x 2
+1 1 2 x 2 1 0 1 1 1
+0 0 2 2 2 1 1 1 0 0
+0 0 1 x 1 1 x 2 1 1
+0 0 1 1 2 2 2 3 x 2
+0 0 0 0 1 x 1 2 x 2
+0 0 0 0 1 1 1 1 1 1
+0 0 0 1 2 2 1 0 0 0
+0 0 0 1 x x 1 0 0 0
+0 0 0 1 2 2 1 0 0 0
+0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
+1 1 0 1 1 1 0 0 0 0
+x 1 0 1 x 1 0 0 0 0
+2 3 1 3 2 2 1 1 1 0
+x 2 x 2 x 1 1 x 2 1
+1 2 1 2 1 1 1 2 x 1
+0 0 1 1 1 0 0 1 1 1
+0 0 1 x 1 1 1 2 2 2
+0 0 1 1 1 1 x 2 x x
+0 0 0 0 0 1 1 2 2 2
+""".strip()
 
 # g = """
 #
