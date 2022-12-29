@@ -2,7 +2,7 @@ import time
 from itertools import combinations as combs
 
 class MineSweeper:
-    # (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)
+    # [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
     walk = [(dy, dx) for dx in range(-1, 2) for dy in range(-1, 2) if (dy, dx) != (0, 0)]
 
     def __init__(self, game_map: str, n: int):
@@ -12,7 +12,7 @@ class MineSweeper:
         self.j_max, self.i_max = len(self.grid), len(self.grid[0])
 
     def solve(self):
-        self.avalanche()   # the core:
+        self.avalanche()  # the core:
         res = self.make_map_from_grid()  # string representation of res:
         self.show_grid()  # showing the grid:
         return '?' if '?' in res else res  # returning the result:
@@ -24,14 +24,14 @@ class MineSweeper:
             print(f'AVALANCHE iteration: {avalanche_iters}: ')
             self.get_groups()  # get groups list from the current grid state:
             self.transform_groups()  # transforming groups according to the groups-addition rules:
-            actions = self.check_groups()  # cells opening and flagging:
+            check_actions = self.check_groups()  # cells opening and flagging:
             # if there have been opened or flagged zero quantity of cells:
-            if actions == 0:
+            if check_actions == 0:
                 print(f'SMART SECTION: ')
                 print(f'mines remained: {self.mines_remained}')
                 # cells groups building:
-                opened_cells = [(j, i) for i in range(len(self.grid[0])) for j in range(len(self.grid)) if '?' in [self.grid[c[0]][c[1]] for c in self.get_neighs((j, i))] and self.grid[j][i].isdigit()]
-                closed_cells = [(j, i) for i in range(len(self.grid[0])) for j in range(len(self.grid)) if self.grid[j][i] == '?']
+                opened_cells = [(j, i) for i in range(self.i_max) for j in range(self.j_max) if '?' in [self.grid[y][x] for y, x in self.get_neighs((j, i))] and self.grid[j][i].isdigit()]
+                closed_cells = [(j, i) for i in range(self.i_max) for j in range(self.j_max) if self.grid[j][i] == '?']
                 neighbouring_closed_cells = list({cc for oc in opened_cells for cc in self.get_neighs(oc) if cc in closed_cells})
                 print(f'{len(opened_cells)} opened_cells found:\n{opened_cells}')
                 print(f'{len(closed_cells)} closed_cells found:\n{closed_cells}')
@@ -75,7 +75,7 @@ class MineSweeper:
         return [(cell[0] + dy, cell[1] + dx) for dy, dx in self.walk if self.is_cell_valid((cell[0] + dy, cell[1] + dx))]
 
     def is_cell_valid(self, cell: tuple[int, int]):
-        return 0 <= cell[0] < len(self.grid) and 0 <= cell[1] < len(self.grid[0])
+        return 0 <= cell[0] < self.j_max and 0 <= cell[1] < self.i_max
 
     def check_groups(self):
         print(f'GROUPS CHECKING STARTS...')
@@ -85,16 +85,16 @@ class MineSweeper:
         # starting a groups' transformation:
         print(f'GROUPS TRANSFORMING STARTS...')
         while True:
-            actions = 0
+            transform_actions = 0
             for j in range(0, len(self.groups) - 1):
                 i = j + 1
                 while i < len(self.groups):
                     # significantly increases performance, 0-valued groups should be processed in check_groups() method instead of transform_groups one:
                     if self.groups[j].val != 0 and self.groups[i].val != 0:
-                        actions += (k := self.groups[j].unify(self.groups[i], self.groups))
+                        transform_actions += (k := self.groups[j].unify(self.groups[i], self.groups))
                         if k == 1: i -= 1  # case of deleting a group from groups' list:
                     i += 1
-            if actions == 0: break # checks if there have been some transformation during the current step if no -->> breaks:
+            if transform_actions == 0: break # checks if there have been some transformation during the current step if no -->> breaks:
 
     def get_groups(self):
         print(f'GETTING GROUPS...')
@@ -132,23 +132,23 @@ class Group:
         self.cell = cell
 
     def get_closed_neighs(self, mine_sweeper):
-       for neigh in MineSweeper.get_neighs(mine_sweeper, self.cell):
-            if mine_sweeper.grid[neigh[0]][neigh[1]] == '?': self.group.add((neigh[0], neigh[1]))
-            elif mine_sweeper.grid[neigh[0]][neigh[1]] == 'x': self.val -= 1
+       for j, i in MineSweeper.get_neighs(mine_sweeper, self.cell):
+            if mine_sweeper.grid[j][i] == '?': self.group.add((j, i))
+            elif mine_sweeper.grid[j][i] == 'x': self.val -= 1
 
     # check group after groups transformation:
     def check(self, mine_sweeper):
         if self.val == 0:
             # opening all mines:
-            for cell in self.group:
-                if mine_sweeper.grid[cell[0]][cell[1]] == '?':
-                    MineSweeper.open(mine_sweeper, [cell])
+            for j, i in self.group:
+                if mine_sweeper.grid[j][i] == '?':
+                    MineSweeper.open(mine_sweeper, [(j, i)])
             return 1
         elif self.val == len(self.group):
             # flagging all mines found
-            for cell in self.group:
-                if mine_sweeper.grid[cell[0]][cell[1]] == '?':
-                    MineSweeper.flag(mine_sweeper, [cell])
+            for j, i in self.group:
+                if mine_sweeper.grid[j][i] == '?':
+                    MineSweeper.flag(mine_sweeper, [(j, i)])
             return 1
         return 0
 
@@ -481,21 +481,17 @@ def open(j: int, i: int):
         return int(g)
 
 ms = MineSweeper(g, s.count('x'))
+mines = MineSweeper(s, s.count('x'))
 print(f'INITIAL GRID: ')
 MineSweeper.show_grid(ms)
 print(f'SOLUTION: ')
-MineSweeper.show_grid(ms)
+MineSweeper.show_grid(mines)
 start = time.time_ns()
 print(ms.solve())
 finish = time.time_ns()
 
-print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
+print(f'time elapsed: {get_ms(start, finish)} milliseconds')
 
-
-
-q = None
-if q:
-    print('LALA')
 
 
 
