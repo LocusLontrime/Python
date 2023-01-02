@@ -1,4 +1,4 @@
-# very slow!!!
+# very slow!!! WHY???
 import math
 import time
 from time import sleep
@@ -187,11 +187,11 @@ class HugeInt:
 new_huge_int = HugeInt('2323232832321543534534534534345809885675655680940084098098098098080909234324324324324309879963365')
 print(f'number length: {len(new_huge_int)}')
 start = time.time_ns()
-# sqrt = new_huge_int.sqrt()
-result = new_huge_int * new_huge_int
+sqrt = new_huge_int.sqrt()
+# result = new_huge_int * new_huge_int
 finish = time.time_ns()
-# print(f'sqrt of {new_huge_int} : {sqrt}')
-print(f'res: {result}')
+print(f'sqrt of {new_huge_int} : {sqrt}')
+# print(f'res: {result}')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
 # print([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11][1:])
