@@ -1,108 +1,102 @@
+# accepted on codewars.com
+import heapq as hq
+import time
+import numpy as np
+
+
 def three_dots(game_map):  # 36 366 98 989 LL
-    pass
+    return ThreeDotsGame(game_map).solve()
 
 
-class Triplet:
-    # movement constants:
-    MOVES = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    NAMES = ['→', '↓', '←', '↑']
-
+class ThreeDotsGame:
     def __init__(self, game_map):
-        self.grid, self.dots, self.goals = self.make_grid_from_blueprint(game_map)
-        print(f'DOTS: {self.dots}')
+        st = time.time_ns()
+        self.grid, in_dots, goals = self.make_grid_from_blueprint(game_map)
+        self.in_dots, self.goals = tuple(in_dots[i] for i in range(3)), tuple(goals[i] for i in range(3))
+        fin = time.time_ns()
+        print(f'INITIALS: {self.in_dots}')
         print(f'GOALS: {self.goals}')
         self.Y, self.X = len(self.grid), len(self.grid[0])
-        self.stop_flag = False
-        self.solution = None
-        self.backtracking_iters = 0
+        self.a_star_iters = 0
 
     def solve(self):
-        self.backtracking('', set())
-        # print(f'THE WAY: {self.solution}')
-        return self.solution
+        return self.a_star_var()
 
-    def show_triplet(self):
+    # from INITIALS -->> GOALS:
+    def a_star_var(self):
+        initials = Triplet(self.in_dots)
+        triplets_state_dict = {self.in_dots: initials}
+        triplets_state_dict: dict[tuple[tuple[int, int], ...], 'Triplet']  # checking...
+        triplets_to_be_visited = [initials]
+        initials.g = 0
+        hq.heapify(triplets_to_be_visited)
+        goals = Triplet(self.goals)
+        triplets_state_dict[self.goals] = goals
+        # core of a-star variation:
+        while triplets_to_be_visited:
+            self.a_star_iters += 1
+            curr_triplet = hq.heappop(triplets_to_be_visited)
+            # print(f'iter: {self.a_star_iters}, curr_triplet: {curr_triplet}')
+            # self.show_triplet(curr_triplet)
+            if curr_triplet == goals:
+                print(f'SOLUTION BEEN FOUND!')
+                break
+            # next step of a-star:
+            for new_coords, move in curr_triplet.get_next_moves(self):
+                # kind of memoization:
+                if new_coords not in triplets_state_dict.keys():
+                    # print(f'new_coords: {new_coords}')
+                    # print(f'move: {move}')
+                    triplets_state_dict[new_coords] = Triplet(new_coords)
+                new_triplet = triplets_state_dict[new_coords]
+                # dynamic programming and length minimization:
+                if new_triplet.g > curr_triplet.g + 1:
+                    new_triplet.g = curr_triplet.g + 1
+                    new_triplet.h = new_triplet.manhattan_heuristic(goals)
+                    new_triplet.aux_h = new_triplet.aux(goals)
+                    new_triplet.previously_visited_state = curr_triplet
+                    new_triplet.direction = move
+                    hq.heappush(triplets_to_be_visited, new_triplet)
+        # the first cell for path-restoring (from the end):
+        triplet = goals
+        the_way = ''
+        print(f'goals.previously_visited_state: {goals.previously_visited_state}')
+        # path restoring (here we get the reversed path):
+        while triplet.previously_visited_state:
+            the_way += triplet.direction
+            triplet = triplet.previously_visited_state
+        # info:
+        print(f'dict length: {len(triplets_state_dict)}')
+        print(f'A* iterations: {self.a_star_iters}')
+        # returning the reversed shortest path:
+        return the_way[::-1]
+
+    def show_triplet(self, triplet: 'Triplet'):
         for row in self.grid:
             for cell in row:
-                if cell in self.dots.values():
-                    if cell == self.dots[0]:
+                c = cell[:2]
+                if c in triplet.dots:
+                    # print(f'cell[:2]: {cell[:2]}')
+                    # print(f'triplet.dots[0]: {triplet.dots[0]}')
+                    if c == triplet.dots[0]:
                         print(f'R', end='')
-                    elif cell == self.dots[1]:
+                    elif c == triplet.dots[1]:
                         print(f'G', end='')
                     else:
                         print(f'Y', end='')
-                elif cell in self.goals.values():
-                    if cell == self.goals[0]:
+                elif c in self.goals:
+                    if c == self.goals[0]:
                         print(f'r', end='')
-                    elif cell == self.goals[1]:
+                    elif c == self.goals[1]:
                         print(f'g', end='')
                     else:
                         print(f'y', end='')
-                elif cell.passability:
+                elif cell[2]:
                     print(f' ', end='')
                 else:
                     print(f'*', end='')
             print()
         print()
-
-    def get_next_moves(self):
-        # all 4 moves:
-        new_triplets = []
-        for ind, move in enumerate(self.MOVES):
-            # try to move every dot:
-            new_dots = {}
-            for key in self.dots.keys():
-                new_dot = self.dots[key].move(self, move)
-                new_dots[key] = new_dot
-            new_triplets.append((new_dots, self.NAMES[ind]))
-        return new_triplets
-
-    def check(self) -> bool:
-        for key in self.dots.keys():
-            if self.dots[key] != self.goals[key]:
-                return False
-        return True
-
-    def __str__(self):
-        return str(self.dots.values())
-
-    def __repr__(self):
-        return str(self) + ' '
-
-    def __hash__(self) -> int:
-        # print(f'dict: {self.dots}')
-        t = tuple(self.dots[key] for key in self.dots.keys())
-        # print(f'hashable: {t}')
-        return hash(t)
-
-    def backtracking(self, steps: str, visited_states: set[int]):
-        if not self.stop_flag and len(visited_states) < 32:
-            self.backtracking_iters += 1
-            if self.backtracking_iters % 10000 == 0:
-                print(f'{self.backtracking_iters}-th iteration of backtracking: ')
-                print(f'TRIPLET STATE: {self}')
-                self.show_triplet()
-            # base case of finding solution:
-            if self.check():
-                print(f'SOLUTION FOUND!!!')
-                self.stop_flag = True
-                self.solution = steps
-                return
-            # looking for next possible moves:
-            new_triplets = self.get_next_moves()
-            # print(f'new triplets: {len(new_triplets)}')
-            current_dots = self.dots.copy()
-            new_triplets = sorted(new_triplets, key=lambda x: sum([x[0][key].manhattan_distance(self.goals[key]) for key in x[0].keys()]))
-            for new_triplet, move in new_triplets:
-                # new step:
-                self.dots = new_triplet
-                # recurrent_relation:
-                h = hash(self)
-                # print(f'hash: {h}')
-                if h not in visited_states:
-                    self.backtracking(steps + move, visited_states | {h})
-                # backtracking:
-                self.dots = current_dots
 
     @staticmethod
     def make_grid_from_blueprint(game_map: str):
@@ -112,55 +106,82 @@ class Triplet:
             grid.append([])
             for x, s in enumerate(row[1:-1]):
                 if s in (l := ['R', 'G', 'Y']):
-                    cell = Cell(y, x)
-                    start_dots[l.index(s)] = cell
+                    cell = y, x, True
+                    start_dots[l.index(s)] = cell[:2]
                 elif s in (l := ['r', 'g', 'y']):
-                    cell = Cell(y, x)
-                    end_dots[l.index(s)] = cell
+                    cell = y, x, True
+                    end_dots[l.index(s)] = cell[:2]
                 elif s == '*':
-                    cell = Cell(y, x, False)
+                    cell = y, x, False
                 else:
-                    # space ' ' case:
-                    cell = Cell(y, x)
+                    cell = y, x, True
                 grid[y].append(cell)
         return grid, start_dots, end_dots
 
 
-class Cell:
-    def __init__(self, y, x, passability=True):
-        self.y, self.x = y, x
-        self.passability = passability
+class Triplet:
+    # movement constants:
+    MOVES = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    NAMES = ['R', 'D', 'L', 'U']  # ['→', '↓', '←', '↑']
 
-    def move(self, triplet: 'Triplet', move: tuple[int, int]) -> 'Cell' or None:
-        new_y, new_x = self.y + move[0], self.x + move[1]
-        if 0 <= new_y < triplet.Y and 0 <= new_x < triplet.X:
-            if (nc := triplet.grid[new_y][new_x]).passability and nc not in triplet.dots:
-                return nc
-        return self
+    def __init__(self, dots: tuple[tuple[int, int], ...]):
+        self.dots = dots
+        # a star vars:
+        self.g = np.Infinity
+        self.h = 0
+        self.aux_h = 0
+        # path-restoring vars:
+        self.previously_visited_state = None
+        self.direction = None
 
-    def manhattan_distance(self, other):
-        return abs(self.y - other.y) + abs(self.x - other.x)
+    def get_next_moves(self, game: 'ThreeDotsGame'):
+        # all 4 moves:
+        new_triplets = []
+        for ind, move in enumerate(self.MOVES):
+            # try to move every dot:
+            new_dots = list(self.move_cell(self.dots[i], game, move) for i in range(len(self.dots)))
+            for j in range(len(self.dots) - 1):
+                for i in range(j + 1, len(self.dots)):
+                    if new_dots[j] == new_dots[i]:
+                        new_dots[j], new_dots[i] = self.dots[j], self.dots[i]
+            new_triplets.append((tuple(new_dots), self.NAMES[ind]))
+        return new_triplets
 
-    def __eq__(self, other):
-        # print(f'SELF: {self}')
-        # print(f'OTHER: {other}')
-        # print(f'SELF == OTHER: {(self.y, self.x) == (other.y, other.x)}')
-        return (self.y, self.x) == (other.y, other.x)
+    @staticmethod
+    def move_cell(cell: tuple[int, int], game: 'ThreeDotsGame', move: tuple[int, int]) -> tuple[int, int]:
+        ny, nx = cell[0] + move[0], cell[1] + move[1]
+        if 0 <= ny < game.Y and 0 <= nx < game.X:
+            if game.grid[ny][nx][2]:
+                return ny, nx
+        return cell
 
-    def __ne__(self, other):
-        return not (self == other)
+    @staticmethod
+    def manhattan_distance(cell1: tuple[int, int], cell2: tuple[int, int]):
+        return abs(cell1[0] - cell2[0]) + abs(cell1[1] - cell2[1])
 
-    def __hash__(self):
-        return hash((self.y, self.x))
+    def __eq__(self, other: 'Triplet'):
+        for i, cell in enumerate(self.dots):
+            if cell != other.dots[i]: return False
+        return True
+
+    # it must be implemented for working with priority queues/heaps:
+    def __lt__(self, other):
+        # self.g + self.h + self.aux_h < other.g + other.h + other.aux_h -->> for optimal solution
+        return self.h + self.aux_h < other.h + other.aux_h  # -->> for faster one
+
+    def manhattan_heuristic(self, other: 'Triplet') -> int:
+        return max(self.manhattan_distance(self.dots[i], other.dots[i]) for i in range(len(self.dots)))
+
+    def aux(self, other: 'Triplet') -> int:
+        return sum(abs(self.manhattan_distance(self.dots[j], self.dots[i]) - other.manhattan_distance(other.dots[j],
+                                                                                                      other.dots[i]))
+                   for j in range(len(self.dots) - 1) for i in range(j + 1, len(self.dots)))
 
     def __str__(self):
-        return str((self.y, self.x))
+        return str(self.dots)
 
     def __repr__(self):
-        return str(self)
-
-    def a_star_variation(self):
-        pass
+        return str(self) + ' '
 
 
 field1 = ["+------------+\n"
@@ -183,23 +204,89 @@ field2 = ["+------------+\n"
           + "|           y|\n"
           + "+------------+"]
 
-field = ["+------------+\n"
-         + "|R     ** ***|\n"
-         + "|G     ** ***|\n"
-         + "|Y           |\n"
-         + "|            |\n"
-         + "|            |\n"
-         + "|            |\n"
-         + "|           g|\n"
-         + "|** ***     r|\n"
-         + "|** ***     y|\n"
-         + "+------------+"]
+field3 = ["+------------+\n"
+          + "|R     ** ***|\n"
+          + "|G     ** ***|\n"
+          + "|Y           |\n"
+          + "|            |\n"
+          + "|            |\n"
+          + "|            |\n"
+          + "|           g|\n"
+          + "|** ***     r|\n"
+          + "|** ***     y|\n"
+          + "+------------+"]
+
+field4 = ["+------------+\n"
+          + "|RGY         |\n"
+          + "|            |\n"
+          + "|     **     |\n"
+          + "|     **     |\n"
+          + "|            |\n"
+          + "|         rgy|\n"
+          + "+------------+"]
+
+field5 = ["+------------+\n"
+          + "|R           |\n"
+          + "|G           |\n"
+          + "|Y    **     |\n"
+          + "|     **    r|\n"
+          + "|           g|\n"
+          + "|           y|\n"
+          + "+------------+"]
+
+field6 = ["+------------+\n"
+          + "|R           |\n"
+          + "|G    **     |\n"
+          + "|Y    **     |\n"
+          + "|            |\n"
+          + "|     **    r|\n"
+          + "|     **    g|\n"
+          + "|           y|\n"
+          + "+------------+"]
+
+field7 = ["+---------------+\n"
+          + "|         g     |\n"
+          + "|           r   |\n"
+          + "|   **      y   |\n"
+          + "|   **       RY |\n"
+          + "|      *****   G|\n"
+          + "|***   ***      |\n"
+          + "|***      **    |\n"
+          + "+---------------+"]
+
+field8 = ["+---------------+\n"
+          + "| YG            |\n"
+          + "|    ***  * *   |\n"
+          + "|  R ***  * *r y|\n"
+          + "|        **** g |\n"
+          + "|          **   |\n"
+          + "|        ****   |\n"
+          + "|               |\n"
+          + "+---------------+"]
+
+field = ["+---------------+\n"
+         + "|               |\n"
+         + "|   * *         |\n"
+         + "|** * *   r     |\n"
+         + "|** * *    y    |\n"
+         + "|G Y* *   g     |\n"
+         + "|R  * *   ***   |\n"
+         + "|         ***   |\n"
+         + "+---------------+"]
 
 print(f'game map: ')
 for string in field:
     print(f'{string}')
-Triplet(field[0]).solve()
-
+start = time.time_ns()
+print(f'Solution: {three_dots(field[0])}')
+finish = time.time_ns()
+print(f'Time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 hash(())
 
 print(f'{None and 98}')
+
+# cells_set = {Cell(11, 98), Cell(11, 98)}
+# print(f'{cells_set}')
+
+tu = ((1, 1), (1, 1), (98, 989))
+print(f'set: {set(tu)}')
