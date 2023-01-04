@@ -12,6 +12,8 @@ empty_cell_symbol = '.'
 colours: dict[tuple[int, int], str]
 colours_dict = None
 
+BOLD = "\033[1m"
+
 BLACK = "\033[30m{}"
 RED = "\033[31m{}"
 GREEN = "\033[32m{}"
@@ -20,7 +22,7 @@ BROWN = "\033[34m{}"
 PURPLE = "\033[35m{}"
 CYAN = "\033[36m{}"
 X = "\033[37m{}"
-END = "\033[0m{}"
+END = "\033[0m"
 
 COLOURS = [RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, BLACK, X]
 
@@ -164,8 +166,7 @@ def show_grid(grid):
 
 
 def colour_print(char, colour):
-    print(f"{colour.format(char)}", end='')
-    print(f"{END.format('')}", end= '')
+    print(f"{(BOLD + colour.format(char) + END)}", end='')
 
 
 game_map_x = '''+------+

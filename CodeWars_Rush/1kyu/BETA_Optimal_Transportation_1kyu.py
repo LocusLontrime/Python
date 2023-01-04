@@ -14,7 +14,7 @@ CYAN = "\033[36m{}"
 END = "\033[0m{}"
 
 
-def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
+def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989 LL
     # quantities of rows and columns:
     rows, cols = len(costs), len(costs[0])
     # table for X(j, i) --> optimal (min) total price:
@@ -256,18 +256,18 @@ def show_cycle(table, rows_basis_cells, cycle):
             if el is None:
                 table_copy[j].append('N' * max_length)
             elif type(el) is int:
-                table_copy[j].append(colour_(str(el) + ' ' * (max_length - len(str(el))), PURPLE))
+                table_copy[j].append(colour_(str(el) + ' ' * (max_length - len(str(el))), PURPLE, True))
             else:
                 table_copy[j].append(el)
     # cycle elements changing:
     for i, step in enumerate(cycle):
         curr_j, curr_i = step
         if i == 0:
-            table_copy[curr_j][curr_i] = colour_('S' + ' ' * (max_length - 1), YELLOW)
+            table_copy[curr_j][curr_i] = colour_('S' + ' ' * (max_length - 1), YELLOW, True)
         elif i % 2 == 0:
-            table_copy[curr_j][curr_i] = colour_('+' + ' ' * (max_length - 1), GREEN)
+            table_copy[curr_j][curr_i] = colour_('+' + ' ' * (max_length - 1), GREEN, True)
         else:
-            table_copy[curr_j][curr_i] = colour_('-' + ' ' * (max_length - 1), CYAN)
+            table_copy[curr_j][curr_i] = colour_('-' + ' ' * (max_length - 1), CYAN, True)
         if i + 1 < len(cycle):
             connect_two(table_copy, cycle[i], cycle[i + 1], max_length)
         else:
@@ -284,9 +284,9 @@ def show_cycle(table, rows_basis_cells, cycle):
 def connect_two(table, point1: tuple[int, int], point2: tuple[int, int], max_length):
     # defines a linking symbol:
     if point1[0] == point2[0]:
-        symbol = colour_('=' * max_length, RED)
+        symbol = colour_('=' * max_length, RED, True)
     else:
-        symbol = colour_('|' + ' ' * (max_length - 1), RED)
+        symbol = colour_('|' + ' ' * (max_length - 1), RED, True)
     # building a neck:
     for j in range(m := min(point1[0], point2[0]), m + abs(point1[0] - point2[0]) + 1):
         for i in range(n := min(point1[1], point2[1]), n + abs(point1[1] - point2[1]) + 1):
@@ -294,8 +294,9 @@ def connect_two(table, point1: tuple[int, int], point2: tuple[int, int], max_len
                 table[j][i] = symbol
 
 
-def colour_(char, colour):
-    return f"{colour.format(char)}{END.format('')}"
+def colour_(char, colour, flag = False):
+    s = "\033[1m" if flag else ''
+    return f"{(s + colour).format(char)}{END.format('')}"
 
 
 # method for creating an example of closed transport task with parameters given:

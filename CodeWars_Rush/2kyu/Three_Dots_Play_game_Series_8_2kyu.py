@@ -9,10 +9,11 @@ def three_dots(game_map):  # 36 366 98 989 LL
 
 
 class ThreeDotsGame:
+    BOLD = "\033[1m"
     RED = "\033[31m{}"
     GREEN = "\033[32m{}"
-    BROWN = "\033[33m{}"
-    END = "\033[0m{}"
+    YELLOW = "\033[33m{}"
+    END = "\033[0m"
 
     def __init__(self, game_map):
         st = time.time_ns()
@@ -95,14 +96,14 @@ class ThreeDotsGame:
                     elif c == triplet.dots[1]:
                         self.colour_print('G', self.GREEN)
                     else:
-                        self.colour_print('Y', self.BROWN)
+                        self.colour_print('Y', self.YELLOW)
                 elif c in self.goals:
                     if c == self.goals[0]:
                         self.colour_print('r', self.RED)
                     elif c == self.goals[1]:
                         self.colour_print('g', self.GREEN)
                     else:
-                        self.colour_print('y', self.BROWN)
+                        self.colour_print('y', self.YELLOW)
                 elif cell[2]:
                     print(f' ', end='')
                 else:
@@ -116,8 +117,7 @@ class ThreeDotsGame:
         return f"+{'-' * length}+"
 
     def colour_print(self, char, colour):
-        print(f"{colour.format(char)}", end='')
-        print(f"{self.END.format('')}", end= '')
+        print(f"{(self.BOLD + colour + self.END).format(char)}", end='')
 
     @staticmethod
     def make_grid_from_blueprint(game_map: str):

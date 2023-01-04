@@ -10,6 +10,8 @@ def four_pass(stations: list[int]):
     return [candy_f.get_num(node.y, node.x) for node in the_path] if the_path else None
 
 class CandyFactory:
+    # styles:
+    BOLD = "\033[1m"
     # colours:
     BLACK = "\033[30m{}"
     RED = "\033[31m{}"
@@ -20,7 +22,7 @@ class CandyFactory:
     CYAN = "\033[36m{}"
     LIGHT_GREEN = "\033[1;32m{}"
     X = "\033[37m{}"
-    END = "\033[0m{}"
+    END = "\033[0m"
 
     def __init__(self, stations, j_max=10, i_max=10):
         self.COLOURS = [self.RED, self.GREEN, self.YELLOW, self.BROWN, self.PURPLE, self.CYAN, self.LIGHT_GREEN, self.BLACK, self.X]
@@ -49,13 +51,13 @@ class CandyFactory:
 
     # visualisation of hint method:
     def get_hint(self):
-        return " --->>> ".join([self.colour_str_inv(f'st{i + 1}', self.COLOURS[i]) for i in range(len(self.station_nodes))]) + self.colour_str('', self.END)
+        return self.BOLD.format('') + (f"{self.BOLD + '{}'}".format(" --->>> ")).join([self.colour_str_inv(f'st{i + 1}', self.COLOURS[i]) for i in range(len(self.station_nodes))]) + self.colour_str('', self.END)
 
     def solve(self):
         print(f'stations: {self.station_nodes}')
         print(f'station_pairs: {self.station_pairs}')
         perm_station_pairs = list(perms(self.station_pairs))
-        print(f'perm_station_pairs: {perm_station_pairs}')
+        # print(f'perm_station_pairs: {perm_station_pairs}')
         print(f'the shortest possible path length: {self.the_shortest_possible}')
         min_path_length = np.Infinity
         sh_p_dict = {}
@@ -84,7 +86,6 @@ class CandyFactory:
                     min_path_length = current_path_length
                     sh_p_dict = path_dict.copy()
         the_shortest_one = self.restore_path(sh_p_dict)
-        print(f'all candidates to be the shortest path: ')
         # the shortest path found:
         print(f'the_shortest_one length: {len(the_shortest_one)}')
         self.show_path(sh_p_dict)
@@ -105,27 +106,22 @@ class CandyFactory:
                     for key in path_dict.keys():
                         if node in path_dict[key]:
                             self.colour_print('p', self.COLOURS[key])
-                            self.reset_colour()
                             break
                     else:
                         print(f'.', end=' ')
             print()
-        self.reset_colour()
         print()
 
     # colour printing/returning and colour reset methods:
-    @staticmethod
-    def colour_print(char, colour):
-        print(colour.format(char), end=' ')
+    def colour_print(self, char, colour):
+        print((self.BOLD + colour.format(char) + self.END), end=' ')
 
-    @staticmethod
-    def colour_str(char, colour):
-        return colour.format(char)
+    def colour_str(self, char, colour):
+        return (self.BOLD + colour + self.END).format(char)
+
 
     def colour_str_inv(self, char, colour):
-        return self.colour_str('', self.END) + char + self.colour_str('', colour)
-    def reset_colour(self):
-        print(self.END.format(''), end='')
+        return char +  (self.BOLD + colour).format('')
 
     def rec_path_seeker(self, permutation: tuple['Node', 'Node', int], used_nodes: set['Node'], path_dict: dict[int: list['Node']], path_parts_complete: int):
         # print(f'depth: {path_parts_complete}')
@@ -261,12 +257,12 @@ cf9 = CandyFactory([59, 90, 10, 31])
 cf10 = CandyFactory([81, 10, 14, 98])
 cf12 = CandyFactory([89, 66, 75, 59])
 cf13 = CandyFactory([1, 624, 2, 979, 1000, 328, 213], 28, 36)  # approx 15 minutes of calcs with all printing... 36 366 98 989
-cf14 = CandyFactory([1, 111, 223, 2, 198, 145, 95], 18, 18)
+cf = CandyFactory([1, 111, 223, 2, 198, 145, 95], 18, 18)
 cf15 = CandyFactory([43, 29, 14, 39])
 cf16 = CandyFactory([94, 90, 75, 92])
 cf17 = CandyFactory([59, 12, 20, 39])
 cf18 = CandyFactory([32, 27, 92, 38])
-cf = CandyFactory([1704, 2849, 1198, 2500, 2288, 2348, 809, 178], 29, 100)  # too much time...
+cf19 = CandyFactory([1704, 2849, 1198, 2500, 2288, 2348, 809, 178], 29, 100)  # too much time...
 
 # cf = CandyFactory()
 # cf = CandyFactory()
