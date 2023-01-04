@@ -9,6 +9,11 @@ def three_dots(game_map):  # 36 366 98 989 LL
 
 
 class ThreeDotsGame:
+    RED = "\033[31m{}"
+    GREEN = "\033[32m{}"
+    BROWN = "\033[33m{}"
+    END = "\033[0m{}"
+
     def __init__(self, game_map):
         st = time.time_ns()
         self.grid, in_dots, goals = self.make_grid_from_blueprint(game_map)
@@ -59,44 +64,60 @@ class ThreeDotsGame:
                     hq.heappush(triplets_to_be_visited, new_triplet)
         # the first cell for path-restoring (from the end):
         triplet = goals
-        the_way = ''
-        print(f'goals.previously_visited_state: {goals.previously_visited_state}')
+        triplets, the_way = [], ''
         # path restoring (here we get the reversed path):
         while triplet.previously_visited_state:
+            triplets.append(triplet)
             the_way += triplet.direction
             triplet = triplet.previously_visited_state
         # info:
         print(f'dict length: {len(triplets_state_dict)}')
         print(f'A* iterations: {self.a_star_iters}')
+        print(f'Showing the road: ')
+        triplets = triplets[::-1]
+        print()
+        for i, triplet in enumerate(triplets):
+            time.sleep(0.5)
+            print(f'{i}th step: ')
+            self.show_triplet(triplet)
         # returning the reversed shortest path:
         return the_way[::-1]
 
     def show_triplet(self, triplet: 'Triplet'):
+        print(f'{self.get_border(self.X)}')
         for row in self.grid:
+            print(f'|', end='')
             for cell in row:
                 c = cell[:2]
                 if c in triplet.dots:
-                    # print(f'cell[:2]: {cell[:2]}')
-                    # print(f'triplet.dots[0]: {triplet.dots[0]}')
                     if c == triplet.dots[0]:
-                        print(f'R', end='')
+                        self.colour_print('R', self.RED)
                     elif c == triplet.dots[1]:
-                        print(f'G', end='')
+                        self.colour_print('G', self.GREEN)
                     else:
-                        print(f'Y', end='')
+                        self.colour_print('Y', self.BROWN)
                 elif c in self.goals:
                     if c == self.goals[0]:
-                        print(f'r', end='')
+                        self.colour_print('r', self.RED)
                     elif c == self.goals[1]:
-                        print(f'g', end='')
+                        self.colour_print('g', self.GREEN)
                     else:
-                        print(f'y', end='')
+                        self.colour_print('y', self.BROWN)
                 elif cell[2]:
                     print(f' ', end='')
                 else:
                     print(f'*', end='')
-            print()
+            print(f'|')
+        print(f'{self.get_border(self.X)}')
         print()
+
+    @staticmethod
+    def get_border(length):
+        return f"+{'-' * length}+"
+
+    def colour_print(self, char, colour):
+        print(f"{colour.format(char)}", end='')
+        print(f"{self.END.format('')}", end= '')
 
     @staticmethod
     def make_grid_from_blueprint(game_map: str):
@@ -166,8 +187,8 @@ class Triplet:
 
     # it must be implemented for working with priority queues/heaps:
     def __lt__(self, other):
-        # self.g + self.h + self.aux_h < other.g + other.h + other.aux_h -->> for optimal solution
-        return self.h + self.aux_h < other.h + other.aux_h  # -->> for faster one
+        return self.g + self.h + self.aux_h < other.g + other.h + other.aux_h  # -->> for optimal solution
+        # return self.h + self.aux_h < other.h + other.aux_h  # -->> for faster one (in general, not in every case)...
 
     def manhattan_heuristic(self, other: 'Triplet') -> int:
         return max(self.manhattan_distance(self.dots[i], other.dots[i]) for i in range(len(self.dots)))
