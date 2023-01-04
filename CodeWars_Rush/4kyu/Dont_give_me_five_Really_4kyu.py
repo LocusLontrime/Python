@@ -43,6 +43,7 @@ def count_digit_five(max_num: int) -> int:
     return recursive_seeker(max_num)
 
 
+# the accepted one:
 def dont_give_me_five(start, end):
     # count the numbers from start to end that don't contain the digit 5
     counter = 0

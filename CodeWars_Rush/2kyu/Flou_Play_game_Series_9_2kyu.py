@@ -1,13 +1,28 @@
 # accepted on codewars.com
 import random
 
+# need to be coloured!!!
+rec_iters = 0
 en_alphabet = 'abcdefghijklmnopqrstuvwxyz123456789!@$%^&*|-+'
 directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 names = ['Up', 'Right', 'Down', 'Left']
 colour_block_symbol = 'B'
 empty_cell_symbol = '.'
 # visualisation:
-colours: dict[tuple[int, int]]
+colours: dict[tuple[int, int], str]
+colours_dict = None
+
+BLACK = "\033[30m{}"
+RED = "\033[31m{}"
+GREEN = "\033[32m{}"
+YELLOW = "\033[33m{}"
+BROWN = "\033[34m{}"
+PURPLE = "\033[35m{}"
+CYAN = "\033[36m{}"
+X = "\033[37m{}"
+END = "\033[0m{}"
+
+COLOURS = [RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, BLACK, X]
 
 
 def play_flou(game_map: str):
@@ -28,7 +43,8 @@ def play_flou(game_map: str):
 
 
 def make_grid_from_blueprint(game_map: str):
-    global colours
+    global colours, colours_dict
+    colours_dict = {}
     colours = dict()
     grid = []
     colour_blocks = []
@@ -38,12 +54,19 @@ def make_grid_from_blueprint(game_map: str):
         for i, cell in enumerate(row):
             if cell == colour_block_symbol:
                 colour_blocks.append(block := (j, i))
-                colours[block] = en_alphabet[len(colours)]
-            grid[j].append(cell)
+                s = colours[block] = en_alphabet[len(colours)]
+                colours_dict[s] = COLOURS[len(colours) - 1]
+                grid[j].append(s.upper())
+            else:
+                grid[j].append(cell)
     return grid, colour_blocks
 
 
 def rec_filler(grid, colour_blocks):
+    global rec_iters
+    rec_iters += 1
+    if rec_iters % 10000 == 0:
+        print(f'rec_iter: {rec_iters}')
     res = []
     # we can start with any colour block remained:
     for ind, colour_block in enumerate(colour_blocks):
@@ -104,7 +127,8 @@ def move_colour_block(grid, colour_block, dir_ind):
         if grid[next_j][next_i] != empty_cell_symbol:
             # trying to change direction:
             curr_dir_ind = (curr_dir_ind + 1) % 4
-            ninety_degrees_right_next_j, ninety_degrees_right_next_i = new_j + directions[curr_dir_ind][0], new_i + directions[curr_dir_ind][1]
+            ninety_degrees_right_next_j, ninety_degrees_right_next_i = new_j + directions[curr_dir_ind][0], new_i + \
+                                                                       directions[curr_dir_ind][1]
             # stop condition:
             if grid[ninety_degrees_right_next_j][ninety_degrees_right_next_i] != empty_cell_symbol:
                 flag_of_movement = False
@@ -125,10 +149,23 @@ def get_poss_dirs(grid, colour_block: tuple[int, int]):
             possible_directions.append(ind)
     return possible_directions
 
+
 def show_grid(grid):
+    global colours_dict
     print(f'grid: ')
     for row in grid:
-        print(f'{row}')
+        for cell in row:
+            if colours_dict and cell in colours_dict.keys():
+                colour_print(cell, colours_dict[cell])
+            else:
+                print(f'{cell}', end='')
+        print()
+    print()
+
+
+def colour_print(char, colour):
+    print(f"{colour.format(char)}", end='')
+    print(f"{END.format('')}", end= '')
 
 
 game_map_x = '''+------+
@@ -171,15 +208,24 @@ game_map_3 = '''+----+
 +----+'''
 
 
-def create_map_blueprint(j_max: int, i_max: int, inv_freq: int):
-    def create_border_line(length: int):
-        return '+' + '-' * (length - 2) + '+'
+def create_map_blueprint(j_max: int, i_max: int, colours_q: int):
+    def generate_colours_positions() -> list[tuple[int, int]]:
+        colours_positions_ = []
+        possible_positions = [(j_, i) for i in range(i_max) for j_ in range(j_max)]
+        for _ in range(colours_q):
+            r = random.randrange(0, len(possible_positions))
+            colours_positions_.append(possible_positions.pop(r))
+        return colours_positions_
 
-    def create_line(length: int):
+    colours_positions = generate_colours_positions()
+
+    def create_border_line():
+        return '+' + '-' * i_max + '+'
+
+    def create_line(j_: int):
         line = ''
-        for i in range(i_max - 2):
-            r = random.randrange(0, 10000)
-            if r > 10000 - 10000 // inv_freq:
+        for i in range(i_max):
+            if (j_, i) in colours_positions:
                 line += 'B'
             else:
                 line += '.'
@@ -187,20 +233,18 @@ def create_map_blueprint(j_max: int, i_max: int, inv_freq: int):
 
     if j_max < 3:
         print(f'j_max cannot be less than 3')
-        return None
+        return
     if i_max < 3:
         print(f'i_max cannot be less than 3')
-        return None
+        return
     map_blueprint = ''
-    s = f'{create_border_line(i_max)}'
-    for j in range(j_max - 2):
-        map_blueprint += f'{create_line(i_max)}\n'
+    s = f'{create_border_line()}'
+    for j in range(j_max):
+        map_blueprint += f'{create_line(j)}\n'
     return f'{s}\n{map_blueprint}{s}'
 
 
-game_map_huge = f'''{create_map_blueprint(25, 25, 55)}'''
-print(f'{game_map_huge}')
-
+game_map_huge = f'''{create_map_blueprint(18, 36, 7)}'''
 
 # print(play_flou(game_map_1))
 # print(play_flou(game_map_2))

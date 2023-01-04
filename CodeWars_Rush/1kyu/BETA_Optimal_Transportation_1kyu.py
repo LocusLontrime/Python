@@ -1,11 +1,17 @@
 # accepted on codewars.com
-import copy
 import math
 import random
 import time as t
 from functools import reduce
 import numpy as np
+
 SHOW_FLAG = True
+RED = "\033[31m{}"
+GREEN = "\033[32m{}"
+YELLOW = "\033[33m{}"
+PURPLE = "\033[35m{}"
+CYAN = "\033[36m{}"
+END = "\033[0m{}"
 
 
 def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989
@@ -241,41 +247,46 @@ def show_cycle(table, rows_basis_cells, cycle):
     # print(f'np_table: {np_table}')
     # [[table[cell[0]][cell[1]] for cell in cells] for cells in rows_basis_cells]
     max_el = np.amax(np_table)
-    max_length = max(len(str(max_el)), len('None'))
+    max_length = len(str(max_el))
     table_copy = []
     # table copy creating:
     for j, row in enumerate(table):
         table_copy.append([])
         for el in row:
-            table_copy[j].append(el)
+            if el is None:
+                table_copy[j].append('N' * max_length)
+            elif type(el) is int:
+                table_copy[j].append(colour_(str(el) + ' ' * (max_length - len(str(el))), PURPLE))
+            else:
+                table_copy[j].append(el)
     # cycle elements changing:
     for i, step in enumerate(cycle):
         curr_j, curr_i = step
         if i == 0:
-            table_copy[curr_j][curr_i] = 'S'
+            table_copy[curr_j][curr_i] = colour_('S' + ' ' * (max_length - 1), YELLOW)
         elif i % 2 == 0:
-            table_copy[curr_j][curr_i] = '+'
+            table_copy[curr_j][curr_i] = colour_('+' + ' ' * (max_length - 1), GREEN)
         else:
-            table_copy[curr_j][curr_i] = '-'
+            table_copy[curr_j][curr_i] = colour_('-' + ' ' * (max_length - 1), CYAN)
         if i + 1 < len(cycle):
-            connect_two(table_copy, cycle[i], cycle[i + 1])
+            connect_two(table_copy, cycle[i], cycle[i + 1], max_length)
         else:
-            connect_two(table_copy, cycle[i], cycle[0])
+            connect_two(table_copy, cycle[i], cycle[0], max_length)
     # table with cycle printing:
-    for row in table_copy:
-        for el in row:
-            print(f'{el}{" " * (max_length - len(str(el)) + 1)}', end='')
+    for j, row in enumerate(table_copy):
+        for i, el in enumerate(row):
+            print(f'{el} ', end='')
         print()
     print(end='\n')
 
 
 # aux method for connecting two table cells with '=' (horizontal case) or '|' (vertical case):
-def connect_two(table, point1: tuple[int, int], point2: tuple[int, int]):
+def connect_two(table, point1: tuple[int, int], point2: tuple[int, int], max_length):
     # defines a linking symbol:
     if point1[0] == point2[0]:
-        symbol = '='
+        symbol = colour_('=' * max_length, RED)
     else:
-        symbol = '|'
+        symbol = colour_('|' + ' ' * (max_length - 1), RED)
     # building a neck:
     for j in range(m := min(point1[0], point2[0]), m + abs(point1[0] - point2[0]) + 1):
         for i in range(n := min(point1[1], point2[1]), n + abs(point1[1] - point2[1]) + 1):
@@ -283,9 +294,12 @@ def connect_two(table, point1: tuple[int, int], point2: tuple[int, int]):
                 table[j][i] = symbol
 
 
+def colour_(char, colour):
+    return f"{colour.format(char)}{END.format('')}"
+
+
 # method for creating an example of closed transport task with parameters given:
 def create_an_example(rows: int, columns: int, values_range=100):
-    costs, suppliers, consumers = [], [], []
     # preparing the supp and cons arrays:
     suppliers = [None for j in range(rows)]
     consumers = [None for i in range(columns)]
@@ -1275,4 +1289,6 @@ print(f'total time: {(finish - start) // 10 ** 6} milliseconds')
 
 
 
-
+c = colour_('===', RED)
+print(f"{c}")
+print(f'length: {len(c)}')

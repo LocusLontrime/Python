@@ -1,3 +1,4 @@
+# accepted on codewars.com
 from functools import lru_cache
 
 fibs: list[int]

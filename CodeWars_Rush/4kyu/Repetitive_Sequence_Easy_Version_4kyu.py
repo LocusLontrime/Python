@@ -1,3 +1,4 @@
+# accepted on codewars.com
 # approx value
 THRESHOLD = 100000
 

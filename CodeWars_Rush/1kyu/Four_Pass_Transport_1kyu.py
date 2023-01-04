@@ -14,8 +14,8 @@ class CandyFactory:
     BLACK = "\033[30m{}"
     RED = "\033[31m{}"
     GREEN = "\033[32m{}"
-    BROWN = "\033[33m{}"
-    BLUE = "\033[34m{}"
+    YELLOW = "\033[33m{}"
+    BROWN = "\033[34m{}"
     PURPLE = "\033[35m{}"
     CYAN = "\033[36m{}"
     LIGHT_GREEN = "\033[1;32m{}"
@@ -23,7 +23,7 @@ class CandyFactory:
     END = "\033[0m{}"
 
     def __init__(self, stations, j_max=10, i_max=10):
-        self.COLOURS = [self.RED, self.GREEN, self.BROWN, self.BLUE, self.PURPLE, self.CYAN, self.LIGHT_GREEN, self.X]
+        self.COLOURS = [self.RED, self.GREEN, self.YELLOW, self.BROWN, self.PURPLE, self.CYAN, self.LIGHT_GREEN, self.BLACK, self.X]
         self.J_MAX, self.I_MAX = j_max, i_max
         self.field = [[Node(j, i) for i in range(self.I_MAX)] for j in range(self.J_MAX)]
         self.max_a_star_iters = 0
