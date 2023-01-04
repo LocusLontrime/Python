@@ -12,6 +12,20 @@ horizontal_restrictions: dict
 # flag of finishing all the recursive branches
 flag: bool
 
+BOLD = "\033[1m"
+
+BLACK = "\033[30m{}"
+RED = "\033[31m{}"
+GREEN = "\033[32m{}"
+YELLOW = "\033[33m{}"
+BROWN = "\033[34m{}"
+PURPLE = "\033[35m{}"
+CYAN = "\033[36m{}"
+
+END = "\033[0m"
+
+COLOURS = [RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, BLACK]
+
 
 # main method
 def solve_puzzle(clues):
@@ -185,11 +199,29 @@ def check_board(board_to_check, rows, columns):
     return True
 
 
+def colour_print(char, colour):
+    print(f"{(BOLD + colour.format(char) + END)}", end=' ')
+
+
+def show_line(length: int):
+    print(f"*{'-' * (2 * length + 1)}*")
+
+
+def show_puzzle(solved_puzzle: list[list[int]]):
+    show_line(len(solved_puzzle[0]))
+    for row in solved_puzzle:
+        print(f'|', end=' ')
+        for cell in row:
+            colour_print(cell, COLOURS[cell - 1])
+        print(f'|')
+    show_line(len(solved_puzzle[0]))
+
+
 t1 = time.perf_counter_ns()
 
 # print(solve_puzzle([0, 2, 3, 0, 2, 0, 0, 5, 0, 4, 5, 0, 4, 0, 0, 4, 2, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0]))
 # print(solve_puzzle([7, 0, 0, 0, 2, 2, 3, 0, 0, 3, 0, 0, 0, 0, 3, 0, 3, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 4]))
-print(solve_puzzle([3, 3, 2, 1, 2, 2, 3, 4, 3, 2, 4, 1, 4, 2, 2, 4, 1, 4, 5, 3, 2, 3, 1, 4, 2, 5, 2, 3]))
+show_puzzle(solve_puzzle([3, 3, 2, 1, 2, 2, 3, 4, 3, 2, 4, 1, 4, 2, 2, 4, 1, 4, 5, 3, 2, 3, 1, 4, 2, 5, 2, 3]))
 
 t2 = time.perf_counter_ns()
 
