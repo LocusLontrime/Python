@@ -78,9 +78,9 @@ class ThreeDotsGame:
         triplets = triplets[::-1]
         print()
         for i, triplet in enumerate(triplets):
-            time.sleep(0.5)
             print(f'{i}th step: ')
             self.show_triplet(triplet)
+            time.sleep(0.5)
         # returning the reversed shortest path:
         return the_way[::-1]
 
@@ -187,8 +187,8 @@ class Triplet:
 
     # it must be implemented for working with priority queues/heaps:
     def __lt__(self, other):
-        return self.g + self.h + self.aux_h < other.g + other.h + other.aux_h  # -->> for optimal solution
-        # return self.h + self.aux_h < other.h + other.aux_h  # -->> for faster one (in general, not in every case)...
+        # return self.g + self.h + self.aux_h < other.g + other.h + other.aux_h  # -->> for optimal solution
+        return self.h + self.aux_h < other.h + other.aux_h  # -->> for faster one (in general, not in every case)...
 
     def manhattan_heuristic(self, other: 'Triplet') -> int:
         return max(self.manhattan_distance(self.dots[i], other.dots[i]) for i in range(len(self.dots)))
@@ -225,7 +225,7 @@ field2 = ["+------------+\n"
           + "|           y|\n"
           + "+------------+"]
 
-field3 = ["+------------+\n"
+field = ["+------------+\n"
           + "|R     ** ***|\n"
           + "|G     ** ***|\n"
           + "|Y           |\n"
@@ -285,7 +285,7 @@ field8 = ["+---------------+\n"
           + "|               |\n"
           + "+---------------+"]
 
-field = ["+---------------+\n"
+field9 = ["+---------------+\n"
          + "|               |\n"
          + "|   * *         |\n"
          + "|** * *   r     |\n"
