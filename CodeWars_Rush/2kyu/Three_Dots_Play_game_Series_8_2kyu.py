@@ -1,6 +1,7 @@
 # accepted on codewars.com
 import heapq as hq
 import time
+import math
 import numpy as np
 
 
@@ -16,10 +17,8 @@ class ThreeDotsGame:
     END = "\033[0m"
 
     def __init__(self, game_map):
-        st = time.time_ns()
         self.grid, in_dots, goals = self.make_grid_from_blueprint(game_map)
         self.in_dots, self.goals = tuple(in_dots[i] for i in range(3)), tuple(goals[i] for i in range(3))
-        fin = time.time_ns()
         print(f'INITIALS: {self.in_dots}')
         print(f'GOALS: {self.goals}')
         self.Y, self.X = len(self.grid), len(self.grid[0])
@@ -80,7 +79,7 @@ class ThreeDotsGame:
         for i, triplet in enumerate(triplets):
             print(f'{i}th step: ')
             self.show_triplet(triplet)
-            time.sleep(0.5)
+            # time.sleep(0.5)
         # returning the reversed shortest path:
         return the_way[::-1]
 
@@ -161,11 +160,15 @@ class Triplet:
         for ind, move in enumerate(self.MOVES):
             # try to move every dot:
             new_dots = list(self.move_cell(self.dots[i], game, move) for i in range(len(self.dots)))
-            for j in range(len(self.dots) - 1):
-                for i in range(j + 1, len(self.dots)):
-                    if new_dots[j] == new_dots[i]:
-                        new_dots[j], new_dots[i] = self.dots[j], self.dots[i]
-            new_triplets.append((tuple(new_dots), self.NAMES[ind]))
+            collision_counter = 0
+            for new_dot in new_dots:
+                if new_dot in self.dots: collision_counter += 1
+            if collision_counter < len(self.dots):
+                for j in range(len(self.dots) - 1):
+                    for i in range(j + 1, len(self.dots)):
+                        if new_dots[j] == new_dots[i]:
+                            new_dots[j], new_dots[i] = self.dots[j], self.dots[i]
+                new_triplets.append((tuple(new_dots), self.NAMES[ind]))
         return new_triplets
 
     @staticmethod
