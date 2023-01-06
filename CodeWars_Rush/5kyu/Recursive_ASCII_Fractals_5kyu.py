@@ -1,3 +1,4 @@
+# accepted on codewars.com
 import time
 
 def fractalize(seed: list, i: int) -> list:
