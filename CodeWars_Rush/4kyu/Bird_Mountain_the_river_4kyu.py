@@ -1,3 +1,4 @@
+# accepted on codewars.com
 step = 0
 
 
@@ -14,14 +15,11 @@ def dry_ground(mountain: list[str]):
 
     def wave_(wave_):
         global step
-        new_wave = []
         for cell_ in wave_:
             for neigh_ in get_neighs(cell_[0], cell_[1]):
                 if grid[neigh_[0]][neigh_[1]] == 0:
                     grid[neigh_[0]][neigh_[1]] = step + 1
-                    new_wave.append(neigh_)
-        if new_wave: step += 1
-        return new_wave
+                    yield neigh_
 
     def show():
         for row_ in grid:
@@ -46,29 +44,24 @@ def dry_ground(mountain: list[str]):
                             break
     # bird calculations for mountain heights:
     print(f'bird calculations for mountain heights: ')
-    if wave:
+    while len(wave) > 0:
         step += 1
-        print(f'current height: {step}, grid:')
-        show()
-    while wave:
-        wave = wave_(wave)
+        wave = list(wave_(wave))
         print(f'current height: {step}, grid:')
         show()
 
     def flood(y_, x_, step_, new_river_front_):
         g = grid[y_][x_]
-        if type(g) is int and g == step_:
-            new_river_front_.append((y_, x_))
-            return 0
-        elif type(g) is str or (type(g) is int and g < step_):
+        if type(g) is str or (type(g) is int and g < step_):
             # flooding:
             k = 1 if grid[y_][x_] != '-' else 0
             grid[y_][x_] = '-'
             # proceeding to the neighbouring cells:
             for neigh_y_, neigh_x_ in get_neighs(y_, x_):
-                if grid[neigh_y_][neigh_x_] != '-':
-                    k += flood(neigh_y_, neigh_x_, step_, new_river_front_)
+                if grid[neigh_y_][neigh_x_] != '-': k += flood(neigh_y_, neigh_x_, step_, new_river_front_)
             return k
+        elif type(g) is int and g == step_:
+            new_river_front_.append((y_, x_))
         return 0
 
     area = len(mountain) * len(mountain[0]) - len(river_front)
@@ -87,7 +80,6 @@ def dry_ground(mountain: list[str]):
         print(f'area remained: {area}')
         if new_river_front: river_front = new_river_front[:]
         show()
-
     return res
 
 
