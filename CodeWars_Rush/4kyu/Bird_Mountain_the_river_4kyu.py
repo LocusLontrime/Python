@@ -2,7 +2,7 @@ step = 0
 
 
 def dry_ground(mountain: list[str]):
-    if len(mountain):
+    if len(mountain) == 0:
         return 0, 0, 0, 0
     global step
     walk = [(dy, dx) for dx in range(-1, 2) for dy in range(-1, 2) if dy * dx == 0 and (dy, dx) != (0, 0)]
@@ -30,8 +30,7 @@ def dry_ground(mountain: list[str]):
             print()
         print()
 
-    wave = []
-    step, river_front = 0, []
+    step, wave, river_front = 0, [], []
     for y, row in enumerate(mountain):
         for x, cell in enumerate(row):
             if cell == '-': river_front.append((y, x))
@@ -106,8 +105,8 @@ map_of_mountain_and_river = [
 ]
 
 
-# print(f'Flooded regions: {dry_ground(map_of_mountain_and_river)}')
-t = (1, 2, 3, 98)
-print(f'length: {len(t)}')
+print(f'Flooded regions: {dry_ground(map_of_mountain_and_river)}')
+# t = (1, 2, 3, 98)
+# print(f'length: {len(t)}')
 
 

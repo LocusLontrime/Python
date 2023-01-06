@@ -221,7 +221,7 @@ class Node:
                 if neigh not in used_nodes and neigh not in forbidden_nodes:
                     # nonsense, but it works...
                     y, x = other.y - self.y, other.x - self.x
-                    dy, dx = neigh.y - curr_node.y, neigh.x - curr_node.x
+                    dy, dx = neigh.y - self.y, neigh.x - curr_node.x
                     # at first, it was vector-cross product of the vector between start and finish points and the vector, co-directional with the current direction of movement:
                     vector_cross_product = candy_factory.multiplier * (y * dx - x * dy)
                     # vector_cross_product is used as a tiebreaker for screening out lots of heuristically equals paths:

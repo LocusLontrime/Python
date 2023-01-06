@@ -44,8 +44,9 @@ def show(grid: list):
 
 
 start = time.time_ns()
-f = fractalize(the_core, 5)
+for ind in range(1, 5 + 1 + 1):
+    f = fractalize(the_core,ind )
+    print(f'f sizes: {len(f)}x{len(f[0])}')
+    print(f'{show(f)}')
 finish = time.time_ns()
-print(f'f sizes: {len(f)}x{len(f[0])}')
-print(f'{show(f)}')
 print(f'Time elapsed: {(finish - start) // 10 ** 6} milliseconds')
