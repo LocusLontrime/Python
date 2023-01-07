@@ -1,5 +1,6 @@
 # accepted on codewars.com
 import heapq
+import time
 import numpy as np
 
 
@@ -7,14 +8,13 @@ directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 names = ['up', 'right', 'down', 'left']
 
 
-def cheapest_path(t, start, finish):
+def cheapest_path(t, start_, finish_):
     # a star implementation
     if len(t) == 0 or len(t[0]) == 0:
         return []
 
     grid_of_nodes = [[Node(j, i, t[j][i]) for i in range(len(t[0]))] for j in range(len(t))]
-
-    path = a_star(grid_of_nodes, grid_of_nodes[finish[0]][finish[1]], grid_of_nodes[start[0]][start[1]])
+    path = a_star(grid_of_nodes, grid_of_nodes[finish_[0]][finish_[1]], grid_of_nodes[start_[0]][start_[1]])
 
     moves = []
     for ind, node in enumerate(path):
@@ -23,40 +23,35 @@ def cheapest_path(t, start, finish):
 
     return moves
 
-
 def manhattan_heuristic(node1: 'Node', node2: 'Node'):
     return abs(node1.position.y - node2.position.y) + abs(node1.position.x - node2.position.x)
 
-
-def a_star(grid: list[list['Node']], start: 'Node', finish: 'Node'):
-    nodes_to_be_visited = [start]
-    start.g = 0
+def a_star(grid: list[list['Node']], start_: 'Node', finish_: 'Node'):
+    nodes_to_be_visited = [start_]
+    start_.g = 0
     heapq.heapify(nodes_to_be_visited)
-
+    # the main cycle:
     while nodes_to_be_visited:
         curr_node = heapq.heappop(nodes_to_be_visited)
-
-        if curr_node == finish:
+        # base case of finding the shortest path:
+        if curr_node == finish_:
             break
-
+        # next step:
         for neigh in get_adjacent_ones(grid, curr_node):
             if neigh.g > curr_node.g + neigh.val:
                 neigh.g = curr_node.g + neigh.val
-                neigh.h = manhattan_heuristic(neigh, finish)
+                neigh.h = manhattan_heuristic(neigh, finish_)
                 neigh.previously_visited_node = curr_node
                 heapq.heappush(nodes_to_be_visited, neigh)
-
-    node = finish
-
+    # start point of path restoration (here we begin from the end node of the shortest path found):
+    node = finish_
     shortest_path = []
-
-    # path restoring (here we get the reversed path)
+    # path restoring (here we get the reversed path):
     while node.previously_visited_node:
         shortest_path.append(node)
         node = node.previously_visited_node
-
-    shortest_path.append(start)
-
+    shortest_path.append(start_)
+    # returns the result:
     return list(shortest_path)
 
 
@@ -64,9 +59,8 @@ def get_adjacent_ones(grid: list[list['Node']], node: 'Node'):
     list_of_adj_nodes = []
     y, x = node.position.y, node.position.x
     for (j, i) in directions:
-        # print(f'j, i: {j, i}')
         neigh_j, neigh_i = y + j, x + i
-        if 0 <= neigh_j < len(grid) and 0 <= neigh_i < len(grid[0]) and not node.is_visited:
+        if 0 <= neigh_j < len(grid) and 0 <= neigh_i < len(grid[0]):
             neigh = grid[neigh_j][neigh_i]
             list_of_adj_nodes.append(neigh)
     return list_of_adj_nodes
@@ -97,8 +91,7 @@ class Node:
         self.position = Point(y, x)  # (2,5)
         self.val = val
         self.previously_visited_node = None  # for building the shortest path of Nodes from the starting point to the ending one
-        self.is_visited = False  # flag of visiting the node (???)
-
+        # cost and heuristic vars:
         self.g = np.Infinity  # aggregated cost of moving from start to the current Node, Infinity chosen for convenience and algorithm's logic
         self.h = 0  # approximated cost evaluated by heuristic for path starting from the current node and ending at the exit Node
         # f = h + g or total cost of the current Node is not needed here
@@ -131,7 +124,9 @@ grid_m = [
     [1, 1, 1, 19, 1]
 ]
 
-# print(cheapest_path(grid_ex, (0, 1), (4, 7)))
-print(cheapest_path(grid_m, (0, 0), (4, 4)))
-
+start = time.time_ns()
+print(cheapest_path(grid_ex, (0, 1), (4, 7)))
+# print(cheapest_path(grid_m, (0, 0), (4, 4)))
+finish = time.time_ns()
+print(f'Time elapsed: {(finish - start) // 10 ** 6} ms')
 

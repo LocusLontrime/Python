@@ -1,4 +1,3 @@
-# accepted on codewars.com
 import heapq as hq
 import time
 import math
@@ -16,8 +15,9 @@ class ThreeDotsGame(arcade.Window):
     def __init__(self, width: int, height: int, game_map):
         global TILE_SIZE
         super().__init__(width, height)
+        self.CURSOR_HAND = 'hand'
         # choosing the main background colour:
-        arcade.set_background_color(arcade.color.WHITE_SMOKE)
+        arcade.set_background_color(arcade.color.DUTCH_WHITE)
         # initialization of important fields:
         self.grid, dots, goals = self.make_grid_from_blueprint(game_map)
         self.dots, self.goals = Triplet(tuple(dots[i] for i in range(len(dots)))), Triplet(
@@ -316,8 +316,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# Finishing rendering and showing the result:
-arcade.finish_render()
-# Until the user press 'Esc' button the window will be opened:
-arcade.run()
