@@ -1,4 +1,4 @@
-# accepted on codewars.com
+# accepted on codewars.com (5-7 seconds, can be optimized a bit)
 import heapq as hq
 import time
 import math
