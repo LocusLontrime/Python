@@ -17,11 +17,11 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         arcade.set_background_color(arcade.color.DUTCH_WHITE)
         # scaling:
         self.scale = 0
-        self.scale_names = {0: 5, 1: 10, 2: 17, 3: 25, 4: 34, 5: 51, 6: 85, 7: 102, 8: 136, 9: 170}
+        self.scale_names = {0: 5, 1: 10, 2: 15, 3: 22, 4: 33, 5: 45, 6: 66, 7: 90, 8: 110, 9: 165}
         # data and info:
         self.line_width = line_width
         self.tiles_q = vertical_tiles
-        self.Y, self.X = SCREEN_HEIGHT - 30, SCREEN_WIDTH - 250
+        self.Y, self.X = SCREEN_HEIGHT - 26, SCREEN_WIDTH - 250
         self.tile_size, self.hor_tiles_q = self.get_pars()
         self.iterations = 0
         self.nodes_visited = set()
@@ -31,7 +31,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.grid = [[Node(j, i, 1) for i in range(self.hor_tiles_q)] for j in range(self.tiles_q)]
         # interactions:
         self.building_walls_flag = False
-        self.mode = 0  # 0 for building the walls when 1 for erasing them afterwards, 2 for a start node choosing and 3 for a end one...
+        self.mode = 0  # 0 for building the walls when 1 for erasing them afterwards, 2 for a start node choosing and 3 for an end one...
         self.mode_names = {0: 'BUILDING/ERASING', 1: 'START & END NODES CHOOSING'}
         self.build_or_erase = True  # True for building and False for erasing
         self.heuristic = 0
@@ -43,14 +43,16 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.end_node = None
 
     def get_pars(self):
+        self.Y, self.X = SCREEN_HEIGHT - 60, SCREEN_WIDTH - 250
         self.tiles_q = self.scale_names[self.scale]
+        self.line_width = int(math.sqrt(max(self.scale_names.values()) / self.tiles_q))
         tile_size = self.Y // self.tiles_q
         hor_tiles_q = self.X // tile_size
         self.Y, self.X = self.tiles_q * tile_size, hor_tiles_q * tile_size
         return tile_size, hor_tiles_q
 
     def get_hor_tiles(self, i):
-        return self.X // (self.Y // self.scale_names[i])
+        return (SCREEN_WIDTH - 250) // ((SCREEN_HEIGHT - 30) // self.scale_names[i])
 
     @staticmethod
     def get_ms(start, finish):
@@ -82,8 +84,10 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 if self.grid[y][x].colour:
                     arcade.draw_rectangle_filled(5 + self.tile_size * x + self.tile_size / 2,
                                                  5 + self.tile_size * y + self.tile_size / 2,
-                                                 self.tile_size - 2 * self.line_width,
-                                                 self.tile_size - 2 * self.line_width, self.grid[y][x].colour)
+                                                 self.tile_size - 2 * self.line_width - (
+                                                     1 if self.line_width % 2 != 0 else 0),
+                                                 self.tile_size - 2 * self.line_width - (
+                                                     1 if self.line_width % 2 != 0 else 0), self.grid[y][x].colour)
         # HINTS:
         arcade.draw_text(f'Mode: {self.mode_names[self.mode]}', 25, SCREEN_HEIGHT - 25, arcade.color.BLACK, bold=True)
         arcade.draw_text(
@@ -125,18 +129,27 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
             arcade.draw_rectangle_outline(SCREEN_WIDTH - 225,
                                           SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30, 18, 18,
                                           arcade.color.BLACK, 2)
-            arcade.draw_text(f'{self.scale_names[i]}x{self.get_hor_tiles(i)}' , SCREEN_WIDTH - 225 + (18 + 2 * 2),
+            arcade.draw_text(f'{self.scale_names[i]}x{self.get_hor_tiles(i)}', SCREEN_WIDTH - 225 + (18 + 2 * 2),
                              SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30 - 6,
                              arcade.color.BLACK, bold=True)
 
         arcade.draw_rectangle_filled(SCREEN_WIDTH - 225,
-                                          SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + self.scale) - 2 * 18 * 3 - 30, 14, 14,
-                                          arcade.color.BLACK)
+                                     SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + self.scale) - 2 * 18 * 3 - 30, 14,
+                                     14,
+                                     arcade.color.BLACK)
 
     def rebuild_map(self):
         self.tile_size, self.hor_tiles_q = self.get_pars()
-        # what is next?
-        pass
+        print(f'tile size: {self.tile_size}, line width: {self.line_width}')
+        # grid's renewing:
+        self.grid = [[Node(j, i, 1) for i in range(self.hor_tiles_q)] for j in range(self.tiles_q)]
+        # pars resetting:
+        self.iterations = 0
+        self.nodes_visited = set()
+        self.path_length = 0
+        self.time_elapsed_ms = 0
+        self.start_node = None
+        self.end_node = None
 
     def update(self, delta_time: float):
         # game logic and movement mechanics lies here:
@@ -224,7 +237,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                     18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 130 - (
                     18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30 + 9:
                 self.scale = i
-                self.rebuid_map()
+                self.rebuild_map()
         if self.mode == 0:
             self.building_walls_flag = True
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -403,11 +416,11 @@ if __name__ == "__main__":
 # v1.10 coordinate pairs tiebreaker added
 # v1.11 fixed bug when cross vector product deviation heuristic causes no impact on a_star
 # v1.12 interface for scale choosing added
-#
+# v1.13 fixed bug when node's filled rectangle has been located not in the center of related grid cell, scaling improved
 # TODO: implement a step-up a_star visualization with some interaction... (high, hard)
-# TODO: add some other tiebreakers (medium, easy)
+# TODO: add some other tiebreakers (medium, easy) +-
 # TODO: upgrade the visual part (medium, medium)
-# TODO: improve scaling (high, easy)
+# TODO:
 # TODO:
 # TODO:
 # TODO:
