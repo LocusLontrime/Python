@@ -30,7 +30,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         # interactions:
         self.building_walls_flag = False
         self.mode = 0  # 0 for building the walls when 1 for erasing them afterwards, 2 for a start node choosing and 3 for a end one...
-        self.mode_names = {0: 'BUILDING/ERASING', 1: 'START NODE CHOOSING', 2: 'END NODE CHOOSING'}
+        self.mode_names = {0: 'BUILDING/ERASING', 1: 'START & END NODES CHOOSING'}
         self.build_or_erase = True  # True for building and False for erasing
         self.heuristic = 0
         self.heuristic_names = {0: 'MANHATTAN', 1: 'EUCLIDIAN', 2: 'MAX_DELTA', 3: 'DIJKSTRA'}
@@ -75,7 +75,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         arcade.draw_text(f'Mode: {self.mode_names[self.mode]}', 25, SCREEN_HEIGHT - 25, arcade.color.BLACK, bold=True)
         arcade.draw_text(
             f'A* iters: {self.iterations}, path length: {self.path_length}, nodes visited: {len(self.nodes_visited)}, time elapsed: {self.time_elapsed_ms}',
-            295, SCREEN_HEIGHT - 25, arcade.color.BROWN, bold=True)
+            365, SCREEN_HEIGHT - 25, arcade.color.BROWN, bold=True)
         # SET-UPS:
         arcade.draw_text(f'Heuristics: ', SCREEN_WIDTH - 235, SCREEN_HEIGHT - 70, arcade.color.BLACK, bold=True)
         for i in range(len(self.heuristic_names)):
@@ -96,8 +96,9 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                          SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 - 6, arcade.color.BLACK, bold=True)
 
         if self.tiebreaker:
-            arcade.draw_rectangle_filled(SCREEN_WIDTH - 225, SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30, 14,
-                                          14, arcade.color.BLACK)
+            arcade.draw_rectangle_filled(SCREEN_WIDTH - 225, SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30,
+                                         14,
+                                         14, arcade.color.BLACK)
 
     def update(self, delta_time: float):
         # game logic and movement mechanics lies here:
@@ -175,25 +176,28 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 self.heuristic = i
                 break
         if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 100 - (
-                18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 + 9:
-                self.tiebreaker = None if self.tiebreaker else 1
-        self.building_walls_flag = True
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.build_or_erase = True
-        elif button == arcade.MOUSE_BUTTON_RIGHT:
-            self.build_or_erase = False
+                18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 100 - (
+                18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 + 9:
+            self.tiebreaker = None if self.tiebreaker else 1
+        if self.mode == 0:
+            self.building_walls_flag = True
+            if button == arcade.MOUSE_BUTTON_LEFT:
+                self.build_or_erase = True
+            elif button == arcade.MOUSE_BUTTON_RIGHT:
+                self.build_or_erase = False
         if self.mode == 1:
-            sn = self.get_node(x, y)
-            if sn:
-                if self.start_node: self.start_node.colour = None
-                sn.colour = arcade.color.GREEN
-                self.start_node = sn
-        if self.mode == 2:
-            en = self.get_node(x, y)
-            if en:
-                if self.end_node: self.end_node.colour = None
-                en.colour = arcade.color.BLUE
-                self.end_node = en
+            if button == arcade.MOUSE_BUTTON_LEFT:
+                sn = self.get_node(x, y)
+                if sn:
+                    if self.start_node: self.start_node.colour = None
+                    sn.colour = arcade.color.GREEN
+                    self.start_node = sn
+            elif button == arcade.MOUSE_BUTTON_RIGHT:
+                en = self.get_node(x, y)
+                if en:
+                    if self.end_node: self.end_node.colour = None
+                    en.colour = arcade.color.BLUE
+                    self.end_node = en
 
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
         self.mode = (self.mode + 1) % len(self.mode_names)
@@ -244,7 +248,6 @@ class Node:
         self.h = 0
         self.cross_deviation = 0
         self.previously_visited_node = None
-
 
     @staticmethod
     def manhattan_distance(node1, node2: 'Node'):
@@ -320,3 +323,44 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# v0.1 base Node class created
+# v0.2 base Astar(arcade.Window) class created
+# v0.3 grid lines drawing added
+# v0.4 grid of nodes (self.grid) for Astar class, consisting of Nodes objects created, some fields added for both classes,
+# drawing of walls (not passable nodes), start and end nodes added
+# v0.5 on_mouse_press() and on_mouse_release methods() overwritten
+# v0.6 on_mouse_motion() method overwritten
+# v0.7 on_mouse_scroll() method overwritten, now it is possible to draw walls while mouse button pressed,
+# switch drawing modes and erase walls, choose start and end node (4 modes are available for now)
+# v0.8 on_key_press() method overwritten, clear() method for Node class implemented for resetting the temporal fields to its defaults,
+# clear() method for Astar class added to clear all the game field (every Node), now by pressing the 'ENTER' key user can clear all the map
+# v0.9 info displaying added (current mode, a_star related information)
+# v1.0 a_star now is called by pressing the 'SPACE' key, the shortest way is shown on the grid
+# v1.1 visited_nodes are now displayed after a_star call, info extended, hash() dunder method added for class Node
+# v1.2 tiebreaker (vector cross product absolute deviation) added
+# v1.3 erase separate drawing mode merged with build mode, now there is one build/erase draw mode for building walls by pressing the left mouse button
+# and erasing them by pressing the right one
+# v1.4 fixed a bug, when some heuristic related temporal pars have not been cleared after a_star had been called
+# v1.5 now it is possible to reset all heuristic related pars for the every node on the grid but leave all the walls
+# and start and end nodes at their positions by pressing the 'BACKSPACE' key, clear method for Astar class divided into two methods:
+# clear_empty_nodes() for partial clearing and clear_grid() for entire clearing
+# v1.6 3 auxiliary heuristics added
+# v1.7 user interface for heuristic  and tiebreaker choosing added
+# v1.8 fixed a bug when start and end nodes have been removed after heuristic had been chosen
+# v1.9 start node choosing and end node choosing drawing modes merged into one start & end nodes choosing drawing mode,
+# start node is chosen by pressing the left mouse button when end node is chosen by pressing the right one
+#
+#
+#
+#
+# TODO: implement a step-up a_star visualization with some interaction... (high, hard)
+# TODO: add some other tiebreakers (medium, easy)
+# TODO: upgrade the visual part (medium, medium)
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+
