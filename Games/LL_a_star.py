@@ -15,17 +15,19 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
     def __init__(self, width: int, height: int, vertical_tiles=25, line_width=3):
         super().__init__(width, height)
         arcade.set_background_color(arcade.color.DUTCH_WHITE)
+        # scaling:
+        self.scale = 0
+        self.scale_names = {0: 5, 1: 10, 2: 17, 3: 25, 4: 34, 5: 51, 6: 85, 7: 102, 8: 136, 9: 170}
         # data and info:
         self.line_width = line_width
         self.tiles_q = vertical_tiles
         self.Y, self.X = SCREEN_HEIGHT - 30, SCREEN_WIDTH - 250
-        self.tile_size = self.Y // self.tiles_q
-        self.hor_tiles_q = self.X // self.tile_size
-        self.Y, self.X = self.tiles_q * self.tile_size, self.hor_tiles_q * self.tile_size
+        self.tile_size, self.hor_tiles_q = self.get_pars()
         self.iterations = 0
         self.nodes_visited = set()
         self.path_length = 0
         self.time_elapsed_ms = 0
+        # grid of nodes:
         self.grid = [[Node(j, i, 1) for i in range(self.hor_tiles_q)] for j in range(self.tiles_q)]
         # interactions:
         self.building_walls_flag = False
@@ -35,9 +37,20 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.heuristic = 0
         self.heuristic_names = {0: 'MANHATTAN', 1: 'EUCLIDIAN', 2: 'MAX_DELTA', 3: 'DIJKSTRA'}
         self.tiebreaker = None
+        self.tiebreaker_names = {0: 'VECTOR_CROSS', 1: 'COORDINATES'}
         # a_star important pars:
         self.start_node = None
         self.end_node = None
+
+    def get_pars(self):
+        self.tiles_q = self.scale_names[self.scale]
+        tile_size = self.Y // self.tiles_q
+        hor_tiles_q = self.X // tile_size
+        self.Y, self.X = self.tiles_q * tile_size, hor_tiles_q * tile_size
+        return tile_size, hor_tiles_q
+
+    def get_hor_tiles(self, i):
+        return self.X // (self.Y // self.scale_names[i])
 
     @staticmethod
     def get_ms(start, finish):
@@ -90,15 +103,40 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
 
         arcade.draw_text(f'Tiebreakers: ', SCREEN_WIDTH - 235, SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3,
                          arcade.color.BLACK, bold=True)
-        arcade.draw_rectangle_outline(SCREEN_WIDTH - 225, SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30, 18,
-                                      18, arcade.color.BLACK, 2)
-        arcade.draw_text(f'VECTOR_CROSS', SCREEN_WIDTH - 225 + (18 + 2 * 2),
-                         SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 - 6, arcade.color.BLACK, bold=True)
+        for i in range(len(self.tiebreaker_names)):
+            arcade.draw_rectangle_outline(SCREEN_WIDTH - 225,
+                                          SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * (3 + i) - 18 * 3 - 30, 18,
+                                          18, arcade.color.BLACK, 2)
+            arcade.draw_text(self.tiebreaker_names[i], SCREEN_WIDTH - 225 + (18 + 2 * 2),
+                             SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * (3 + i) - 18 * 3 - 30 - 6, arcade.color.BLACK,
+                             bold=True)
 
-        if self.tiebreaker:
-            arcade.draw_rectangle_filled(SCREEN_WIDTH - 225, SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * 3 - 18 * 3 - 30,
+        if self.tiebreaker is not None:
+            arcade.draw_rectangle_filled(SCREEN_WIDTH - 225,
+                                         SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * (3 + self.tiebreaker) - 18 * 3 - 30,
                                          14,
                                          14, arcade.color.BLACK)
+
+        arcade.draw_text('Vertical tiles: ', SCREEN_WIDTH - 235,
+                         SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * 4 - 2 * 18 * 3,
+                         arcade.color.BLACK, bold=True)
+
+        for i in range(len(self.scale_names)):
+            arcade.draw_rectangle_outline(SCREEN_WIDTH - 225,
+                                          SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30, 18, 18,
+                                          arcade.color.BLACK, 2)
+            arcade.draw_text(f'{self.scale_names[i]}x{self.get_hor_tiles(i)}' , SCREEN_WIDTH - 225 + (18 + 2 * 2),
+                             SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30 - 6,
+                             arcade.color.BLACK, bold=True)
+
+        arcade.draw_rectangle_filled(SCREEN_WIDTH - 225,
+                                          SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * (4 + self.scale) - 2 * 18 * 3 - 30, 14, 14,
+                                          arcade.color.BLACK)
+
+    def rebuild_map(self):
+        self.tile_size, self.hor_tiles_q = self.get_pars()
+        # what is next?
+        pass
 
     def update(self, delta_time: float):
         # game logic and movement mechanics lies here:
@@ -175,10 +213,18 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                     18 + 2 * 2 + 18) * i - 9 <= y <= SCREEN_HEIGHT - 100 - (18 + 2 * 2 + 18) * i + 9:
                 self.heuristic = i
                 break
-        if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 100 - (
-                18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 100 - (
-                18 + 2 * 2 + 18) * 3 - 18 * 3 - 30 + 9:
-            self.tiebreaker = None if self.tiebreaker else 1
+        for i in range(len(self.tiebreaker_names)):
+            if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 100 - (
+                    18 + 2 * 2 + 18) * (3 + i) - 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 100 - (
+                    18 + 2 * 2 + 18) * (3 + i) - 18 * 3 - 30 + 9:
+                self.tiebreaker = None if self.tiebreaker == i else i
+                break
+        for i in range(len(self.scale_names)):
+            if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 130 - (
+                    18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 130 - (
+                    18 + 2 * 2 + 18) * (4 + i) - 2 * 18 * 3 - 30 + 9:
+                self.scale = i
+                self.rebuid_map()
         if self.mode == 0:
             self.building_walls_flag = True
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -218,22 +264,22 @@ class Node:
         # cost and heuristic vars:
         self.g = np.Infinity  # aggregated cost of moving from start to the current Node, Infinity chosen for convenience and algorithm's logic
         self.h = 0  # approximated cost evaluated by heuristic for path starting from the current node and ending at the exit Node
-        self.cross_deviation = 0
+        self.tiebreaker = None
         # f = h + g or total cost of the current Node is not needed here
         # visual options:
         self.colour = None
         # heur dict:
         self.heuristics = {0: self.manhattan_distance, 1: self.euclidian_distance, 2: self.max_delta,
                            3: self.no_heuristic}
-        self.tiebreakers = {0: self.vector_cross_product_deviation}
+        self.tiebreakers = {0: self.vector_cross_product_deviation, 1: self.coordinates_pair}
 
     def __eq__(self, other: 'Node'):
         return (self.y, self.x) == (other.y, other.x)
 
     # this is needed for using Node objects in priority queue like heapq and so on
     def __lt__(self, other: 'Node'):
-        return (self.g + self.h, self.cross_deviation) < (
-            other.g + other.h, other.cross_deviation)  # the right sigh is "<" for __lt__() method
+        return (self.g + self.h, self.tiebreaker) < (
+            other.g + other.h, other.tiebreaker)  # the right sigh is "<" for __lt__() method
 
     def __hash__(self):
         return hash((self.y, self.x))
@@ -246,7 +292,7 @@ class Node:
     def heur_clear(self):
         self.g = np.Infinity
         self.h = 0
-        self.cross_deviation = 0
+        self.tiebreaker = None
         self.previously_visited_node = None
 
     @staticmethod
@@ -267,8 +313,14 @@ class Node:
 
     # self * other, tiebreaker:
     @staticmethod
-    def vector_cross_product_deviation(v1, v2):
-        return v1[0] * v2[1] - v1[1] * v2[0]
+    def vector_cross_product_deviation(start, end, neigh):
+        v1 = neigh.y - start.y, neigh.x - start.x
+        v2 = end.y - neigh.y, end.x - neigh.x
+        return abs(v1[0] * v2[1] - v1[1] * v2[0])
+
+    @staticmethod
+    def coordinates_pair(start, end, neigh):
+        return neigh.y, neigh.x
 
     def get_neighs(self, game: 'Astar') -> list['Node']:
         for dy, dx in self.walk:
@@ -296,10 +348,8 @@ class Node:
                 if neigh.g > curr_node.g + neigh.val:
                     neigh.g = curr_node.g + neigh.val
                     neigh.h = neigh.heuristics[game.heuristic](neigh, other)
-                    if game.tiebreaker:
-                        curr_dir = neigh.y - self.y, neigh.x - self.x
-                        goal_dir = other.y - neigh.y, other.x - neigh.x
-                        neigh.cross_deviation = abs(self.vector_cross_product_deviation(curr_dir, goal_dir))
+                    if game.tiebreaker is not None: neigh.tiebreaker = self.tiebreakers[game.tiebreaker](self, other,
+                                                                                                         neigh)
                     neigh.previously_visited_node = curr_node
                     hq.heappush(nodes_to_be_visited, neigh)
         # start point of path restoration (here we begin from the end node of the shortest path found):
@@ -350,17 +400,16 @@ if __name__ == "__main__":
 # v1.8 fixed a bug when start and end nodes have been removed after heuristic had been chosen
 # v1.9 start node choosing and end node choosing drawing modes merged into one start & end nodes choosing drawing mode,
 # start node is chosen by pressing the left mouse button when end node is chosen by pressing the right one
-#
-#
-#
+# v1.10 coordinate pairs tiebreaker added
+# v1.11 fixed bug when cross vector product deviation heuristic causes no impact on a_star
+# v1.12 interface for scale choosing added
 #
 # TODO: implement a step-up a_star visualization with some interaction... (high, hard)
 # TODO: add some other tiebreakers (medium, easy)
 # TODO: upgrade the visual part (medium, medium)
+# TODO: improve scaling (high, easy)
 # TODO:
 # TODO:
 # TODO:
 # TODO:
 # TODO:
-# TODO:
-
