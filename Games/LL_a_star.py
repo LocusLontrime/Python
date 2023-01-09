@@ -24,6 +24,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.Y, self.X = SCREEN_HEIGHT - 26, SCREEN_WIDTH - 250
         self.tile_size, self.hor_tiles_q = self.get_pars()
         self.iterations = 0
+        self.max_times_visited = 0
         self.nodes_visited = set()
         self.path_length = 0
         self.time_elapsed_ms = 0
@@ -82,17 +83,18 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         # blocks:
         for y in range(self.tiles_q):
             for x in range(self.hor_tiles_q):
-                if self.grid[y][x].colour:
+                if (n := self.grid[y][x]).colour:
                     arcade.draw_rectangle_filled(5 + self.tile_size * x + self.tile_size / 2,
                                                  5 + self.tile_size * y + self.tile_size / 2,
                                                  self.tile_size - 2 * self.line_width - (
                                                      1 if self.line_width % 2 != 0 else 0),
                                                  self.tile_size - 2 * self.line_width - (
-                                                     1 if self.line_width % 2 != 0 else 0), self.grid[y][x].colour)
+                                                     1 if self.line_width % 2 != 0 else 0), n.colour)
         # HINTS:
         arcade.draw_text(f'Mode: {self.mode_names[self.mode]}', 25, SCREEN_HEIGHT - 35, arcade.color.BLACK, bold=True)
         arcade.draw_text(
-            f'A* iters: {self.iterations}, path length: {self.path_length}, nodes visited: {len(self.nodes_visited)}, time elapsed: {self.time_elapsed_ms}',
+            f'A* iters: {self.iterations}, path length: {self.path_length}, nodes visited: {len(self.nodes_visited)}, '
+            f'max times visited: {self.max_times_visited}, time elapsed: {self.time_elapsed_ms}',
             365, SCREEN_HEIGHT - 35, arcade.color.BROWN, bold=True)
         # SET-UPS:
         arcade.draw_text(f'Heuristics: ', SCREEN_WIDTH - 235, SCREEN_HEIGHT - 70, arcade.color.BLACK, bold=True)
@@ -128,7 +130,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         arcade.draw_rectangle_outline(SCREEN_WIDTH - 225,
                                       SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * 4 - 2 * 18 * 3 - 30, 18, 18,
                                       arcade.color.BLACK, 2)
-        arcade.draw_text(f'GREEDY FLAG', SCREEN_WIDTH - 225 + (18 + 2 * 2),
+        arcade.draw_text(f'GREEDY_FLAG', SCREEN_WIDTH - 225 + (18 + 2 * 2),
                          SCREEN_HEIGHT - 130 - (18 + 2 * 2 + 18) * 4 - 2 * 18 * 3 - 30 - 6,
                          arcade.color.BLACK, bold=True)
 
@@ -171,6 +173,10 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
     def update(self, delta_time: float):
         # game logic and movement mechanics lies here:
         ...
+
+    @staticmethod
+    def linear_gradi(c: tuple[int, int, int], i):
+        return c[0] + 3 * i, c[1] - 5 * i, c[2] + i * 5
 
     def erase_all_linked_nodes(self, node: 'Node'):
         node.passability = True
@@ -312,6 +318,7 @@ class Node:
         self.val = val
         self.passability = passability
         self.previously_visited_node = None  # for building the shortest path of Nodes from the starting point to the ending one
+        self.times_visited = 0
         # cost and heuristic vars:
         self.g = np.Infinity  # aggregated cost of moving from start to the current Node, Infinity chosen for convenience and algorithm's logic
         self.h = 0  # approximated cost evaluated by heuristic for path starting from the current node and ending at the exit Node
@@ -330,8 +337,10 @@ class Node:
 
     # this is needed for using Node objects in priority queue like heapq and so on
     def __lt__(self, other: 'Node'):
-        if self.IS_GREEDY: return (self.h, self.tiebreaker) < (other.h, other.tiebreaker)
-        else: return (self.g + self.h, self.tiebreaker) < (other.g + other.h, other.tiebreaker)
+        if self.IS_GREEDY:
+            return (self.h, self.tiebreaker) < (other.h, other.tiebreaker)
+        else:
+            return (self.g + self.h, self.tiebreaker) < (other.g + other.h, other.tiebreaker)
 
     def __hash__(self):
         return hash((self.y, self.x))
@@ -346,6 +355,7 @@ class Node:
         self.h = 0
         self.tiebreaker = None
         self.previously_visited_node = None
+        self.times_visited = 0
 
     @staticmethod
     def manhattan_distance(node1, node2: 'Node'):
@@ -393,13 +403,16 @@ class Node:
         nodes_to_be_visited = [self]
         self.g = 0
         hq.heapify(nodes_to_be_visited)
+        max_times_visited = 0
         # the main cycle:
         while nodes_to_be_visited:
             game.iterations += 1
             curr_node = hq.heappop(nodes_to_be_visited)
-            game.nodes_visited.add(curr_node)
             if curr_node not in [self, other]:
                 curr_node.colour = arcade.color.ROSE_QUARTZ
+            curr_node.times_visited += 1
+            max_times_visited = max(max_times_visited, curr_node.times_visited)
+            game.nodes_visited.add(curr_node)
             # base case of finding the shortest path:
             if curr_node == other: break
             # next step:
@@ -411,6 +424,7 @@ class Node:
                                                                                                          neigh)
                     neigh.previously_visited_node = curr_node
                     hq.heappush(nodes_to_be_visited, neigh)
+        game.max_times_visited = max_times_visited
         # start point of path restoration (here we begin from the end node of the shortest path found):
         node = other
         shortest_path = []
@@ -468,8 +482,8 @@ if __name__ == "__main__":
 # v1.16 fixed bug when the time elapsed ms have not been reset after pressing keys such as 'BACKSPACE' and 'ENTER'
 # v1.17 fixed bug when greedy flag has had no impact on a_star, fixed closely related to this clearing bug when if there has been at least one
 # important node (start or end) unselected clearing process has been finished with error
-#
-#
+# --- trying to visualize more visited node by numbers at first and then by colour gradient, bad idea...
+# v1.171 max times visited var is now shown in the info, hotfix: bad location bug resolved, GREEDY FLAG -->> GREEDY_FLAG
 #
 #
 #
