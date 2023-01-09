@@ -33,7 +33,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         # interactions:
         self.building_walls_flag = False
         self.mode = 0  # 0 for building the walls when 1 for erasing them afterwards, 2 for a start node choosing and 3 for an end one...
-        self.mode_names = {0: 'BUILDING/ERASING', 1: 'START & END NODES CHOOSING'}
+        self.mode_names = {0: 'BUILDING/ERASING', 1: 'START&END_NODES_CHOOSING'}
         self.build_or_erase = True  # True for building and False for erasing
         self.heuristic = 0
         self.heuristic_names = {0: 'MANHATTAN', 1: 'EUCLIDIAN', 2: 'MAX_DELTA', 3: 'DIJKSTRA'}
@@ -43,6 +43,62 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.start_node = None
         self.end_node = None
         self.greedy_flag = False  # is algorithm greedy?
+        self.is_interactive = False
+        self.nodes_to_be_visited = []
+        self.curr_node = None
+        self.prev_max_times_visited = 0
+        self.neighs_added_to_heap = []
+
+    def a_star_interactive(self):
+        self.nodes_to_be_visited = [self.start_node]
+        hq.heapify(self.nodes_to_be_visited)
+        self.start_node.g = 0
+        self.get_all_neighs()
+        Node.IS_GREEDY = self.greedy_flag
+        self.max_times_visited = 0
+        self.iterations = 0
+        self.neighs_added_to_heap = []
+
+    def a_star_step_up(self):
+        self.iterations += 1
+        self.curr_node = hq.heappop(self.nodes_to_be_visited)
+        if self.curr_node not in [self.start_node, self.end_node]:
+            self.curr_node.colour = arcade.color.ROSE_QUARTZ
+        self.curr_node.times_visited += 1
+        self.prev_max_times_visited = self.max_times_visited  # memoization
+        self.max_times_visited = max(self.max_times_visited, self.curr_node.times_visited)
+        self.nodes_visited.add(self.curr_node)
+        # base case of finding the shortest path:
+        if self.curr_node == self.end_node:
+            ...
+        # next step:
+        for neigh in self.curr_node.neighs:
+            if neigh.g > self.curr_node.g + neigh.val:
+                # memoization for further 'backtracking':
+                self.neighs_added_to_heap.append(neigh.aux_copy())
+                neigh.g = self.curr_node.g + neigh.val
+                neigh.h = neigh.heuristics[self.heuristic](neigh, self.end_node)
+                if self.tiebreaker is not None: neigh.tiebreaker = self.start_node.tiebreakers[self.tiebreaker](self,
+                                                                                                                self.end_node,
+                                                                                                                neigh)
+                neigh.previously_visited_node = self.curr_node
+                hq.heappush(self.nodes_to_be_visited, neigh)
+
+    def a_star_step_down(self):
+        self.iterations -= 1
+        self.curr_node.times_visited -= 1
+        if self.curr_node.times_visited == 0:
+            self.curr_node.colour = None
+        self.max_times_visited = self.prev_max_times_visited
+        self.curr_node = self.curr_node.previously_visited_node
+        for neigh in self.neighs_added_to_heap:
+            y, x = neigh.y, neigh.x
+            node = self.grid[y][x]
+            self.nodes_to_be_visited.remove(node)
+            node.restore(neigh)
+
+    def a_star_choose_node(self):
+        ...
 
     def get_pars(self):
         self.Y, self.X = SCREEN_HEIGHT - 60, SCREEN_WIDTH - 250
@@ -162,6 +218,22 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                                      14,
                                      arcade.color.BLACK)
 
+        arcade.draw_text('Show mode: ', SCREEN_WIDTH - 235,
+                         SCREEN_HEIGHT - 190 - (18 + 2 * 2 + 18) * 14 - 4 * 18 * 3, arcade.color.BLACK, bold=True)
+
+        arcade.draw_rectangle_outline(SCREEN_WIDTH - 225,
+                                      SCREEN_HEIGHT - 190 - (18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30, 18, 18,
+                                      arcade.color.BLACK, 2)
+
+        arcade.draw_text('IS_A_STAR_INTERACTIVE', SCREEN_WIDTH - 225 + (18 + 2 * 2),
+                         SCREEN_HEIGHT - 190 - (18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30 - 6, arcade.color.BLACK,
+                         bold=True)
+
+        if self.is_interactive:
+            arcade.draw_rectangle_filled(SCREEN_WIDTH - 225,
+                                         SCREEN_HEIGHT - 190 - (18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30, 14, 14,
+                                         arcade.color.BLACK)
+
     def rebuild_map(self):
         self.tile_size, self.hor_tiles_q = self.get_pars()
         print(f'tile size: {self.tile_size}, line width: {self.line_width}')
@@ -236,6 +308,9 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
             # recall a_star :
             case arcade.key.BACKSPACE:
                 self.clear_empty_nodes()
+            # a_star interactive:
+            case arcade.key.Q:
+                ...
 
     def get_node(self, mouse_x, mouse_y):
         x_, y_ = mouse_x - 5, mouse_y - 5
@@ -280,6 +355,10 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 18 + 2 * 2 + 18) * 4 - 2 * 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 130 - (
                 18 + 2 * 2 + 18) * 4 - 2 * 18 * 3 - 30 + 9:
             self.greedy_flag = not self.greedy_flag
+        if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 190 - (
+                18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 190 - (
+                18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30 + 9:
+            self.is_interactive = not self.is_interactive
         if self.mode == 0:
             self.building_walls_flag = True
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -304,6 +383,8 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                     if self.end_node: self.end_node.colour = None
                     en.colour = arcade.color.BLUE
                     self.end_node = en
+        elif self.mode == 2:  # a_star interactive
+            ...
 
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
         self.mode = (self.mode + 1) % len(self.mode_names)
@@ -336,6 +417,18 @@ class Node:
         self.heuristics = {0: self.manhattan_distance, 1: self.euclidian_distance, 2: self.max_delta,
                            3: self.no_heuristic}
         self.tiebreakers = {0: self.vector_cross_product_deviation, 1: self.coordinates_pair}
+
+    def aux_copy(self):
+        copied_node = Node(self.y, self.x, self.val)
+        copied_node.g = self.g
+        copied_node.h = self.h
+        copied_node.tiebreaker = self.tiebreaker
+        return copied_node
+
+    def restore(self, copied_node: 'Node'):
+        self.g = copied_node.g
+        self.h = copied_node.h
+        self.tiebreaker = copied_node.tiebreaker
 
     def __eq__(self, other):
         if type(self) != type(other): return False
@@ -535,11 +628,11 @@ if __name__ == "__main__":
 #
 #
 #
-# TODO: implement a step-up a_star visualization with some interaction... (high, hard)
+# TODO: implement a step-up a_star visualization with some interaction (info window with pars of the current node or the selected one)... (high, hard)
 # TODO: add some other tiebreakers (medium, easy) +-
 # TODO: upgrade the visual part (medium, medium) -+
 # TODO: add number representation of times_visited par for the every visited node than can be on off by pressing a key (medium, easy)
 # TODO: create an info/help pages (high, hard)
 # TODO: extend the algo base with Lee wave pathfinding algorithm (medium, medium) +-
-# TODO:
+# TODO: add special flag a_star_interactive_on and switcher on the main window (high, easy)
 # TODO:
