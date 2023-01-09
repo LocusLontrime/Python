@@ -17,7 +17,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         arcade.set_background_color(arcade.color.DUTCH_WHITE)
         # scaling:
         self.scale = 0
-        self.scale_names = {0: 5, 1: 10, 2: 15, 3: 22, 4: 33, 5: 45, 6: 66, 7: 90, 8: 110, 9: 165}
+        self.scale_names = {0: 5, 1: 10, 2: 15, 3: 22, 4: 33, 5: 45, 6: 66, 7: 90, 8: 110, 9: 165, 10: 198}
         # data and info:
         self.line_width = line_width
         self.tiles_q = vertical_tiles
@@ -64,6 +64,11 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         # game set up is located below:
         # sprites and etc...
         ...
+
+    def get_all_neighs(self):  # pre-calculations (kind of optimization)
+        for row in self.grid:
+            for node in row:
+                node.get_neighs(self)
 
     def draw_grid_lines(self):
         for j in range(self.tiles_q + 1):
@@ -317,6 +322,7 @@ class Node:
         self.y, self.x = y, x
         self.val = val
         self.passability = passability
+        self.neighs = set()  # the nearest neighbouring nodes
         self.previously_visited_node = None  # for building the shortest path of Nodes from the starting point to the ending one
         self.times_visited = 0
         # cost and heuristic vars:
@@ -384,12 +390,12 @@ class Node:
     def coordinates_pair(start, end, neigh):
         return neigh.y, neigh.x
 
-    def get_neighs(self, game: 'Astar') -> list['Node']:
+    def get_neighs(self, game: 'Astar'):
         for dy, dx in self.walk:
             ny, nx = self.y + dy, self.x + dx
             if 0 <= ny < game.tiles_q and 0 <= nx < game.hor_tiles_q:
                 if game.grid[ny][nx].passability:
-                    yield game.grid[ny][nx]
+                    self.neighs.add(game.grid[ny][nx])
 
     def get_extended_neighs(self, game: 'Astar') -> list['Node']:
         for dy, dx in self.extended_walk:
@@ -397,9 +403,36 @@ class Node:
             if 0 <= ny < game.tiles_q and 0 <= nx < game.hor_tiles_q:
                 yield game.grid[ny][nx]
 
+    def wave_lee(self, other: 'Node'):
+        front_wave, new_front_wave = {self}, set()
+        other.val, iteration = 0, 0
+        # wave-spreading:
+        while front_wave:
+            iteration += 1
+            for front_node in front_wave:
+                front_node.val = iteration
+                if front_node == other:
+                    front_wave.clear()
+                    break
+                for front_neigh in front_node.neighs:
+                    if front_neigh not in front_wave:
+                        new_front_wave.add(front_neigh)
+            front_wave = new_front_wave[:]
+            # path restoration:
+        if other.val == 0: return []
+        curr_node = other
+        the_shortest_path = []
+        while curr_node != self:
+            the_shortest_path.append(curr_node)
+            for neigh in curr_node.neighs:
+                if neigh.val < curr_node.val:
+                    curr_node = neigh
+                    break
+        return the_shortest_path
+
     def a_star(self, other: 'Node', game: 'Astar'):
         Node.IS_GREEDY = game.greedy_flag
-        print(f'greedy_flag: {game.greedy_flag}')
+        game.get_all_neighs()
         nodes_to_be_visited = [self]
         self.g = 0
         hq.heapify(nodes_to_be_visited)
@@ -416,7 +449,7 @@ class Node:
             # base case of finding the shortest path:
             if curr_node == other: break
             # next step:
-            for neigh in curr_node.get_neighs(game):
+            for neigh in curr_node.neighs:
                 if neigh.g > curr_node.g + neigh.val:
                     neigh.g = curr_node.g + neigh.val
                     neigh.h = neigh.heuristics[game.heuristic](neigh, other)
@@ -484,7 +517,7 @@ if __name__ == "__main__":
 # important node (start or end) unselected clearing process has been finished with error
 # --- trying to visualize more visited node by numbers at first and then by colour gradient, bad idea...
 # v1.171 max times visited var is now shown in the info, hotfix: bad location bug resolved, GREEDY FLAG -->> GREEDY_FLAG
-#
+# v1.18 Wave-spreading lee pathfinding algorithm been implemented, further tests needed...
 #
 #
 #
@@ -505,8 +538,8 @@ if __name__ == "__main__":
 # TODO: implement a step-up a_star visualization with some interaction... (high, hard)
 # TODO: add some other tiebreakers (medium, easy) +-
 # TODO: upgrade the visual part (medium, medium) -+
-# TODO:
-# TODO:
-# TODO:
+# TODO: add number representation of times_visited par for the every visited node than can be on off by pressing a key (medium, easy)
+# TODO: create an info/help pages (high, hard)
+# TODO: extend the algo base with Lee wave pathfinding algorithm (medium, medium) +-
 # TODO:
 # TODO:
