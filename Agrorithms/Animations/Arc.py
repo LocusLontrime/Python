@@ -23,5 +23,9 @@ arcade.finish_render()
 # runs a window until 'Escape' button is pressed:
 arcade.run()
 
-
+d = {0: 1, 1: 2, 2: 3}
+d[2] = 36666
+d[3] = 98
+print(f'd: {d}')
 print(f'{arcade.color.ROSE}')
+
