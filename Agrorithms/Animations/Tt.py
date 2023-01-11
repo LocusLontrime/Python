@@ -32,4 +32,4 @@ class NodeType(Enum):
 
 print(f'NodeType(EMPTY): {NodeType.EMPTY.value}')
 print(f'NodeType(EMPTY): {NodeType.WALL.value}')
-
+print(f'{(1, 2, 98) * 98}')
