@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from EnterData import EnterData
 from Aunthefication import Authentication
 from AmberCode.SoftWare_Architecture_GB.HomeWork4.Core.Customer import Customer
@@ -26,7 +25,7 @@ class Start(EnterData):
             except RuntimeError as e:
                 print(f'error: {e}')
                 continue
-            print("=====================================================================================");
+            print("=====================================================================================")
             run = self.run_login_register_menu_choice_logic(choice)
 
     def run_login_register_menu_choice_logic(self, choice: int) -> bool:
@@ -54,7 +53,7 @@ class Start(EnterData):
         print("Enter the system... ")
         customer = Customer()
         try:
-            customer.set_user(Authentication.authentication(customer.get_user_provider(), user_name, password_hash))
+            self.customer.set_user(Authentication.authentication(self.customer.get_user_provider(), user_name, password_hash))
         except RuntimeError as e:
             print("FAIL")
             print(e)
@@ -82,15 +81,15 @@ class Start(EnterData):
         customer = Customer()
         id_: int
         try:
-            id_ = customer.get_user_provider().create_client(user_name, password_hash, card_number)
-            customer.set_user(Authentication.authentication(customer.get_user_provider(), user_name, password_hash))
+            id_ = self.customer.get_user_provider().create_client(user_name, password_hash, card_number)
+            self.customer.set_user(Authentication.authentication(self.customer.get_user_provider(), user_name, password_hash))
         except RuntimeError as e:
             print("FAIL")
             print(e)
             print("=====================================================================================")
             return
         self.__print_message_line(
-            "OK. user " + customer.get_user().get_user_name() + " with ID " + str(id_) + "added to base.")
+            "OK. user " + self.customer.get_user().get_user_name() + " with ID " + str(id_) + "added to base.")
 
     def __run_buying_menu(self) -> None:
         run = True
@@ -137,7 +136,7 @@ class Start(EnterData):
         try:
             num_route = self._input_int(1, 2)
         except RuntimeError as e:
-            self.__print_message_line(e)
+            self.__print_message_line(str(e))
             return -1
         print("=====================================================================================")
         return num_route
