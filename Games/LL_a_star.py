@@ -1,3 +1,5 @@
+# -*- coding: cp1251 -*-
+
 import heapq as hq
 import time
 import math
@@ -5,10 +7,12 @@ from enum import Enum
 import numpy as np
 # graphics:
 import arcade
+from arcade import gui
+from arcade.gui.widgets import UILabel
 
 # screen sizes:
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1050
+SCREEN_WIDTH = 1500
+SCREEN_HEIGHT = 780
 TILE_SIZE: int
 
 
@@ -55,6 +59,55 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.cycle_breaker_right = False
         self.cycle_breaker_left = False
         self.ticks_q = 5
+
+        # UI interface
+        # ToDo: multiline, label text setter
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.v_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.v_info_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.v_label_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.info_a_star_flag = True
+        self.info_nodes_flag = False
+
+        self.bg_tex = arcade.load_texture(":resources:gui_basic_assets/red_button_normal.png")
+        self.text_for_print = ""
+
+        save_button = arcade.gui.UITextureButton(x=0, y=0, width=20, height=25, texture=arcade.load_texture('btn.png'),
+                                                 texture_hovered=arcade.load_texture('btn_hovered.png'),
+                                                 texture_pressed=arcade.load_texture('btn_pressed.png'))
+        self.v_box.add(save_button.with_space_around(left=10))
+
+        load_button = arcade.gui.UITextureButton(x=0, y=0, width=20, height=25, texture=arcade.load_texture('load.png'),
+                                                 texture_hovered=arcade.load_texture('load_hovered.png'),
+                                                 texture_pressed=arcade.load_texture('load_pressed.png'))
+        self.v_box.add(load_button.with_space_around(left=10))
+
+        a_star_info_button = arcade.gui.UIFlatButton(text='Info A_s', width=90, height=25)
+        self.v_box.add(a_star_info_button.with_space_around(left=10))
+
+        nodes_info = arcade.gui.UIFlatButton(text='Info N', width=70, height=25)
+        self.v_box.add(nodes_info.with_space_around(left=10))
+
+        all_info_button = arcade.gui.UIFlatButton(text='Information', width=115, height=25)
+        self.v_info_box.add(all_info_button.with_space_around(left=10))
+
+        save_button.on_click = self.click_save_grid
+        load_button.on_click = self.click_load_grid
+        a_star_info_button.on_click = self.click_a_star_info
+        nodes_info.on_click = self.click_nodes_info
+        all_info_button.on_click = self.click_info_open
+
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_x=-SCREEN_WIDTH / 2 + 130,
+            align_y=SCREEN_HEIGHT / 2 - 25,
+            child=self.v_box)
+        )
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_x=SCREEN_WIDTH / 2 - 190,
+            align_y=SCREEN_HEIGHT / 2 - 25,
+            child=self.v_info_box)
+        )
 
     def a_star_preparation(self):
         self.nodes_to_be_visited = [self.start_node]
@@ -260,17 +313,39 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                                                  self.tile_size - 2 * self.line_width - (
                                                      1 if self.line_width % 2 != 0 else 0), n.type.value)
         # HINTS:
-        arcade.draw_text(f'Mode: {self.mode_names[self.mode]}', 25, SCREEN_HEIGHT - 35, arcade.color.BLACK, bold=True)
-        arcade.draw_text(
-            f'A* iters: {self.iterations}, path length: {len(self.path) if self.path else "No path found"}, nodes visited: {len(self.nodes_visited)}, '
-            f'max times visited: {self.max_times_visited_dict[self.iterations] if self.is_interactive else "LALA"}, time elapsed: {self.time_elapsed_ms}',
-            365, SCREEN_HEIGHT - 35, arcade.color.BROWN, bold=True)
+        arcade.draw_text(f'Mode: {self.mode_names[self.mode]}', 260, SCREEN_HEIGHT - 35, arcade.color.BLACK,
+                         font_size=10, bold=True)
+        if self.info_a_star_flag:
+            self.text_for_print = f'A* iters: {self.iterations}, path length: {len(self.path) if self.path else "No path found"}, nodes visited: {len(self.nodes_visited)}, ' \
+                                  f'max times visited: {self.max_times_visited_dict[self.iterations] if self.is_interactive else "LALA"}, time elapsed: {self.time_elapsed_ms} '
+
+            label_info = UILabel(x=SCREEN_WIDTH / 2 - 200, y=SCREEN_HEIGHT - 40, width=630, height=25, font_size=10,
+                                 text_color=(0, 0, 205, 255), multiline=False,
+                                 text=self.text_for_print)
+            self.manager.add(
+                arcade.gui.UITexturePane(
+                    label_info.with_space_around(left=10),
+                    tex=self.bg_tex,
+                    padding=(5, 0, 0, 0)))
+
         if self.mode == 2:
             if self.node_chosen:
-                arcade.draw_text(
-                    f"NODE'S INFO -->> pos: {self.node_chosen.y, self.node_chosen.x}, g: {self.node_chosen.g}, "
-                    f"h: {self.node_chosen.h}, f=g+h: {self.node_chosen.g + self.node_chosen.h} t: {self.node_chosen.tiebreaker}, times visited: {self.node_chosen.times_visited}, passability: {self.node_chosen.passability}",
-                    1050, SCREEN_HEIGHT - 35, arcade.color.PURPLE, bold=True)
+                if self.info_nodes_flag:
+                    self.text_for_print = f"NODE'S INFO -->> pos: {self.node_chosen.y, self.node_chosen.x}, g: {self.node_chosen.g}, h: {self.node_chosen.h}, " \
+                                          f"f=g+h: {self.node_chosen.g + self.node_chosen.h} t: {self.node_chosen.tiebreaker}, " \
+                                          f"times visited: {self.node_chosen.times_visited}, passability: {self.node_chosen.passability}"
+
+                    label_info = UILabel(x=SCREEN_WIDTH / 2 - 200, y=SCREEN_HEIGHT - 40, width=630, height=25,
+                                         font_size=10,
+                                         text_color=(0, 0, 205, 255),
+                                         multiline=False,
+                                         text=self.text_for_print)
+                    self.manager.add(
+                        arcade.gui.UITexturePane(
+                            label_info.with_space_around(left=10),
+                            tex=self.bg_tex,
+                            padding=(5, 0, 0, 0)))
+
         # SET-UPS:
         arcade.draw_text(f'Heuristics: ', SCREEN_WIDTH - 235, SCREEN_HEIGHT - 70, arcade.color.BLACK, bold=True)
         for i in range(len(self.heuristic_names)):
@@ -360,12 +435,43 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 p = -self.path[self.path_index].x + self.path[self.path_index - 1].x, -self.path[self.path_index].y + \
                     self.path[self.path_index - 1].y
                 points = self.get_triangle(self.path[self.path_index], p)
-                arcade.draw_triangle_filled(points[0], points[1], points[2], points[3], points[4], points[5], arcade.color.RED)
+                arcade.draw_triangle_filled(points[0], points[1], points[2], points[3], points[4], points[5],
+                                            arcade.color.RED)
+
+        # UI interface save
+        self.manager.draw()
+
+    def click_save_grid(self, event):
+        print('save')
+
+    def click_load_grid(self, event):
+        pass
+
+    def click_nodes_info(self, event):
+        self.info_nodes_flag = True
+        self.info_a_star_flag = False
+
+    def click_a_star_info(self, event):
+        self.info_nodes_flag = False
+        self.info_a_star_flag = True
+
+    def click_info_open(self, event):
+        info_message_box = arcade.gui.UIMessageBox(
+            width=300,
+            height=200,
+            message_text=(
+                "You should have a look on the new GUI features "
+                "coming up with arcade 2.6!"
+            ),
+            buttons=["Ok"]
+        )
+
+        self.manager.add(info_message_box)
 
     def get_triangle(self, node: 'Node', point: tuple[int, int]):
         scaled_point = point[0] * (self.tile_size // 2 - 2), point[1] * (self.tile_size // 2 - 2)
         deltas = (scaled_point[0] - scaled_point[1], scaled_point[0] + scaled_point[1]), (
-        scaled_point[0] + scaled_point[1], -scaled_point[0] + scaled_point[1])
+            scaled_point[0] + scaled_point[1], -scaled_point[0] + scaled_point[1])
         cx, cy = 5 + node.x * self.tile_size + self.tile_size / 2, 5 + node.y * self.tile_size + self.tile_size / 2
         return cx, cy, cx + deltas[0][0], cy + deltas[0][1], cx + deltas[1][0], cy + deltas[1][1]
 
