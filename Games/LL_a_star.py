@@ -66,37 +66,117 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
         self.manager.enable()
         self.v_box = arcade.gui.UIBoxLayout(vertical=False)
         self.v_info_box = arcade.gui.UIBoxLayout(vertical=False)
-        self.v_label_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.v_label_box = arcade.gui.UIBoxLayout(vertical=True)
+        self.v_control_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.v_start_box = arcade.gui.UIBoxLayout(vertical=False)
         self.info_a_star_flag = True
         self.info_nodes_flag = False
 
         self.bg_tex = arcade.load_texture(":resources:gui_basic_assets/red_button_normal.png")
         self.text_for_print = ""
 
-        save_button = arcade.gui.UITextureButton(x=0, y=0, width=20, height=25, texture=arcade.load_texture('btn.png'),
-                                                 texture_hovered=arcade.load_texture('btn_hovered.png'),
-                                                 texture_pressed=arcade.load_texture('btn_pressed.png'))
+        save_button = arcade.gui.UITextureButton(x=0, y=0, width=20, height=25,
+                                                 texture=arcade.load_texture('Текстуры\\btn.png'),
+                                                 texture_hovered=arcade.load_texture('Текстуры\\btn_hovered.png'),
+                                                 texture_pressed=arcade.load_texture('Текстуры\\btn_pressed.png'))
         self.v_box.add(save_button.with_space_around(left=10))
 
-        load_button = arcade.gui.UITextureButton(x=0, y=0, width=20, height=25, texture=arcade.load_texture('load.png'),
-                                                 texture_hovered=arcade.load_texture('load_hovered.png'),
-                                                 texture_pressed=arcade.load_texture('load_pressed.png'))
+        load_button = arcade.gui.UITextureButton(x=0, y=0, width=20, height=25,
+                                                 texture=arcade.load_texture('Текстуры\\load.png'),
+                                                 texture_hovered=arcade.load_texture('Текстуры\\load_hovered.png'),
+                                                 texture_pressed=arcade.load_texture('Текстуры\\load_pressed.png'))
         self.v_box.add(load_button.with_space_around(left=10))
 
-        a_star_info_button = arcade.gui.UIFlatButton(text='Info A_s', width=90, height=25)
+        a_star_info_button = arcade.gui.UITextureButton(x=0, y=0, width=90, height=25,
+                                                        texture=arcade.load_texture('Текстуры\\a_info.png'),
+                                                        texture_hovered=arcade.load_texture(
+                                                            'Текстуры\\a_info_hovered.png'),
+                                                        texture_pressed=arcade.load_texture(
+                                                            'Текстуры\\a_info_pressed.png'))
         self.v_box.add(a_star_info_button.with_space_around(left=10))
 
-        nodes_info = arcade.gui.UIFlatButton(text='Info N', width=70, height=25)
+        nodes_info = arcade.gui.UITextureButton(x=0, y=0, width=70, height=25,
+                                                texture=arcade.load_texture('Текстуры\\n_info.png'),
+                                                texture_hovered=arcade.load_texture('Текстуры\\n_info_hovered.png'),
+                                                texture_pressed=arcade.load_texture('Текстуры\\n_info_pressed.png'))
         self.v_box.add(nodes_info.with_space_around(left=10))
 
-        all_info_button = arcade.gui.UIFlatButton(text='Information', width=115, height=25)
+        all_info_button = arcade.gui.UITextureButton(x=0, y=0, width=50, height=50,
+                                                     texture=arcade.load_texture('Текстуры\\inform.png'),
+                                                     texture_hovered=arcade.load_texture(
+                                                         'Текстуры\\inform_hovered.png'),
+                                                     texture_pressed=arcade.load_texture(
+                                                         'Текстуры\\inform_pressed.png'))
         self.v_info_box.add(all_info_button.with_space_around(left=10))
+
+        # кнопки бокового вида (расположение изменится, функции также после добавления view)
+
+        a_star_step_down_button = arcade.gui.UITextureButton(x=0, y=0, width=30, height=30,
+                                                             texture=arcade.load_texture('Текстуры\\a_star_dovn.png'),
+                                                             texture_hovered=arcade.load_texture(
+                                                                 'Текстуры\\a_star_dovn_hovered.png'),
+                                                             texture_pressed=arcade.load_texture(
+                                                                 'Текстуры\\a_star_dovn_pressed.png'))
+        self.v_control_box.add(a_star_step_down_button.with_space_around(right=10))
+
+        a_star_step_up_button = arcade.gui.UITextureButton(x=0, y=0, width=30, height=30,
+                                                           texture=arcade.load_texture('Текстуры\\a_star_up.png'),
+                                                           texture_hovered=arcade.load_texture(
+                                                               'Текстуры\\a_star_up_hovered.png'),
+                                                           texture_pressed=arcade.load_texture(
+                                                               'Текстуры\\a_star_up_pressed.png'))
+        self.v_control_box.add(a_star_step_up_button.with_space_around(right=10))
+
+        step_gate_down_botton = arcade.gui.UITextureButton(x=0, y=0, width=30, height=30,
+                                                           texture=arcade.load_texture('Текстуры\\step_gate_down.png'),
+                                                           texture_hovered=arcade.load_texture(
+                                                               'Текстуры\\step_gate_down_hovered.png'),
+                                                           texture_pressed=arcade.load_texture(
+                                                               'Текстуры\\step_gate_down_pressed.png'))
+        self.v_control_box.add(step_gate_down_botton.with_space_around(right=10))
+
+        step_gate_up_botton = arcade.gui.UITextureButton(x=0, y=0, width=30, height=30,
+                                                         texture=arcade.load_texture('Текстуры\\step_gate_up.png'),
+                                                         texture_hovered=arcade.load_texture(
+                                                             'Текстуры\\step_gate_up_hovered.png'),
+                                                         texture_pressed=arcade.load_texture(
+                                                             'Текстуры\\step_gate_up_pressed.png'))
+        self.v_control_box.add(step_gate_up_botton.with_space_around(right=10))
+
+        start_a = arcade.gui.UITextureButton(x=0, y=0, width=50, height=50,
+                                             texture=arcade.load_texture('Текстуры\\a_star_start.png'),
+                                             texture_hovered=arcade.load_texture(
+                                                 'Текстуры\\a_star_start_hovered.png'),
+                                             texture_pressed=arcade.load_texture(
+                                                 'Текстуры\\a_star_start_pessed.png'))
+        self.v_start_box.add(start_a.with_space_around(right=10))
+
+        show_heuristics = arcade.gui.UITextureButton(x=0, y=0, width=80, height=50,
+                                                     texture=arcade.load_texture('Текстуры\\heuristics.png'),
+                                                     texture_hovered=arcade.load_texture(
+                                                         'Текстуры\\heuristics_howered.png'),
+                                                     texture_pressed=arcade.load_texture(
+                                                         'Текстуры\\heuristics_pressed.png'))
+        self.v_start_box.add(show_heuristics.with_space_around(right=10))
+
+        settings_button = arcade.gui.UITextureButton(x=0, y=0, width=50, height=50,
+                                                     texture=arcade.load_texture('Текстуры\\settings.png'),
+                                                     texture_hovered=arcade.load_texture(
+                                                         'Текстуры\\settings_hovered.png'),
+                                                     texture_pressed=arcade.load_texture(
+                                                         'Текстуры\\settings_pressed.png'))
+        self.v_info_box.add((settings_button.with_space_around(top=300)))
 
         save_button.on_click = self.click_save_grid
         load_button.on_click = self.click_load_grid
         a_star_info_button.on_click = self.click_a_star_info
         nodes_info.on_click = self.click_nodes_info
         all_info_button.on_click = self.click_info_open
+        a_star_step_up_button.on_click = self.click_s_star_step_up_button
+        a_star_step_down_button.on_click = self.click_a_star_step_down_button
+        start_a.on_click = self.click_start_a_star_button
+        show_heuristics.on_click = self.click_show_heuristics
+        settings_button.on_click = self.click_settings_button
 
         self.manager.add(arcade.gui.UIAnchorWidget(
             align_x=-SCREEN_WIDTH / 2 + 130,
@@ -107,6 +187,16 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
             align_x=SCREEN_WIDTH / 2 - 190,
             align_y=SCREEN_HEIGHT / 2 - 25,
             child=self.v_info_box)
+        )
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_x=SCREEN_WIDTH / 2 - 100,
+            align_y=SCREEN_HEIGHT / 2 - 500,
+            child=self.v_control_box)
+        )
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_x=SCREEN_WIDTH / 2 - 100,
+            align_y=SCREEN_HEIGHT / 2 - 450,
+            child=self.v_start_box)
         )
 
     def a_star_preparation(self):
@@ -415,12 +505,12 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                                       arcade.color.BLACK, 2)
 
         arcade.draw_text('IS_A_STAR_INTERACTIVE', SCREEN_WIDTH - 225 + (18 + 2 * 2),
-                         SCREEN_HEIGHT - 190 - (18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30 - 6, arcade.color.BLACK,
+                         SCREEN_HEIGHT - 500, arcade.color.BLACK,
                          bold=True)
 
         if self.is_interactive:
             arcade.draw_rectangle_filled(SCREEN_WIDTH - 225,
-                                         SCREEN_HEIGHT - 190 - (18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30, 14, 14,
+                                         SCREEN_HEIGHT - 500 + 9, 14, 14,
                                          arcade.color.BLACK)
 
         # NODE CHOSEN:
@@ -438,7 +528,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 arcade.draw_triangle_filled(points[0], points[1], points[2], points[3], points[4], points[5],
                                             arcade.color.RED)
 
-        # UI interface save
+        # UI interface
         self.manager.draw()
 
     def click_save_grid(self, event):
@@ -465,8 +555,54 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
             ),
             buttons=["Ok"]
         )
-
         self.manager.add(info_message_box)
+
+    def click_s_star_step_up_button(self, event):
+        if self.is_interactive:
+            if self.path is None:
+                self.cycle_breaker_right = True
+                self.a_star_step_up()
+            else:
+                if self.path_index < len(self.path) - 1:
+                    self.path_up()
+                    self.path_index += 1
+            self.cycle_breaker_right = False
+            self.ticks_q = 0
+
+    def click_a_star_step_down_button(self, event):
+        if self.is_interactive:
+            if self.path is None:
+                self.cycle_breaker_left = True
+                self.a_star_step_down()
+            else:
+                if self.path_index > 0:
+                    self.path_down()
+                    self.path_index -= 1
+                else:
+                    self.path = None
+            self.cycle_breaker_left = False
+            self.ticks_q = 0
+
+    def click_start_a_star_button(self, event):
+        if self.start_node and self.end_node:
+            if self.is_interactive:
+                self.in_interaction = True
+                self.a_star_preparation()
+            else:
+                start = time.time_ns()
+                the_shortest_path = self.start_node.a_star(self.end_node, self)
+                self.path = the_shortest_path
+                finish = time.time_ns()
+                self.time_elapsed_ms = self.get_ms(start, finish)
+                for node in the_shortest_path:
+                    if node.type not in [NodeType.START_NODE, NodeType.END_NODE]:
+                        node.type = NodeType.PATH_NODE
+
+    def click_show_heuristics(self, event):
+        pass
+
+    def click_settings_button(self, event):
+        pass
 
     def get_triangle(self, node: 'Node', point: tuple[int, int]):
         scaled_point = point[0] * (self.tile_size // 2 - 2), point[1] * (self.tile_size // 2 - 2)
@@ -651,9 +787,7 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 18 + 2 * 2 + 18) * 4 - 2 * 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 130 - (
                 18 + 2 * 2 + 18) * 4 - 2 * 18 * 3 - 30 + 9:
             self.greedy_flag = not self.greedy_flag
-        if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 190 - (
-                18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30 - 9 <= y <= SCREEN_HEIGHT - 190 - (
-                18 + 2 * 2 + 18) * 14 - 4 * 18 * 3 - 30 + 9:
+        if SCREEN_WIDTH - 225 - 9 <= x <= SCREEN_WIDTH - 225 + 9 and SCREEN_HEIGHT - 500 - 9 <= y <= SCREEN_HEIGHT - 500 + 9:
             self.is_interactive = not self.is_interactive
         if self.mode == 0:
             self.building_walls_flag = True
