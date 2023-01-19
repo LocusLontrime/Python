@@ -25,10 +25,10 @@ class CashRepository:
             CashRepository.__cash_repository = CashRepository()
         return CashRepository.__cash_repository
 
-    def transaction(self, payment: int, card_form: int, carrier_card: int) -> bool:
+    def transaction(self, payment: int, card_from: int, carrier_card: int) -> bool:
         from_, to_ = None, None
         for client in self.__clients:
-            if client.get_card() == card_form:
+            if client.get_card() == card_from:
                 from_ = client
             if client.get_card() == carrier_card:
                 to_ = client

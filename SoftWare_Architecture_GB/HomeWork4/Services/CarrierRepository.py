@@ -9,10 +9,11 @@ class CarrierRepository(ICarrierRepo):
     def __init__(self):
         self.__carriers = [Carrier(1, 1)]
 
-    def get_carrier_repository(self) -> 'CarrierRepository':
-        if self.__carrier_repository is None:
-            self.__carrier_repository = CarrierRepository()
-        return self.__carrier_repository
+    @staticmethod
+    def get_carrier_repository() -> 'CarrierRepository':
+        if CarrierRepository.__carrier_repository is None:
+            CarrierRepository.__carrier_repository = CarrierRepository()
+        return CarrierRepository.__carrier_repository
 
     def read(self, id_: int) -> Carrier:
         for carrier in self.__carriers:
