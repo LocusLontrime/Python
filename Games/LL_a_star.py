@@ -360,12 +360,13 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                 p = -self.path[self.path_index].x + self.path[self.path_index - 1].x, -self.path[self.path_index].y + \
                     self.path[self.path_index - 1].y
                 points = self.get_triangle(self.path[self.path_index], p)
-                arcade.draw_triangle_filled(points[0], points[1], points[2], points[3], points[4], points[5], arcade.color.RED)
+                arcade.draw_triangle_filled(points[0], points[1], points[2], points[3], points[4], points[5],
+                                            arcade.color.RED)
 
     def get_triangle(self, node: 'Node', point: tuple[int, int]):
         scaled_point = point[0] * (self.tile_size // 2 - 2), point[1] * (self.tile_size // 2 - 2)
         deltas = (scaled_point[0] - scaled_point[1], scaled_point[0] + scaled_point[1]), (
-        scaled_point[0] + scaled_point[1], -scaled_point[0] + scaled_point[1])
+            scaled_point[0] + scaled_point[1], -scaled_point[0] + scaled_point[1])
         cx, cy = 5 + node.x * self.tile_size + self.tile_size / 2, 5 + node.y * self.tile_size + self.tile_size / 2
         return cx, cy, cx + deltas[0][0], cy + deltas[0][1], cx + deltas[1][0], cy + deltas[1][1]
 
@@ -463,7 +464,14 @@ class Astar(arcade.Window):  # 36 366 98 989 LL
                         for node in the_shortest_path:
                             if node.type not in [NodeType.START_NODE, NodeType.END_NODE]:
                                 node.type = NodeType.PATH_NODE
-            # grid clearing:
+                                p = -self.path[self.path_index + 1].x + self.path[self.path_index].x, \
+                                    -self.path[self.path_index + 1].y + self.path[self.path_index].y
+                                p1, p2, p3 = self.get_triangle(self.path[self.path_index + 1], p)
+                                triangle_shape = arcade.create_triangles_filled_with_colors(
+                                    [p1, p2, p3],
+                                    [arcade.color.WHITE, arcade.color.RED, arcade.color.RED])
+                                self.triangle_shape_list.append(triangle_shape)
+                                # grid clearing:
             case arcade.key.ENTER:
                 self.clear_grid()
             # recall a_star :
