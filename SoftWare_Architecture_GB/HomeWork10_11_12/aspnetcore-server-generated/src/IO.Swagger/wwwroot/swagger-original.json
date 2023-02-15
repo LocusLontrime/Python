@@ -1,0 +1,509 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Сервис роботов-пылесосов",
+    "version" : "0.0.1"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "paths" : {
+    "/robots" : {
+      "get" : {
+        "tags" : [ "Robots" ],
+        "summary" : "Метод получения списка привязанных устройств",
+        "operationId" : "getAllRobots",
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ со списком привязанных устройств",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Robots"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Robots" ],
+        "summary" : "Метод подключения робота",
+        "operationId" : "createRobotCleaner",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Error"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ на подключение робота",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RobotCleaner"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/robots/{fabrick_number}" : {
+      "get" : {
+        "tags" : [ "Robots" ],
+        "summary" : "Метод получения привязанного устройства по ID",
+        "operationId" : "getRobot",
+        "parameters" : [ {
+          "name" : "fabrick_number",
+          "in" : "path",
+          "description" : "Уникальный id устройства",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 1458586586
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ с параметрами устройства",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RobotCleaner"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Robots" ],
+        "summary" : "Метод удаления робота из облака по номеру",
+        "operationId" : "cencelRobotsByNumber",
+        "parameters" : [ {
+          "name" : "fabrick_number",
+          "in" : "path",
+          "description" : "Уникальный id робота",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 78956547895
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ на удаление устройства",
+            "content" : {
+              "adplication/json" : { }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users" : {
+      "get" : {
+        "tags" : [ "Users" ],
+        "summary" : "Метод получения списка пользователей",
+        "operationId" : "getAllUsersById",
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ со списком пользователей",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Users"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Users" ],
+        "summary" : "Метод регистрации (авторизации) пользователя",
+        "operationId" : "createAutUser",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Error"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ на авторизацию(регистрацию) пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}" : {
+      "delete" : {
+        "tags" : [ "Users" ],
+        "summary" : "Метод удаления пользователя по ID",
+        "operationId" : "deleteUserById",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Уникальный id пользователя",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 7955544
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Успешный ответ на удаление пользователя",
+            "content" : {
+              "adplication/json" : { }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Все остальное",
+            "content" : {
+              "adplication/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "RobotCleaner" : {
+        "required" : [ "fabrick_number", "id_group", "ip_adress", "resources", "status" ],
+        "type" : "object",
+        "properties" : {
+          "resources" : {
+            "type" : "integer",
+            "example" : 90
+          },
+          "fabrick_number" : {
+            "type" : "integer",
+            "example" : 792566
+          },
+          "ip_adress" : {
+            "type" : "string",
+            "example" : "192.128.8.5"
+          },
+          "id_group" : {
+            "type" : "integer",
+            "example" : 2
+          },
+          "status" : {
+            "type" : "string",
+            "example" : "Зарядка"
+          }
+        },
+        "example" : {
+          "resources" : 90,
+          "fabrick_number" : 792566,
+          "id_group" : 2,
+          "ip_adress" : "192.128.8.5",
+          "status" : "Зарядка"
+        }
+      },
+      "Robots" : {
+        "type" : "array",
+        "items" : {
+          "$ref" : "#/components/schemas/RobotCleaner"
+        }
+      },
+      "User" : {
+        "required" : [ "hash", "id", "question" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "example" : 124556
+          },
+          "hash" : {
+            "type" : "integer"
+          },
+          "question" : {
+            "type" : "string",
+            "description" : "Контрольный вопрос пользователя"
+          }
+        },
+        "example" : {
+          "question" : "question",
+          "id" : 124556,
+          "hash" : 0
+        }
+      },
+      "Users" : {
+        "type" : "array",
+        "items" : {
+          "$ref" : "#/components/schemas/User"
+        }
+      },
+      "Error404" : {
+        "required" : [ "code", "message" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "description" : "404"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "404 Not Found"
+          }
+        }
+      },
+      "Error500" : {
+        "required" : [ "code", "message" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "description" : "500"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "500 Internal Server Error"
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "code", "message" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "Error"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,121 @@
+  "components": {
+    "schemas": {
+      "RobotCleaner": {
+        "type": "object",
+        "required": [
+          "resources",
+          "fabrick_number",
+          "ip_adress",
+          "id_group",
+          "status"
+        ],
+        "properties": {
+          "resources": {
+            "type": "integer",
+            "example": 90
+          },
+          "fabrick_number": {
+            "type": "integer",
+            "example": 792566
+          },
+          "ip_adress": {
+            "type": "string",
+            "example": "192.128.8.5"
+          },
+          "id_group": {
+            "type": "integer",
+            "example": 2
+          },
+          "status": {
+            "type": "string",
+            "example": "Зарядка"
+          }
+        }
+      },
+      "Robots": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/RobotCleaner"
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "hash",
+          "question"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 124556
+          },
+          "hash": {
+            "type": "integer",
+            "example": 8.965658985658755e+21
+          },
+          "question": {
+            "type": "string",
+            "description": "Контрольный вопрос пользователя"
+          }
+        }
+      },
+      "Users": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/User"
+        }
+      },
+      "Error404": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "404"
+          },
+          "message": {
+            "type": "string",
+            "example": "404 Not Found"
+          }
+        }
+      },
+      "Error500": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "500"
+          },
+          "message": {
+            "type": "string",
+            "example": "500 Internal Server Error"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string",
+            "example": "Error"
+          }
+        }
+      }
+    }
+  }
+}
