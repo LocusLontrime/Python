@@ -94,7 +94,7 @@ def main():
     r_array = get_random_array(100000, 100000)
     # print(f'random array: {r_array}')
     start = time.time_ns()
-    heap_sort_bottom_up(r_array)
+    # heap_sort_bottom_up(r_array)
     finish = time.time_ns()
     # print(f'Sorted array: {r_array}')
     print(f'rec counter: {rec_counter}')
@@ -106,5 +106,8 @@ if __name__ == '__main__':
     threading.stack_size(200000000)
     thread = threading.Thread(target=main)
     thread.start()
+
+
+
 
 
