@@ -1,0 +1,370 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Заказ на ресурсы облака",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/clouds": {
+      "get": {
+        "summary": "Метод получения списка ресурсов на облако",
+        "tags": [
+          "Clouds"
+        ],
+        "operationId": "getAllClouds",
+        "parameters": [
+          {
+            "name": "cloud_id",
+            "in": "path",
+            "required": true,
+            "description": "Идентификатор заказа облака",
+            "schema": {
+              "type": "string"
+            },
+            "example": "f102b615"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ со списком ресурсов в облаке",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resurces"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Все остальное",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Метод создания заказа на облако",
+        "tags": [
+          "Clouds"
+        ],
+        "operationId": "createCloud",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешный ответ на создание заказа облака",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cloud"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Все остальное",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clouds/{cloud_id}": {
+      "get": {
+        "summary": "Метод получения списка ресурсов на облако ID",
+        "tags": [
+          "Clouds"
+        ],
+        "operationId": "getAllCloudById",
+        "parameters": [
+          {
+            "name": "cloud_id",
+            "in": "path",
+            "required": true,
+            "description": "Идентификатор заказа облака",
+            "schema": {
+              "type": "string"
+            },
+            "example": "f102b615"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ с заказом облака по ID",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cloud"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Все остальное",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Метод отмены заказа на облако по ID",
+        "tags": [
+          "Clouds"
+        ],
+        "operationId": "cencelCloudById",
+        "parameters": [
+          {
+            "name": "cloud_id",
+            "in": "path",
+            "required": true,
+            "description": "Идентификатор заказа облака",
+            "schema": {
+              "type": "string"
+            },
+            "example": "f102b615"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ заказом облака по ID",
+            "content": {
+              "adplication/json": {}
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Все остальное",
+            "content": {
+              "adplication/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Cloud": {
+        "type": "object",
+        "required": [
+          "id_client",
+          "OS",
+          "RAM"
+        ],
+        "properties": {
+          "cloud_id": {
+            "type": "string",
+            "example": "f102b615"
+          },
+          "id_client": {
+            "type": "string",
+            "example": "f102b615"
+          },
+          "OS": {
+            "type": "string",
+            "enum": [
+              "Windows",
+              "Linux"
+            ],
+            "description": "Операционная система сервера"
+          },
+          "RAM": {
+            "type": "string",
+            "example": 128
+          }
+        }
+      },
+      "Resurces": {
+        "type": "object",
+        "required": [
+          "HDD",
+          "OS",
+          "RAM",
+          "CPU"
+        ],
+        "properties": {
+          "HDD": {
+            "type": "string",
+            "example": 1024
+          },
+          "CPU": {
+            "type": "string",
+            "example": 16
+          },
+          "OS": {
+            "type": "string",
+            "enum": [
+              "Windows",
+              "Linux"
+            ],
+            "description": "Операционная система сервера"
+          },
+          "RAM": {
+            "type": "string",
+            "example": 128
+          }
+        }
+      },
+      "Clouds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Cloud"
+        }
+      },
+      "Error404": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string",
+            "example": "404 Not Found"
+          }
+        }
+      },
+      "Error500": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string",
+            "example": "500 Internal Server Error"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string",
+            "example": "Error"
+          }
+        }
+      }
+    }
+  }
+}
