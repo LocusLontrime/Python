@@ -1,5 +1,17 @@
+import random
+import sys
+import threading
+import time
+
+sys.setrecursionlimit(2 * 1000 + 2)
+
+rec_counter: int
+
+
 # main method-covering
 def heap_sort_bottom_up(array: list[int]):
+    global rec_counter
+    rec_counter = 0
     # border case:
     if array is None or len(array) == 0:
         print('The array is empty, there is nothing to sort')
@@ -20,6 +32,8 @@ def heap_sort_bottom_up(array: list[int]):
 
 # here we find the leaf of the heap built with the max array's element
 def top_down_max_leaf_search(array: list[int], upper_ind: int, size: int):
+    global rec_counter
+    rec_counter += 1
     # here we start:
     curr_index = upper_ind
     # indexes of leafs:
@@ -43,7 +57,7 @@ def top_down_max_leaf_search(array: list[int], upper_ind: int, size: int):
 def bottom_up_root_sifting(array: list[int], upper_ind: int, size: int):
     # find the max leaf position:
     curr_index = top_down_max_leaf_search(array, upper_ind, size)
-    print(f'curr_index: {curr_index}, size: {size}')
+    # print(f'curr_index: {curr_index}, size: {size}')
     # ascending until the first bigger
     while array[curr_index] < array[upper_ind]:
         # proceeding to the parent (on the one level higher)
@@ -60,7 +74,37 @@ def bottom_up_root_sifting(array: list[int], upper_ind: int, size: int):
 
 
 # test-case:
-arr = [1, 7, 7, 0, 7, 8, 98, 1, -111, -1, -1, 0, 0, 1, -1, 111, 98, 98, 9, 8, 7, 6, 5, 55, 111, 0, -1, -1001, 98, 9898989, 98]
-arr_x = [9, 8, 7, 77, 1, 2, 3, 0, 989, 98]
-heap_sort_bottom_up(arr)
-print(arr)
+# arr = [1, 7, 7, 0, 7, 8, 98, 1, -111, -1, -1, 0, 0, 1, -1, 111, 98, 98, 9, 8, 7, 6, 5, 55, 111, 0, -1, -1001, 98, 9898989, 98]
+# arr_x = [9, 8, 7, 77, 1, 2, 3, 0, 989, 98]
+# heap_sort_bottom_up(arr)
+# print(f'Sorted array: {arr}')
+
+
+def get_random_array(border: int, size: int):
+    if border < 0 or size < 0:
+        raise AttributeError(f'border and size must be greater than zero...')
+    return [random.randint(0, border) for _ in range(size)]
+
+
+def get_ms(time_ns_start: int, time_ns_finish: int):
+    return (time_ns_finish - time_ns_start) // 10 ** 6
+
+
+def main():
+    r_array = get_random_array(100000, 100000)
+    # print(f'random array: {r_array}')
+    start = time.time_ns()
+    heap_sort_bottom_up(r_array)
+    finish = time.time_ns()
+    # print(f'Sorted array: {r_array}')
+    print(f'rec counter: {rec_counter}')
+    print(f'time elapsed: {get_ms(start, finish)} ms')
+
+
+if __name__ == '__main__':
+    sys.setrecursionlimit(2 * 100000 + 2)
+    threading.stack_size(200000000)
+    thread = threading.Thread(target=main)
+    thread.start()
+
+
