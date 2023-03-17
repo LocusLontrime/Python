@@ -103,15 +103,18 @@ class Fraction:
             return Fraction(-self.numerator * fraction_divisor.denominator, -self.denominator * fraction_divisor.numerator)
 
     def raise_to_power(self, power: int):
+        """fast recursive power rising"""
         return Fraction.raise_to_power_aux(self.copy(), power)
 
     @staticmethod
     def raise_to_power_aux(fraction, power: int):
+        """aux part for fast recursive power rising"""
+        # base cases:
         if power == 0:
             return Fraction(1)
         if power == 1:
             return fraction
-
+        # recursive calls:
         if power % 2 == 0:
             return Fraction.raise_to_power_aux(fraction.multiply(fraction), power // 2)
         else:
@@ -149,6 +152,7 @@ class Fraction:
                     else:
                         fractions_str += str(self.numerator) + '/' + str(self.denominator)
         else:
+            # TODO: decide if it is needed!..
             print("Denominator cannot be equal to Zero, fraction does not exist!")
         if is_negative:
             self.numerator = -self.numerator
@@ -162,6 +166,7 @@ class Fraction:
 
     @staticmethod
     def check(other: Fraction | int):
+        """check type"""
         if isinstance(other, int):
             other = Fraction(other)
         elif not isinstance(other, Fraction):
@@ -231,8 +236,9 @@ print(f1 * f3)
 print((f1 ** 10) * 7)
 
 # error check:
-print((f1 ** 10) * '97')
+# print((f1 ** 10) * '97')
 
 
 
+print(f'{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11][0:5:2]}')
 
