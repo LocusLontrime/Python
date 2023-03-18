@@ -1,6 +1,9 @@
 import time
 from random import random, randint
 
+
+# Task 1 (SORTING, HOARE):
+
 rec_counter: int
 
 
@@ -49,10 +52,29 @@ def hoare_partition(array: list[int], left_border: int, right_border: int, pivot
             return right_border
 
 
-input_list = [randint(1, 100) for _ in range(110)]
+input_list = [randint(1, 1000000) for _ in range(1000000)]
 
+start = time.time_ns()
 its = quick_sort(input_list)
+finish = time.time_ns()
 
 print(f'{input_list} \n its: {its}')
+print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
+
+
+# Task 2 (Three lists and a dict):
+
+def func(names: list[str], salaries: list[int], cash_prizes: list[str]) -> dict[str, float]:
+    if len({(l := len(names)), len(salaries), len(cash_prizes)}) != 1:
+        raise ValueError(f'Lengths of all three lists must be the same!!!')
+    return {names[i]: (salaries[i] * float(cash_prizes[i].split('%')[0]) / 100) for i in range(l)}
+
+
+names_ = ['Vadik', 'Svetlana', 'Dmitry', 'Ivan', 'Roman']
+salaries_ = [100000, 50000, 900000, 250000, 500000]
+cash_prizes_ = ['10.25', '19.88', '125.98', '55.52', '101.88']
+
+print(f'new dict: {func(names_, salaries_, cash_prizes_)}')
+
 
 
