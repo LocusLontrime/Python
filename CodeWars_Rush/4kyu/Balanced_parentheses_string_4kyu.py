@@ -1,4 +1,4 @@
-# accepted on codewars.com
+# accepted on codewars.com  # LL 36 366 98 989
 catalan_numbers = {0: 1}
 
 
