@@ -13,7 +13,20 @@ def fib_gen(size_: int):
 
 
 size = 10
-print(f'first {size} fibs: {list(fib_gen(size))}')
+list_ = []
+# print(f'first {size} fibs: {list()}')
+f = fib_gen(size)
+
+print(f'{next(f)}')
+print(f'{next(f)}')
+print(f'{next(f)}')
+print(f'{next(f)}')
+print(f'{next(f)}')
+print(f'list_: {list_}')
+
+
+
+
 
 
 

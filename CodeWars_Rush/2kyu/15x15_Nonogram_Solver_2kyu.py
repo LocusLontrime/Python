@@ -1,5 +1,6 @@
-def solve(clues):  # 36 366 98 989 LL
+def solve(clues_):  # 36 366 98 989 LL
     pass
+
 
 clues = (
     (
