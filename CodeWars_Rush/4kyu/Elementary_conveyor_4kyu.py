@@ -3,7 +3,7 @@ import sys
 # directional dict for moving alongside the conveyor:
 directions = {'r': (0, 1), 'd': (1, 0), 'l': (0, -1), 'u': (-1, 0)}
 # for large tests it is necessary!
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(100000)
 
 
 def path_counter(conveyor: str):
@@ -20,7 +20,7 @@ def path_counter(conveyor: str):
     result = [[-1 for _ in range(X)] for _ in range(Y)]
 
     def rec_paths_seeker(y_: int, x_: int, path_len: int):
-        # is the cell has already been visited:
+        # is the cell has not already been visited:
         if not grid[y_][x_][1]:
             # making changes in the result 2D array:
             result[y_][x_] = path_len

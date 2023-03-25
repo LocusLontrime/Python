@@ -1,6 +1,6 @@
 # Найдите максимальную сумму пути от вершины до основания следующего треугольника:
 
-triangle = [  # test case
+triangle_ = [  # test case
     [75],
     [95, 64],
     [17, 47, 82],
@@ -18,7 +18,7 @@ triangle = [  # test case
     [4, 62, 98, 27, 23, 9, 70, 98, 73, 93, 38, 53, 60, 4, 23],
 ]
 
-print(triangle[3][1])  # checking
+print(triangle_[3][1])  # checking
 
 
 def get_max_sum_path(triangle):
@@ -28,5 +28,5 @@ def get_max_sum_path(triangle):
     return triangle[0][0]
 
 
-print(get_max_sum_path(triangle))
+print(get_max_sum_path(triangle_))
 
