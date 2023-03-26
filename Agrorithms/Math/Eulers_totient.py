@@ -20,3 +20,6 @@ def eulers_totient_phi(m: int) -> int:  # algo for computing totient function
 
     return int(totient)
 
+
+print(f'totient: {eulers_totient_phi(6)}')
+
