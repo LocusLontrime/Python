@@ -28,6 +28,7 @@ def first_impossible(stones: list[tuple[int, int]]):  # LL 36 366 98 989
             process_stone(_y, _x, INIT_VAL)
 
     def process_stone(_y: int, _x: int, val: int, is_reversed: bool = False):
+        """place or stone or unplace it depending on the flag 'is_reversed'"""
         for neigh in get_neighs(_y, _x):
             if neigh in neighs.keys():
                 neighs[neigh] += (-val if is_reversed else val)
