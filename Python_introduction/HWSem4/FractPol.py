@@ -1,7 +1,7 @@
 from functools import reduce
 
-from AmberCode.HWSem4.Fraction import Fraction
-from AmberCode.HWSem4.Polynomial import Polynomial
+from Fraction import Fraction
+from Polynomial import Polynomial
 
 
 class FractPol:
@@ -105,7 +105,6 @@ class FractPol:
 
         quotient = FractPol('')
         remainder = self.copy()
-        temporal_pol = FractPol('')
 
         while len(remainder.coefficients) > 0 and max(remainder.coefficients.keys()) >= max(divisor.coefficients.keys()):
             rem_max_power = max(remainder.coefficients.keys())  # 36 366 98 989
@@ -246,6 +245,8 @@ print(FractPol('x^2-1').gcd(FractPol('x^2+2x+1')))
 print(FractPol('x^2-1').lcm(FractPol('x^2+2x+1')))
 
 print(FractPol('x^2+19x-1') / FractPol('23x-111'))
+
+print(FractPol(''))
 
 
 

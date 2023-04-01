@@ -7,6 +7,7 @@ class Polynomial:
     def __init__(self, pol_str: str):
         self.coefficients = {}
         self.get_coefficients_from_string(pol_str)
+        print(f'self.coefficients: {self.coefficients}')
 
     @staticmethod
     def get_random_pol(max_power: int, max_abs_coeff: int):
@@ -211,4 +212,5 @@ class Polynomial:
         pass
 
 
+p1, p2 = Polynomial('3x^4+5x^3-4x^2+x+1'), Polynomial('x+1')
 

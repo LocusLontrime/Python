@@ -155,15 +155,18 @@ class Plant(ABC):
     def shoot(self, grid: Grid):
         ...
 
-    @staticmethod
-    def inflict_damage(j: int, i: int, damage_remained: int, zombie: 'Zombie', grid: Grid):
+    def inflict_damage(self, j: int, i: int, damage_remained: int, zombie: 'Zombie', grid: Grid):
         z_hp = zombie.hp - damage_remained
+        sh = ('Super' if isinstance(self, SuperShooter) else '') + 'Shooter'
         if z_hp <= 0:
+            print(f'{sh}: {self} in the cell {j, i} destroys Zombie: {zombie}')
             grid.zombies.remove(zombie)
             grid.grid[j][i] = None
             return damage_remained - zombie.hp
         else:
+            print(f'{sh}: {self} in the cell {j, i} inflicts {damage_remained} to zombie: {zombie}, now zombie has: {z_hp} hp')
             zombie.hp = z_hp
+
             return 0
 
 
@@ -176,10 +179,8 @@ class Shooter(Plant):
     def shoot(self, grid: Grid) -> None:
         damage_remained = self._damage
         for i_ in range(self.i + 1, grid.i_max):
-            print(f'i_: {i_}, damage_remained: {damage_remained}')
             if isinstance((z := grid.grid[self.j][i_]), Zombie):
                 if delta_d := self.inflict_damage(self.j, i_, damage_remained, z, grid):
-                    print(f'LALA!!!')
                     damage_remained = delta_d
                 else:
                     # the plant runs out of bullets:
@@ -203,7 +204,6 @@ class SuperShooter(Plant):
             dj, di = dir_.value
             j_, i_ = self.j, self.i
             while grid.is_valid(j_ + dj, i_ + di):
-                print(f'dir_: {dir_}, damage: {self._damage}')
                 j_ += dj
                 i_ += di
                 if isinstance((z := grid.grid[j_][i_]), Zombie):
@@ -248,8 +248,10 @@ class Zombie:
         self._i -= 1
         # if zombie touches a plant he destroys it:
         if isinstance((s := grid.grid[self._j][self._i]), Shooter):
+            print(f'Zombie: {self} in the cell: {self._j, self._i} destroys Shooter {s}')
             grid.shooters.remove(s)
         elif isinstance((ss := grid.grid[self._j][self._i]), SuperShooter):
+            print(f'Zombie: {self} in the cell: {self._j, self._i} destroys SuperShooter {ss}')
             grid.super_shooters.remove(ss)
         # updating the grid:
         grid.grid[self._j][self._i] = self  # <<-- new position of zombie on the grid:
