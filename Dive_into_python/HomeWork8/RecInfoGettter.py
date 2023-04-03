@@ -30,7 +30,7 @@ def rec_info_getter(path: str):
     NAMES = ['file', 'dir', 'mount', 'link', 'unbeknown_obj']
 
     files_n_dirs = os.listdir(path)
-    # print(f'files_n_dirs: {files_n_dirs}')
+    print(f'files_n_dirs: {files_n_dirs}')
     type_: str
     general_size_ = 0
 
@@ -57,7 +57,7 @@ def rec_info_getter(path: str):
                 print(f'Congratulations, you found an unbeknown object in your OS!!!')
             info[file_or_dir_] = (path, NAMES[4], size_)
 
-        # print(f'size: {size_}')
+        print(f'size: {size_}')
 
         general_size_ += size_
 
