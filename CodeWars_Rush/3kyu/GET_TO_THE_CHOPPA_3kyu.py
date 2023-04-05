@@ -155,7 +155,7 @@ class Node:
 def convert_grid(grid, start_node, end_node):
     converted_grid = [[Node(i, j, grid[i][j].passable) for j in range(len(grid))] for i in range(len(grid[0]))]
     converted_start_node, converted_end_node = converted_grid[start_node.position.x][start_node.position.y], \
-                                               converted_grid[end_node.position.x][end_node.position.y]
+        converted_grid[end_node.position.x][end_node.position.y]
 
     return converted_grid, converted_start_node, converted_end_node
 
