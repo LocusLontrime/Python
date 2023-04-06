@@ -5,6 +5,9 @@ import heapq as hq
 import numpy as np
 
 
+adjacency_matrix = None
+
+
 class Point(NamedTuple):  # 36 366 98 989
     x: float
     y: float
@@ -17,12 +20,14 @@ class Circle(NamedTuple):
 
 # Returns length of the shortest route from a to b, avoiding the interiors of the circles in c
 def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float | None:
+    # adjacency matrix initialization:
+    adjacency_matrix: dict[tuple[Vertex, Vertex], float] = dict()  # <<-- memoization for edges lengths
     # if start or end point lies in at least one of the circles given:
     if not validate(a, b, c):
         return None
     # removing the repeating circles from the list:
     circles = set(c)
-    start_vertex, end_vertex = None, None
+    start_vertex, end_vertex = ..., ...
     # here we build a graph representing the circles-obstacles for further pathfinding:
     graph = build_graph(a, b, list(circles))
     # pathfinding using Dijkstra algorithm:
@@ -88,14 +93,28 @@ def circle_intersect(circle1: Circle, circle2: Circle) -> bool:
     return circle1.r + circle2.r > math.hypot(circle2.ctr.y - circle1.ctr.y, circle2.ctr.x - circle1.ctr.x)
 
 
-def get_valid_edges(c1: Circle | Point, c2: Circle) -> list[tuple['Vertex', 'Vertex']]:
+def get_valid_edges(c1: Circle | Point, c2: Circle, circles: list[Circle]) -> list[tuple['Vertex', 'Vertex']]:
     """defines all valid edges for 2 circles as list of tuples: (2 linked Vertices)"""
     # WitchDoctor's code (uses intersect()...):
 
     # check for obstacles (one for)...
 
     # Value error if c1 in c2 or c2 in c1...
-    ...
+    if isinstance(c1, Circle):
+        # obstacles check:
+        for circle in circles:
+            if circle not in [c1, c2]:
+                # let c1 be the larger circle:
+                c1_, c2_ = (c1, c2) if c1.r > c2.r else (c2, c1)
+                # getting all 4 or 2 pair of points:
+                # 1. 2 outer tangent edges:
+                angle_c1c2_ox = ...
+                if not circle_intersect(c1, c2):
+                    # 2. 2 crossing edges
+                    ...
+
+
+                # if intersect(...)
 
 
 def build_graph(a: Point, b: Point, circles: list[Circle]) -> list['Vertex']:
