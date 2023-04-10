@@ -51,6 +51,7 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     hq.heapify(vertexes_to_be_visited)  # -->> priority heap will be convenient for us.
     # the core of Dijkstra algo:
     counter = 0
+    print(f'dijkstra steps: ')
     while vertexes_to_be_visited:
         # current vertex
         vertex_ = hq.heappop(vertexes_to_be_visited)
@@ -371,6 +372,7 @@ class RotDir(Enum):
     ANTI_CLOCKWISE = 1  # LL 36 366 98 989
 
 
+# test:
 a__ = Point(x=1, y=1)
 b__ = Point(x=5, y=5)
 c__ = [Circle(ctr=Point(x=0, y=0), r=0.6654126562743986), Circle(ctr=Point(x=0, y=1), r=0.31217519648965275),
