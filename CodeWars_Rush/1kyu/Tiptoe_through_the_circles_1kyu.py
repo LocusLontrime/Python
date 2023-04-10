@@ -38,6 +38,9 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     # here we build a graph representing the circles-obstacles for further pathfinding,
     # v_hashes needed in order not to create new Vertexes if they have already been built:
     v_hashes = build_graph(a, b, list(circles))
+    print(f'v_hashes: ')
+    for i, (k, v) in enumerate(v_hashes.items()):
+        print(f'{i}. hash: {k}, vertex: {v}')
     if (start_hash := hash(Vertex(Circle(a, 0), 0))) not in v_hashes.keys() or (
             end_hash := hash(Vertex(Circle(b, 0), 0))) not in v_hashes.keys():
         return NO_PATH
@@ -47,9 +50,11 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     start_vertex.g = 0  # here we are situated at the very beginning of the path!
     hq.heapify(vertexes_to_be_visited)  # -->> priority heap will be convenient for us.
     # the core of Dijkstra algo:
+    counter = 0
     while vertexes_to_be_visited:
         # current vertex
         vertex_ = hq.heappop(vertexes_to_be_visited)
+        print(f'{counter}. current vertex: {vertex_}')
         if vertex_ == end_vertex:
             # the shortest path been found:
             break
@@ -64,6 +69,26 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
                     # path memoization:
                     neigh.previously_visited_vertex = vertex_
                     hq.heappush(vertexes_to_be_visited, neigh)
+        counter += 1
+    # path restoration:
+    # the start point of path restoration process (here we begin from the end node of the shortest path found):
+    vertex = end_vertex
+    shortest_path = []
+    # path restoring (here we get the reversed path):
+    while vertex.previously_visited_vertex:
+        shortest_path.append(vertex)
+        vertex = vertex.previously_visited_vertex
+    shortest_path.append(start_vertex)
+    # shortest path visualizing:
+    print(f'SHORTEST PATH VISUALIZATION: ')
+    for i, vertex in enumerate(sp := shortest_path[::-1]):
+        if vertex == start_vertex:
+            s = 'START'
+        elif vertex == end_vertex:
+            s = 'END'
+        else:
+            s = 'ARC' if vertex.circle == sp[i - 1].circle else 'BRIDGE'
+        print(f'{i}. {s}: {vertex}')
     # check end_vertex.g:
     if end_vertex.g == np.Infinity:
         # there is no path!
