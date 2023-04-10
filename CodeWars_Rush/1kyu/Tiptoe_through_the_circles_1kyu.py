@@ -22,8 +22,9 @@ class Circle(NamedTuple):
     r: float
 
 
-# Returns length of the shortest route from a to b, avoiding the interiors of the circles in c
 def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
+    """returns length of the shortest route from a to b,
+    avoiding the interiors of the circles in c"""
     print(f'a: {a}')
     print(f'b: {b}')
     print(f'circles: {c}')
@@ -166,15 +167,18 @@ def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle]) -> list[tup
     return vertices
 
 
-def build_edges_circle(vertices: list['Vertex'], separators: list[float]):
-    # builds all the links for all the vertices that belong to the same circle:
-    if vertices:
-        len_ = len(vertices)
-        for j in range(len_):
-            if vertices[j].circle.r:
+def build_edges_circle(vertices: set['Vertex'], separators: set[float]):
+    """builds all the links for all the vertices that belong to the same circle,
+    taking into account the presence of circle-obstacles, called separators
+    :param vertices: vertices of the same circle C
+    :param separators: directing angles of intersected circles C and O (obstacle)"""
+    vertices_ = list(vertices)
+    if vertices_:
+        for j in range(len_ := len(vertices_)):
+            if vertices_[j].circle.r:
                 for i in range(j + 1, len_):
-                    if vertices[j].rot_dir != vertices[i].rot_dir:
-                        min_angle_v, max_angle_v = sorted([vertices[j], vertices[i]], key=lambda x: x.angle)
+                    if vertices_[j].rot_dir != vertices_[i].rot_dir:
+                        min_angle_v, max_angle_v = sorted([vertices_[j], vertices_[i]], key=lambda x: x.angle)
                         flag = True
                         for obstacle in separators:
                             if min_angle_v.rot_dir == RotDir.ANTI_CLOCKWISE:
@@ -188,12 +192,14 @@ def build_edges_circle(vertices: list['Vertex'], separators: list[float]):
                                     flag = False
                                     break
                         if flag:
-                            vertices[j].connect(vertices[i])
-                            vertices[i].connect(vertices[j])
+                            vertices_[j].connect(vertices_[i])
+                            vertices_[i].connect(vertices_[j])
 
 
 def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
-    """builds graph: creates vertices and edges between them"""
+    """builds graph: creates vertices and edges between them,
+    then validates all the possible edges found,
+    here edge is the tuple of two connected vertices: tuple[v1, v2]"""
     # appending a and b points to the list of circles as A and B circles:
     A, B = Circle(a, 0), Circle(b, 0)
     circles_ = circles + [A, B]
@@ -201,17 +207,18 @@ def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
     # getting possible neighbours for all circles:
     len_ = len(circles_)
     # aux dicts of vertices and separators for all the circles:
-    circle_vertices = defaultdict(list[Vertex])  # : dict[Circle, list['Vertex']] = dict()
-    separators = defaultdict(list[float])  # : dict[Circle, list[float]] = dict()
+    circle_vertices = defaultdict(set[Vertex])  # : dict[Circle, list['Vertex']] = dict()
+    separators = defaultdict(set[float])  # : dict[Circle, list[float]] = dict()
     for j in range(len_):
         # initializing neighs for all the vertexes:
         # busting of all possible neighs for current circle:
         for i in range(j + 1, len_):
             if circle_intersect(cj := circles_[j], ci := circles_[i]):
-                separators[cj].append(angle_of_intersection(circles_[i], circles_[j]))
-                separators[ci].append(angle_of_intersection(circles_[j], circles_[i]))
+                separators[cj].add(angle_of_intersection(circles_[i], circles_[j]))
+                separators[ci].add(angle_of_intersection(circles_[j], circles_[i]))
             valid_edges = get_valid_edges(circles_[j], circles_[i], circles_)
             for v1, v2 in valid_edges:
+                # hashing:
                 v1_hash, v2_hash = hash(v1), hash(v2)
                 # extracting vertices from the memory:
                 v1 = v_hashes.setdefault(v1_hash, v1)
@@ -219,15 +226,21 @@ def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
                 # building link:
                 v1.connect(v2)
                 v2.connect(v1)
+                # defining the rotation's direction for v1 and v2 around the relative circles:
                 v1.get_rot_dir(v2)
                 v2.get_rot_dir(v1)
                 # building vertices[circle] dict:
-                circle_vertices[v1.circle].append(v1)
-                circle_vertices[v2.circle].append(v2)
+                circle_vertices[v1.circle].add(v1)
+                circle_vertices[v2.circle].add(v2)
+    # showing circle_vertices dict:
+    # print(f'circle_vertices: \n')
+    # for i, (k, v) in enumerate(circle_vertices.items()):
+    #     print(f'{i}th circle: {k}, {len(v)} vertices')
+    #     print(f'vertices: {v}\n')
     # getting all circle connections:
     for c in circles_:
-        verts, seps = circle_vertices[c] if c in circle_vertices.keys() else [], separators[
-            c] if c in separators.keys() else []
+        verts, seps = circle_vertices[c] if c in circle_vertices.keys() else {}, separators[
+            c] if c in separators.keys() else {}
         build_edges_circle(verts, seps)
     return v_hashes
 
@@ -245,22 +258,21 @@ def _in(c1: Circle, c2: Circle):
 def validate_ab(a: Point, b: Point, circles: list[Circle]) -> bool:
     """checks if a or b point lies in some circle from the list"""
     for circle in circles:
-        if in_(a, circle):
-            return False
-        elif in_(b, circle):
+        if in_(a, circle) or in_(b, circle):
             return False
     return True
 
 
 @functools.lru_cache
 def get_coeffs(p1: Point, p2: Point) -> tuple[float, float, float]:
-    """defines the coefficients a, b, c for the straight line describing by the equation: ax + by + c = 0
+    """defines the coefficients a, b, c for the straight line,
+    describing by the equation: ax + by + c = 0
     and passing through 2 different points: p1 and p2"""
     if p1 != p2:
         # constants for the straight line equation:
         return p2.y - p1.y, p1.x - p2.x, p1.y * p2.x - p2.y * p1.x
     else:
-        raise ValueError(f'method: {get_coeffs}, p1: {p1} = p2: {p2}')
+        raise ValueError(f'method: {get_coeffs}, p1: {p1} cannot be equal to p2: {p2}')
 
 
 def arc(a1: float, a2: float, circle: Circle, flag: bool = True) -> float:
@@ -269,15 +281,18 @@ def arc(a1: float, a2: float, circle: Circle, flag: bool = True) -> float:
     return da * circle.r if flag else (2 * math.pi - da) * circle.r
 
 
-def scalar_product(x1, y1, x2, y2):
+def scalar_product(x1: float, y1: float, x2: float, y2: float):
+    """calculates the scalar product of two vectors: v1(x1, y1) and v2(x2, y2)"""
     return x1 * x2 + y1 * y2
 
 
-def cross_product_val(x1, y1, x2, y2):
+def cross_product_val(x1: float, y1: float, x2: float, y2: float):
+    """returns the scalar value of vector cross product for two vectors: v1(x1, y1) and v2(x2, y2)"""
     return x1 * y2 - x2 * y1
 
 
 def angle_of_intersection(outer_obj: Circle | Point, circle: Circle):
+    """defines the angle between vector(circle, outer_obj) and abscissa axis"""
     _x, _y = 0, 1  # abscissa axis
     if isinstance(outer_obj, Circle):
         x_, y_ = outer_obj.ctr.x - circle.ctr.x, outer_obj.ctr.y - circle.ctr.y
@@ -297,7 +312,8 @@ def angle_of_intersection(outer_obj: Circle | Point, circle: Circle):
 
 class Vertex:
     """Vertex cannot be just a circle, it is a point on the border of the circle
-    with some concrete value of the angle with abscissa axis..."""
+    with some concrete value of the angle with abscissa axis and
+    rotation direction around the circle..."""
 
     def __init__(self, circle: Circle, angle: float):
         # basic attrs:
@@ -318,10 +334,15 @@ class Vertex:
         return self._rot_dir
 
     def edge(self, other: 'Vertex'):
+        """returns the length of the edge from the Vertex: v1 to the Vertex: v2"""
         if self.circle == other.circle:
+            # the vertices lie on the same circle:
             v1, v2 = sorted([self, other], key=lambda x: x.angle)
+            # the rotation's direction also has an impact on result:
             res = arc(self.angle, other.angle, self.circle, v1.rot_dir == RotDir.ANTI_CLOCKWISE)
         else:
+            # the vertices lie on the different circles,
+            # it is just an euclidian distance between v1 and v2 points:
             x1, y1, x2, y2 = self.x, self.y, other.x, other.y
             res = math.hypot(x2 - x1, y2 - y1)
         return res
@@ -333,11 +354,13 @@ class Vertex:
                 self.neighs.add(other)
 
     def get_rot_dir(self, twin: 'Vertex'):
+        """defines the rotation's direction of the vertex"""
         l_vector = twin.x - self.x, twin.y - self.y
         r_vector = self.x - self.circle.ctr.x, self.y - self.circle.ctr.y
         self._rot_dir = RotDir.CLOCKWISE if cross_product_val(*l_vector, *r_vector) < 0 else RotDir.ANTI_CLOCKWISE
 
     def validate_edge(self, other: 'Vertex', circles: list[Circle]):
+        """validates the edge between 2 vertices, forbidding any intersections with outer circles"""
         if self != other:
             for circle in circles:
                 if circle not in {self.circle, other.circle}:
@@ -348,10 +371,12 @@ class Vertex:
             raise ValueError(f'method {self.validate_edge} works only for 2 different vertices...')
 
     def __eq__(self, other):
-        return (self.circle, self.angle) == (other.circle, other.angle)
+        # return (self.circle, self.angle) == (other.circle, other.angle)
+        return (self.circle, self.angle, self.rot_dir) == (other.circle, other.angle, other.rot_dir)
 
     def __ne__(self, other):
-        return (self.circle, self.angle) != (other.circle, other.angle)
+        # return (self.circle, self.angle) != (other.circle, other.angle)
+        return (self.circle, self.angle, self.rot_dir) != (other.circle, other.angle, other.rot_dir)
 
     def __lt__(self, other):
         # necessary for priority queue:
@@ -364,6 +389,7 @@ class Vertex:
         return str(self)
 
     def __hash__(self):
+        # necessary for hashing:
         return hash((self.circle, self.angle))
 
 
@@ -413,3 +439,8 @@ start = time.time_ns()
 print(f'shortest_path: {shortest_path_length(a__, b__, c__)}')
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
+
+
+
+
+
