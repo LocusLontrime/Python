@@ -11,6 +11,7 @@ from collections import defaultdict
 ERR = 10 ** -8
 NO_PATH = -1.0
 circle_pairs_counter: int
+trinity_counter: int
 
 
 class Point(NamedTuple):  # 36 366 98 989
@@ -23,11 +24,12 @@ class Circle(NamedTuple):
     r: float
 
 
-def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
+def shortest_path_length(a: Point, b: Point, c: list[Circle], flag=False) -> float:
     """returns length of the shortest route from a to b,
     avoiding the interiors of the circles in c"""
-    global circle_pairs_counter
+    global circle_pairs_counter, trinity_counter
     circle_pairs_counter = 0
+    trinity_counter = 0
     print(f'a: {a}')
     print(f'b: {b}')
     print(f'circles: {c}')
@@ -41,10 +43,11 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     circles = [c for c in circles if all([not _in(c, c_) for c_ in circles - {c}])]
     # here we build a graph representing the circles-obstacles for further pathfinding,
     # v_hashes needed in order not to create new Vertexes if they have already been built:
-    v_hashes = build_graph(a, b, list(circles))
-    print(f'v_hashes: ')
-    for i, (k, v) in enumerate(v_hashes.items()):
-        print(f'{i}. hash: {k}, vertex: {v}, neighs: {len(v.neighs)}')
+    v_hashes = build_graph(a, b, circles, flag)
+    print(f'{len(v_hashes)} v_hashes found: ')
+    if flag:
+        for i, (k, v) in enumerate(v_hashes.items()):
+            print(f'{i}. hash: {k}, vertex: {v}, neighs: {len(v.neighs)}')
     if (start_hash := hash(Vertex(Circle(a, 0), 0))) not in v_hashes.keys() or (
             end_hash := hash(Vertex(Circle(b, 0), 0))) not in v_hashes.keys():
         print(f'start or end point has no neighs')
@@ -56,11 +59,12 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     hq.heapify(vertexes_to_be_visited)  # -->> priority heap will be convenient for us.
     # the core of Dijkstra algo:
     counter = 0
-    print(f'dijkstra steps: ')
+    print(f'dijkstra has made: ')
     while vertexes_to_be_visited:
         # current vertex
         vertex_ = hq.heappop(vertexes_to_be_visited)
-        print(f'{counter}. current vertex: {vertex_}')
+        if flag:
+            print(f'{counter}. current vertex: {vertex_}')
         if vertex_ == end_vertex:
             # the shortest path been found:
             break
@@ -76,6 +80,7 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
                     neigh.previously_visited_vertex = vertex_
                     hq.heappush(vertexes_to_be_visited, neigh)
         counter += 1
+    print(f'{counter + 1} steps...')
     # path restoration:
     # the start point of path restoration process (here we begin from the end node of the shortest path found):
     vertex = end_vertex
@@ -135,7 +140,7 @@ def circle_intersect(circle1: Circle, circle2: Circle) -> bool:
     return circle1.r + circle2.r > math.hypot(circle2.ctr.y - circle1.ctr.y, circle2.ctr.x - circle1.ctr.x)
 
 
-def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle]) -> list[tuple['Vertex', 'Vertex']]:
+def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle], flag: bool = False) -> list[tuple['Vertex', 'Vertex']]:
     """defines all valid edges for 2 circles as list of tuples: (2 linked Vertices)"""
     global circle_pairs_counter
     # possible linked vertices:
@@ -167,9 +172,11 @@ def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle]) -> list[tup
         # 0. if c1 - Point, c2 - Point or c1 and c2 - point:
         poss_vertices.append((Vertex(c1_, 0), Vertex(c2_, 0)))
     # obstacles check:
-    print(f'{circle_pairs_counter}. for circles: {c1_, c2_} {len(poss_vertices)} possible vertices been found')
+    if flag:
+        print(f'{circle_pairs_counter}. for circles: {c1_, c2_} {len(poss_vertices)} possible vertices been found')
     vertices = [(v1, v2) for v1, v2 in poss_vertices if v1.validate_edge(v2, circles)]
-    print(f'{len(vertices)} vertices remained after validation')
+    if flag:
+        print(f'{len(vertices)} vertices remained after validation')
     circle_pairs_counter += 1
     # returns res:
     return vertices
@@ -204,7 +211,7 @@ def build_edges_circle(vertices: set['Vertex'], separators: set[float]):
                             vertices_[i].connect(vertices_[j])
 
 
-def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
+def build_graph(a: Point, b: Point, circles: list[Circle], flag=False) -> dict:
     """builds graph: creates vertices and edges between them,
     then validates all the possible edges found,
     here edge is the tuple of two connected vertices: tuple[v1, v2]"""
@@ -224,7 +231,7 @@ def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
             if circle_intersect(cj := circles_[j], ci := circles_[i]):
                 separators[cj].add(angle_of_intersection(circles_[i], circles_[j]))
                 separators[ci].add(angle_of_intersection(circles_[j], circles_[i]))
-            valid_edges = get_valid_edges(circles_[j], circles_[i], circles_)
+            valid_edges = get_valid_edges(circles_[j], circles_[i], circles_, flag)
             for v1, v2 in valid_edges:
                 # hashing:
                 v1_hash, v2_hash = hash(v1), hash(v2)
@@ -241,10 +248,11 @@ def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
                 circle_vertices[v1.circle].add(v1)
                 circle_vertices[v2.circle].add(v2)
     # showing circle_vertices dict:
-    print(f'circle_vertices: \n')
-    for i, (k, v) in enumerate(circle_vertices.items()):
-        print(f'{i}th circle: {k} has {len(v)} vertices')
-        print(f'vertices: {v}\n')
+    if flag:
+        print(f'circle_vertices: \n')
+        for i, (k, v) in enumerate(circle_vertices.items()):
+            print(f'{i}th circle: {k} has {len(v)} vertices')
+            print(f'vertices: {v}\n')
     # getting all circle connections:
     for c in circles_:
         verts, seps = circle_vertices[c] if c in circle_vertices.keys() else {}, separators[
@@ -276,9 +284,13 @@ def get_coeffs(p1: Point, p2: Point) -> tuple[float, float, float]:
     """defines the coefficients a, b, c for the straight line,
     describing by the equation: ax + by + c = 0
     and passing through 2 different points: p1 and p2"""
+    global trinity_counter
     if p1 != p2:
         # constants for the straight line equation:
-        return p2.y - p1.y, p1.x - p2.x, p1.y * p2.x - p2.y * p1.x
+        a, b, c = p2.y - p1.y, p1.x - p2.x, p1.y * p2.x - p2.y * p1.x
+        print(f'{trinity_counter}. a, b, c: {a, b, c}')
+        trinity_counter += 1
+        return a, b, c
     else:
         raise ValueError(f'method: {get_coeffs}, p1: {p1} cannot be equal to p2: {p2}')
 
@@ -443,12 +455,77 @@ c__ = [Circle(ctr=Point(x=0, y=0), r=0.6654126562743986), Circle(ctr=Point(x=0, 
 
 # 6.03335656791951
 
+a__x = Point(x=1, y=1)
+b__x = Point(x=5, y=5)
+c__x = [Circle(ctr=Point(x=0, y=0), r=0.22536087676417083), Circle(ctr=Point(x=0, y=1), r=0.31572697742376477),
+        Circle(ctr=Point(x=0, y=2), r=0.34621551611926404), Circle(ctr=Point(x=0, y=3), r=0.5213144983397796),
+        Circle(ctr=Point(x=0, y=4), r=0.5118164314655587), Circle(ctr=Point(x=0, y=5), r=0.24980794640723614),
+        Circle(ctr=Point(x=0, y=6), r=0.5152214519446715), Circle(ctr=Point(x=0, y=7), r=0.522460746509023),
+        Circle(ctr=Point(x=1, y=0), r=0.55523882440757), Circle(ctr=Point(x=1, y=2), r=0.6768058778950944),
+        Circle(ctr=Point(x=1, y=3), r=0.22686033414211124), Circle(ctr=Point(x=1, y=4), r=0.40346503250766547),
+        Circle(ctr=Point(x=1, y=5), r=0.6050873699365183), Circle(ctr=Point(x=1, y=6), r=0.44699280748609455),
+        Circle(ctr=Point(x=1, y=7), r=0.571783722541295), Circle(ctr=Point(x=2, y=0), r=0.623612377163954),
+        Circle(ctr=Point(x=2, y=1), r=0.47327484309207646), Circle(ctr=Point(x=2, y=2), r=0.4116287773707881),
+        Circle(ctr=Point(x=2, y=3), r=0.6735617255559191), Circle(ctr=Point(x=2, y=4), r=0.4685481223510578),
+        Circle(ctr=Point(x=2, y=5), r=0.5217285147635266), Circle(ctr=Point(x=2, y=6), r=0.30998576211277395),
+        Circle(ctr=Point(x=2, y=7), r=0.5198963790899143), Circle(ctr=Point(x=3, y=0), r=0.5368135755183175),
+        Circle(ctr=Point(x=3, y=1), r=0.5974121243460103), Circle(ctr=Point(x=3, y=2), r=0.5061762819299475),
+        Circle(ctr=Point(x=3, y=3), r=0.4053584629436955), Circle(ctr=Point(x=3, y=4), r=0.6964988417224959),
+        Circle(ctr=Point(x=3, y=5), r=0.28043378989677875), Circle(ctr=Point(x=3, y=6), r=0.503911703475751),
+        Circle(ctr=Point(x=3, y=7), r=0.1262727547204122), Circle(ctr=Point(x=4, y=0), r=0.5151378431590273),
+        Circle(ctr=Point(x=4, y=1), r=0.36086485579144206), Circle(ctr=Point(x=4, y=2), r=0.4173152281204238),
+        Circle(ctr=Point(x=4, y=3), r=0.3183767212321982), Circle(ctr=Point(x=4, y=4), r=0.6159705261932685),
+        Circle(ctr=Point(x=4, y=5), r=0.20989467788022012), Circle(ctr=Point(x=4, y=6), r=0.6259145677322522),
+        Circle(ctr=Point(x=4, y=7), r=0.6778776474064215), Circle(ctr=Point(x=5, y=0), r=0.5636972558917478),
+        Circle(ctr=Point(x=5, y=1), r=0.5609463461441919), Circle(ctr=Point(x=5, y=2), r=0.391939307958819),
+        Circle(ctr=Point(x=5, y=3), r=0.456533202691935), Circle(ctr=Point(x=5, y=4), r=0.43285039805341513),
+        Circle(ctr=Point(x=5, y=6), r=0.666378344851546), Circle(ctr=Point(x=5, y=7), r=0.5680479590082541),
+        Circle(ctr=Point(x=6, y=0), r=0.4713804449653253), Circle(ctr=Point(x=6, y=1), r=0.4619080887408927),
+        Circle(ctr=Point(x=6, y=2), r=0.24539715021383016), Circle(ctr=Point(x=6, y=3), r=0.3736096939304843),
+        Circle(ctr=Point(x=6, y=4), r=0.6197382619371637), Circle(ctr=Point(x=6, y=5), r=0.24627519131172448),
+        Circle(ctr=Point(x=6, y=6), r=0.5888057655422017), Circle(ctr=Point(x=6, y=7), r=0.5676657743984833),
+        Circle(ctr=Point(x=7, y=0), r=0.540108250058256), Circle(ctr=Point(x=7, y=1), r=0.5732564409496262),
+        Circle(ctr=Point(x=7, y=2), r=0.5362131939036772), Circle(ctr=Point(x=7, y=3), r=0.5966956639895216),
+        Circle(ctr=Point(x=7, y=4), r=0.7095990309258923), Circle(ctr=Point(x=7, y=5), r=0.6521467766957357),
+        Circle(ctr=Point(x=7, y=6), r=0.29132984827738256), Circle(ctr=Point(x=7, y=7), r=0.5453128289664164)]
+
+# ...
+
+a__xy = Point(x=1, y=1)
+b__xy = Point(x=5, y=5)
+c__xy = [Circle(ctr=Point(x=0, y=0), r=0.3733836166535602), Circle(ctr=Point(x=0, y=1), r=0.7646571021257514),
+         Circle(ctr=Point(x=0, y=2), r=0.37625935979706626), Circle(ctr=Point(x=0, y=3), r=0.46151910213661984),
+         Circle(ctr=Point(x=0, y=4), r=0.49633754706788186), Circle(ctr=Point(x=0, y=5), r=0.3924247965496766),
+         Circle(ctr=Point(x=0, y=6), r=0.6465832422643291), Circle(ctr=Point(x=0, y=7), r=0.7355589298669372),
+         Circle(ctr=Point(x=1, y=0), r=0.2556949529041494), Circle(ctr=Point(x=1, y=2), r=0.43340103319944806),
+         Circle(ctr=Point(x=1, y=3), r=0.16363142176405582), Circle(ctr=Point(x=1, y=4), r=0.36872687720007097),
+         Circle(ctr=Point(x=1, y=5), r=0.4654180178631844), Circle(ctr=Point(x=1, y=6), r=0.7160705898422999),
+         Circle(ctr=Point(x=1, y=7), r=0.3603082984813049), Circle(ctr=Point(x=2, y=0), r=0.23005439464389651),
+         Circle(ctr=Point(x=2, y=1), r=0.5210477234553427), Circle(ctr=Point(x=2, y=2), r=0.5137340003548325),
+         Circle(ctr=Point(x=2, y=3), r=0.28561070378126985), Circle(ctr=Point(x=2, y=4), r=0.5427584194859758),
+         Circle(ctr=Point(x=2, y=5), r=0.44646162416440927), Circle(ctr=Point(x=2, y=6), r=0.5873580569370819),
+         Circle(ctr=Point(x=2, y=7), r=0.5072925438051062), Circle(ctr=Point(x=3, y=0), r=0.6543755554632266),
+         Circle(ctr=Point(x=3, y=1), r=0.32641189534982995), Circle(ctr=Point(x=3, y=2), r=0.1738723820347528),
+         Circle(ctr=Point(x=3, y=3), r=0.4427842675433667), Circle(ctr=Point(x=3, y=4), r=0.5237682156468356),
+         Circle(ctr=Point(x=3, y=5), r=0.560401627944492), Circle(ctr=Point(x=3, y=6), r=0.5712770753708286),
+         Circle(ctr=Point(x=3, y=7), r=0.4805720039034642), Circle(ctr=Point(x=4, y=0), r=0.6669233716491119),
+         Circle(ctr=Point(x=4, y=1), r=0.5157106855297812), Circle(ctr=Point(x=4, y=2), r=0.5514950057560287),
+         Circle(ctr=Point(x=4, y=3), r=0.33233196317322716), Circle(ctr=Point(x=4, y=4), r=0.8083744257600238),
+         Circle(ctr=Point(x=4, y=5), r=0.3333187589810605), Circle(ctr=Point(x=4, y=6), r=0.7664630215297396),
+         Circle(ctr=Point(x=4, y=7), r=0.32948012254500303), Circle(ctr=Point(x=5, y=0), r=0.720832835624389),
+         Circle(ctr=Point(x=5, y=1), r=0.38146775936107147), Circle(ctr=Point(x=5, y=2), r=0.6902580605317346),
+         Circle(ctr=Point(x=5, y=3), r=0.43938439937473345), Circle(ctr=Point(x=5, y=4), r=0.7060807031153361),
+         Circle(ctr=Point(x=5, y=6), r=0.5329481712575107), Circle(ctr=Point(x=5, y=7), r=0.2679594922303426),
+         Circle(ctr=Point(x=6, y=0), r=0.2701717944605807), Circle(ctr=Point(x=6, y=1), r=0.6040820497521656),
+         Circle(ctr=Point(x=6, y=2), r=0.370754937522257), Circle(ctr=Point(x=6, y=3), r=0.25923713989749153),
+         Circle(ctr=Point(x=6, y=4), r=0.26010998861553186), Circle(ctr=Point(x=6, y=5), r=0.6605004936242216),
+         Circle(ctr=Point(x=6, y=6), r=0.47369012732331167), Circle(ctr=Point(x=6, y=7), r=0.2473842261471942),
+         Circle(ctr=Point(x=7, y=0), r=0.36160998572254843), Circle(ctr=Point(x=7, y=1), r=0.4487130029786687),
+         Circle(ctr=Point(x=7, y=2), r=0.7419241735684938), Circle(ctr=Point(x=7, y=3), r=0.2437247934395541),
+         Circle(ctr=Point(x=7, y=4), r=0.4293908535832631), Circle(ctr=Point(x=7, y=5), r=0.5398185771497245),
+         Circle(ctr=Point(x=7, y=6), r=0.4960298569587059), Circle(ctr=Point(x=7, y=7), r=0.6997170076760052)]
+
 start = time.time_ns()
 print(f'shortest_path: {shortest_path_length(a__, b__, c__)}')
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
-
-
-
-
-
