@@ -10,6 +10,7 @@ from collections import defaultdict
 
 ERR = 10 ** -8
 NO_PATH = -1.0
+circle_pairs_counter: int
 
 
 class Point(NamedTuple):  # 36 366 98 989
@@ -25,6 +26,8 @@ class Circle(NamedTuple):
 def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     """returns length of the shortest route from a to b,
     avoiding the interiors of the circles in c"""
+    global circle_pairs_counter
+    circle_pairs_counter = 0
     print(f'a: {a}')
     print(f'b: {b}')
     print(f'circles: {c}')
@@ -41,9 +44,10 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     v_hashes = build_graph(a, b, list(circles))
     print(f'v_hashes: ')
     for i, (k, v) in enumerate(v_hashes.items()):
-        print(f'{i}. hash: {k}, vertex: {v}')
+        print(f'{i}. hash: {k}, vertex: {v}, neighs: {len(v.neighs)}')
     if (start_hash := hash(Vertex(Circle(a, 0), 0))) not in v_hashes.keys() or (
             end_hash := hash(Vertex(Circle(b, 0), 0))) not in v_hashes.keys():
+        print(f'start or end point has no neighs')
         return NO_PATH
     start_vertex, end_vertex = v_hashes[start_hash], v_hashes[end_hash]  # weird !!!
     # pathfinding using Dijkstra algorithm:
@@ -94,10 +98,10 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle]) -> float:
     # check end_vertex.g:
     if end_vertex.g == np.Infinity:
         # there is no path!
-        print(f'THERE IS NO PATH!!!')
+        print(f'end_vertex.g = np.Infinity. THERE IS NO PATH!!!')
         return NO_PATH
     # returns the result:
-    return end_vertex.g if end_vertex.g != np.Infinity else NO_PATH
+    return end_vertex.g
 
 
 def intersect(p1: Point, p2: Point, circle: Circle) -> bool:
@@ -133,6 +137,7 @@ def circle_intersect(circle1: Circle, circle2: Circle) -> bool:
 
 def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle]) -> list[tuple['Vertex', 'Vertex']]:
     """defines all valid edges for 2 circles as list of tuples: (2 linked Vertices)"""
+    global circle_pairs_counter
     # possible linked vertices:
     poss_vertices = []
     # Value error if c1 in c2 or c2 in c1...
@@ -162,7 +167,10 @@ def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle]) -> list[tup
         # 0. if c1 - Point, c2 - Point or c1 and c2 - point:
         poss_vertices.append((Vertex(c1_, 0), Vertex(c2_, 0)))
     # obstacles check:
+    print(f'{circle_pairs_counter}. for circles: {c1_, c2_} {len(poss_vertices)} possible vertices been found')
     vertices = [(v1, v2) for v1, v2 in poss_vertices if v1.validate_edge(v2, circles)]
+    print(f'{len(vertices)} vertices remained after validation')
+    circle_pairs_counter += 1
     # returns res:
     return vertices
 
@@ -233,10 +241,10 @@ def build_graph(a: Point, b: Point, circles: list[Circle]) -> dict:
                 circle_vertices[v1.circle].add(v1)
                 circle_vertices[v2.circle].add(v2)
     # showing circle_vertices dict:
-    # print(f'circle_vertices: \n')
-    # for i, (k, v) in enumerate(circle_vertices.items()):
-    #     print(f'{i}th circle: {k}, {len(v)} vertices')
-    #     print(f'vertices: {v}\n')
+    print(f'circle_vertices: \n')
+    for i, (k, v) in enumerate(circle_vertices.items()):
+        print(f'{i}th circle: {k} has {len(v)} vertices')
+        print(f'vertices: {v}\n')
     # getting all circle connections:
     for c in circles_:
         verts, seps = circle_vertices[c] if c in circle_vertices.keys() else {}, separators[
