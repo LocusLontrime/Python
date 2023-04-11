@@ -1,4 +1,5 @@
 class Matrix:
+    """represents a rectangular matrix"""
     def __init__(self, matrix: list[list[int]]):
         set_ = set()
         for row in matrix:
