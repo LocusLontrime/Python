@@ -80,21 +80,28 @@ class Go:  # LL 36 366 98 989
         stones_: set[tuple[int, int]]
         neighs_: set[tuple[int, int]]
 
+        # clearing core pars:
+        self._black_islands = []
+        self._white_islands = []
+
         def dfs(y_: int, x_: int) -> int:
-            if self._board[y_][x_] == symb_:
-                # appending a stone:
-                stones_.add((y_, x_))
-                # visiting:
-                visited[y][x] = True
-                # further steps:
-                area = 0
-                for dy, dx in Island.dydx:
-                    area += dfs(y_ + dy, x_ + dx)
-                return area + 1
-            else:
-                # appending an empty neigh:
-                neighs_.add((y_, x_))
-                return 0
+            if self.validate(y_, x_):
+                if self._board[y_][x_] == symb_ and not visited[y_][x_]:
+                    # appending a stone:
+                    print(f'appending a stone: {y_, x_}')
+                    stones_.add((y_, x_))
+                    # visiting:
+                    visited[y_][x_] = True
+                    # further steps:
+                    area = 0
+                    for dy, dx in Island.dydx:
+                        area += dfs(y_ + dy, x_ + dx)
+                    return area + 1
+                elif self._board[y_][x_] == Go.EMPTY:
+                    # appending an empty neigh:
+                    neighs_.add((y_, x_))
+                    return 0
+            return 0
         # counter for the new islands:
         icounter = 0
         for y in range(self._height):
@@ -221,7 +228,7 @@ class Go:  # LL 36 366 98 989
         # rolling back the board state by 'turns_back' turns back:
         self._board = self._memo[self._turn]
         # core pars updating:
-        ...
+        self.check_islands()
         print(f'the board after rollback: ')
         print(f'{self}')
 
@@ -236,7 +243,7 @@ class Island:
         # True means black while False means white...
         self._player = black
         # core pars:
-        self._stones: set[tuple[int, int]] = {stone} if stone is not None else {}
+        self._stones: set[tuple[int, int]] = {stone} if stone is not None else set()
         self._neighs: set[tuple[int, int]] = set()
         # altering the board:
         if stone is not None:
@@ -337,8 +344,8 @@ class Island:
         if self._stones or self._neighs:
             raise ValueError(f'the island cannot be updated because it is not an empty one...'
                              f'it contains {self.size} stones and {self.liberties} neighs')
-        self._stones = stones
-        self._neighs = neighs
+        self._stones |= stones
+        self._neighs |= neighs
 
 
 go = Go(9)
@@ -352,11 +359,13 @@ go.move('9H')
 go.move('3A')
 go.move('8H')
 go.move('1C')
-# go.rollback(4)
 go.move('1A')
 # go.move('1A')
 # go.move('9J')
-
+go.rollback(4)
+go.move('3A')
+go.move('7J')
+go.move('1C')
 
 print(f'{go.islands}')
 # TODO: when is the game over?
