@@ -5,6 +5,36 @@ from copy import deepcopy
 
 class Go:  # LL 36 366 98 989
     """represents a playable game of Go for two players"""
+
+    class Hash:
+        """aux class for Go game class, represents a board hash, mutable"""
+        def __init__(self, width: int):
+            self._width = width
+            self.hash = 0
+            self._hashes = {0}
+            self._hashes_ordered = {0: 0}
+
+        def num(self, y: int, x: int) -> int:
+            return y * self._width + x
+
+        def dhash(self, stone: tuple[int, int], black: bool = True, add: bool = True) -> None:
+            """calculates the hash change after appending (add = True) a black (black = True) or white (black = False) stone
+            or after removing it (add = False)"""
+            self.hash += (1 if add else -1) * (1 if black else 2) * 3 ** self.num(*stone)
+
+        def check_ko_rule(self, turn: int) -> bool:
+            """checks the enforcement of the following KO rule:
+            player cannot recreate the same board as the board after one of the previous moves"""
+            # TODO: does this rule have the unlimited depth?
+            print(f'hash_: {self.hash}')
+            print(f'hashes: {self._hashes}')
+            if self.hash in self._hashes:
+                return False
+            else:
+                self._hashes.add(self.hash)
+                self._hashes_ordered[turn] = self.hash
+                return True
+
     alphas = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'
     BLACK, WHITE, EMPTY = 'x', 'o', '.'
     HANDICAPS = {
@@ -17,11 +47,14 @@ class Go:  # LL 36 366 98 989
     def __init__(self, height: int, width: int = None) -> None:
         self._height = height
         self._width = width if width is not None else height
+        if not (0 < self._width <= len(Go.alphas) and 0 < self._height < len(Go.alphas)):
+            raise ValueError(f'Board cannot be larger than 25 by 25')
         self._board = [[Go.EMPTY for _ in range(self._width)] for _ in range(self._height)]
         self._turn = 0
         # previous board's states:
-        self._states = set()
-        self._states.add(hash(self))
+        self._hash = Go.Hash(self._width)
+        # self._states = set()
+        # self._states.add(hash(self))
         # memoization:
         # TODO: to think about implementation and further optimization of a rollback system...
         self._memo: dict[int, list[list[str]]] = dict()
@@ -52,6 +85,10 @@ class Go:  # LL 36 366 98 989
         return self._turn % 2 == 0
 
     @property
+    def size(self):
+        return {"height": self._height, "width": self._width}
+
+    @property
     def islands(self):
         blacks = '\n'.join(str(_) for _ in self._black_islands)
         whites = '\n'.join(str(_) for _ in self._white_islands)
@@ -70,9 +107,6 @@ class Go:  # LL 36 366 98 989
         """validates position"""
         return 0 <= y < self._height and 0 <= x < self._width
 
-    def __hash__(self):
-        return hash(tuple(tuple(row) for row in self._board))
-
     def check_islands(self):
         """finds all the islands after rollback..."""
         # memoization of visited cells:
@@ -90,6 +124,7 @@ class Go:  # LL 36 366 98 989
                     # appending a stone:
                     print(f'appending a stone: {y_, x_}')
                     stones_.add((y_, x_))
+                    ...
                     # visiting:
                     visited[y_][x_] = True
                     # further steps:
@@ -113,7 +148,7 @@ class Go:  # LL 36 366 98 989
                     # here dfs starts:
                     dfs(y, x)
                     # island creating:
-                    island_ = Island(self._board, None, symb_ == self.BLACK)
+                    island_ = Island(self._board, self._hash, None, symb_ == self.BLACK)
                     # island updating:
                     island_.update(stones_, neighs_)
                     # island appending to the Islands list:
@@ -124,11 +159,15 @@ class Go:  # LL 36 366 98 989
 
     def create_island(self, stone: tuple[int, int]) -> 'Island':
         """creates an island with player's stone at (y, x)"""
-        island = Island(self._board, stone, self.black)
+        island = Island(self._board, self._hash, stone, self.black)
         island.append(self._black_islands, self._white_islands)
         return island
 
-    def move(self, pos: str) -> None:
+    def move(self, *positions) -> None:
+        for pos_ in positions:
+            self.move_(pos_)
+
+    def move_(self, pos: str) -> None:
         """player makes a move"""
         stone = (y, x) = self.parse_pos(pos)
         print(f'Now {self.turn}s is moving... trying to locate a {self.turn} stone at {y, x} position!')
@@ -155,18 +194,23 @@ class Go:  # LL 36 366 98 989
                             # board altering:
                             self._board[y_][x_] = Go.EMPTY
                         print(f'all the captured stones have been removed!')
-
                 if allies:
+                    print(f'unifying {self.turn} islands: ')
                     sum_ = reduce(lambda a, b: a + b, allies)
-                    for ally in allies:
-                        ally.remove(self._black_islands, self._white_islands)
-                    sum_.append(self._black_islands, self._white_islands)
-                    sum_.add_stone(stone, self._black_islands, self._white_islands)
+                    if not sum_.add_stone(stone):
+                        # self-capturing prohibition's violation:
+                        # TODO: handle the self-capturing case!!!
+                        raise ValueError(
+                            f'self-capturing is strictly prohibited!.. violation detected at the cell: {y, x}')
+                    else:
+                        for ally in allies:
+                            ally.remove(self._black_islands, self._white_islands, need_to_hash=False)
+                        sum_.append(self._black_islands, self._white_islands)
                 else:
                     print(f'a new Island has just been created')
                     island = self.create_island(stone)
                     if not island.liberties:
-                        # self-capturing prohibition's violation:
+                        print(f'{self}')
                         raise ValueError(
                             f'self-capturing is strictly prohibited!.. violation detected at the cell: {y, x}')
             else:
@@ -176,7 +220,7 @@ class Go:  # LL 36 366 98 989
         # turns counter's increasing:
         self._turn += 1
         # checks ko rule:
-        if not self.check_ko_rule():
+        if not self._hash.check_ko_rule(self._turn):
             self.rollback(1)
             raise ValueError(f'ko rule violation! the current board state repeats the previously one...'
                              f'rolling back to the previous state...')
@@ -190,15 +234,6 @@ class Go:  # LL 36 366 98 989
         print(f'{self.turn}s pass their turn')
         self._turn += 1
 
-    def check_ko_rule(self) -> bool:
-        """checks the enforcement of the following KO rule:
-        player cannot recreate the same board as the board after one of the previous moves"""
-        # TODO: does this rule have the unlimited depth?
-        if hash(self) in self._states:
-            return False
-        else:
-            return True
-
     def reset(self):
         """Resets the board, clears all the stones from it and sets the turn to black"""
         self._board = [[Go.EMPTY for _ in range(self._width)] for _ in range(self._height)]
@@ -208,10 +243,15 @@ class Go:  # LL 36 366 98 989
 
     def handicap_stones(self, q: int):
         """places some handicap stones in the correct order, works only for 9x9, 13x13 and 19x19 boards"""
-        if not self._handicaps_used:
+        if not self._handicaps_used and self._turn == 0:
             if self._height == self._width and self._height in Go.HANDICAPS.keys():
                 if 0 <= q <= (m := Go.HANDICAPS[self._height][0]):
-                    ...
+                    for i in range(q):
+                        print(f'LALA')
+                        y_, x_ = Go.HANDICAPS[self._height][1][i]
+                        self._board[y_][x_] = Go.BLACK
+                        self._hash.dhash((y_, x_), black=True, add=True)
+                    self._handicaps_used = True
                 else:
                     raise ValueError(
                         f'invalid handicap stones quantity, it must be larger than {0} and less or equal to {m}...')
@@ -219,6 +259,7 @@ class Go:  # LL 36 366 98 989
                 raise ValueError(f"invalid board size, board's height and width should be equal to 9, 13 or 19...")
         else:
             raise ValueError(f'handicap stones have been already used...')
+        print(f'{self}')
 
     def rollback(self, turns_back: int):
         """rollbacks a set amount of turns on the go board"""
@@ -237,20 +278,22 @@ class Island:
     """represents a set of linked stones of the same colour on the Go-board"""
     dydx = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 
-    def __init__(self, board: list[list[str]], stone: tuple[int, int] = None, black: bool = True):
+    def __init__(self, board: list[list[str]], hash_: Go.Hash, stone: tuple[int, int] = None, black: bool = True):
         # outer link:
         self._board = board  # <<-- the link to the Go game board from Go class...
+        self._hash = hash_
         # True means black while False means white...
         self._player = black
         # core pars:
         self._stones: set[tuple[int, int]] = {stone} if stone is not None else set()
         self._neighs: set[tuple[int, int]] = set()
-        # altering the board:
-        if stone is not None:
-            self._board[stone[0]][stone[1]] = Go.BLACK if black else Go.WHITE
         # initializing the first neighs:
         if stone is not None:
             self.get_neighs(stone)
+        # altering the board and hash:
+        if stone is not None and self.liberties:
+            self._board[stone[0]][stone[1]] = Go.BLACK if black else Go.WHITE
+            self._hash.dhash(stone, black, add=True)
 
     @property
     def liberties(self):
@@ -289,7 +332,7 @@ class Island:
                              f"self: {self._player} != {other._player}")
         else:
             # creating a new Island:
-            sum_ = Island(self._board, None, self._player)
+            sum_ = Island(self._board, self._hash, None, self._player)
             # merging Islands' stones and neighs:
             sum_._stones = self._stones | other._stones
             sum_._neighs = self._neighs | other._neighs
@@ -317,7 +360,7 @@ class Island:
                 if self._board[y_][x_] == Go.EMPTY:
                     self._neighs.add(neigh_)
 
-    def add_stone(self, stone: tuple[int, int], black_islands: list['Island'], white_islands: list['Island']) -> None:
+    def add_stone(self, stone: tuple[int, int]) -> bool:
         """adds a stone to the Island"""
         # TODO: is it needed to check the stone inside of this method beforehand?..
         # at first, this stone should be removed from neighs (liberties decreases by 1):
@@ -328,13 +371,18 @@ class Island:
         self.get_neighs(stone)
         # check if now liberties are equal to zero (# then remove the Island from the list if so):
         if self.liberties == 0:
-            self.remove(black_islands, white_islands)
+            return False
         # finally we can alter the board:
         self._board[stone[0]][stone[1]] = Go.BLACK if self._player else Go.WHITE
+        self._hash.dhash(stone, self._player, add=True)
+        return True
 
-    def remove(self, black_islands: list['Island'], white_islands: list['Island']):
+    def remove(self, black_islands: list['Island'], white_islands: list['Island'], need_to_hash: bool = True):
         """removes the island from the islands list"""
         (black_islands if self._player else white_islands).remove(self)
+        if need_to_hash:
+            for stone_ in self._stones:
+                self._hash.dhash(stone_, self._player, add=False)
 
     def append(self, black_islands: list['Island'], white_islands: list['Island']):
         """appends the island to the islands list"""
@@ -348,24 +396,111 @@ class Island:
         self._neighs |= neighs
 
 
+# print(f'3 ^ 361: {3 ** 361}')
 go = Go(9)
-go.move('1A')
-go.move('9J')
-go.move('1B')
-go.move('8J')
-go.move('2A')
-go.move('2B')
-go.move('9H')
-go.move('3A')
-go.move('8H')
-go.move('1C')
-go.move('1A')
 # go.move('1A')
 # go.move('9J')
-go.rollback(4)
-go.move('3A')
-go.move('7J')
-go.move('1C')
-
-print(f'{go.islands}')
+# go.move('1B')
+# go.move('8J')
+# go.move('2A')
+# go.move('2B')
+# go.move('9H')
+# go.move('3A')
+# go.move('8H')
+# go.move('1C')
+# go.move('1A')
+# go.rollback(4)
+# go.move('3A')
+# go.move('7J')
+# go.move('1C')
+# go.move('1A')
+# go.move('8H')
+# go.move('2A')
+# go.move('7H')
+# go.move('1B')
+# print(f'{go.islands}')
 # TODO: when is the game over?
+
+
+
+
+
+
+
+
+
+
+
+# go.move_('4H')
+# go.move_('8A')
+# go.move_('8B')
+# go.move_('9B')
+# go.move_('9A')
+#
+
+
+
+
+
+# go.handicap_stones(3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+go.move_('5C')
+print(f'turn: {go.turn}')
+go.rollback(1)
+# go.move_('5B')
+# go.move_('4D')
+# go.move_('4A')
+# go.move_('3C')
+# go.move_('3B')
+# go.move_('2D')
+# go.move_('2C')
+# go.move_('4B')
+# go.move_('4C')
+# go.move_('4B')
+#
+# go.move_('4C')
+
+
+
