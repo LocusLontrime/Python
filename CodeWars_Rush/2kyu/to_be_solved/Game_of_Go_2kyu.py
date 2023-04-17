@@ -14,6 +14,14 @@ class Go:  # LL 36 366 98 989
             self._hashes = {0}
             self._hashes_ordered = {0: 0}
 
+        @property
+        def hashes(self):
+            return self._hashes
+
+        @property
+        def hashes_ordered(self):
+            return self._hashes_ordered
+
         def num(self, y: int, x: int) -> int:
             return y * self._width + x
 
@@ -34,6 +42,13 @@ class Go:  # LL 36 366 98 989
                 self._hashes.add(self.hash)
                 self._hashes_ordered[turn] = self.hash
                 return True
+
+        def order(self, turn: int) -> None:
+            self._hashes_ordered[turn] = self.hash
+
+        def reset(self):
+            self.hash = 0
+            self._hashes = {0}
 
     alphas = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'
     BLACK, WHITE, EMPTY = 'x', 'o', '.'
@@ -233,12 +248,17 @@ class Go:  # LL 36 366 98 989
         """current player passes his turn"""
         print(f'{self.turn}s pass their turn')
         self._turn += 1
+        self._memo[self._turn] = deepcopy(self._board)
+        self._hash.order(self._turn)
 
     def reset(self):
         """Resets the board, clears all the stones from it and sets the turn to black"""
         self._board = [[Go.EMPTY for _ in range(self._width)] for _ in range(self._height)]
         self._turn = 0
-        ...
+        self._black_islands: list[Island] = []
+        self._white_islands: list[Island] = []
+        self._handicaps_used = False
+        self._hash.reset()
         print(f'The board has been reset to default state...')
 
     def handicap_stones(self, q: int):
@@ -247,7 +267,6 @@ class Go:  # LL 36 366 98 989
             if self._height == self._width and self._height in Go.HANDICAPS.keys():
                 if 0 <= q <= (m := Go.HANDICAPS[self._height][0]):
                     for i in range(q):
-                        print(f'LALA')
                         y_, x_ = Go.HANDICAPS[self._height][1][i]
                         self._board[y_][x_] = Go.BLACK
                         self._hash.dhash((y_, x_), black=True, add=True)
@@ -270,6 +289,9 @@ class Go:  # LL 36 366 98 989
         self._board = self._memo[self._turn]
         # core pars updating:
         self.check_islands()
+        # hash class change:
+        if self._hash.hashes_ordered[self._turn] in self._hash.hashes:
+            self._hash.hashes.remove(self._hash.hashes_ordered[self._turn])
         print(f'the board after rollback: ')
         print(f'{self}')
 
