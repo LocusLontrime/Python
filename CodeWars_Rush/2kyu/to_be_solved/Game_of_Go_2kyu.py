@@ -24,13 +24,17 @@ class Go:  # LL 36 366 98 989
             return self._hashes_ordered
 
         def show_hashes(self):
+            """shows hashes for all the turns made"""
+            print(f'HASHES: ')
             for k, v in self._hashes_ordered.items():
                 print(f'{k}th turn hash: {v}')
 
         def num(self, y: int, x: int) -> int:
+            """bijective mapping from board coordinates 2D space to the natural numbers"""
             return y * self._width + x
 
         def yx(self, num: int) -> tuple[int, int]:
+            """inverse bijective mapping6"""
             return divmod(num, self._width)
 
         def dhash(self, stone: tuple[int, int], black: bool = True, add: bool = True) -> None:
@@ -40,7 +44,7 @@ class Go:  # LL 36 366 98 989
 
         def check_ko_rule(self, turn: int) -> bool:
             """checks the enforcement of the following KO rule:
-            player cannot recreate the same board as the board after one of the previous moves"""
+            player cannot recreate the same board as the one after his previous move"""
             if turn > 2 and self.hash == self._hashes_ordered[turn - 2]:
                 return False
             else:
@@ -48,24 +52,30 @@ class Go:  # LL 36 366 98 989
                 return True
 
         def order(self, turn: int) -> None:
+            """sets the hash of the current turn"""
             self._hashes_ordered[turn] = self.hash
 
         def reset(self):
+            """resets hashing to its default"""
             self._hash = 0
             self._hashes_ordered = {0: 0}
 
         def rollback(self, turn, turns: int):
+            """rolls hashing back"""
             for turn_ in range(turn + 1, turn + turns + 1):
                 del self._hashes_ordered[turn_]
             self._hash = self._hashes_ordered[turn]
 
         def get_board(self, turn: int):
+            """returns decoded board state at the current turn"""
             return self.decode_board(self._hashes_ordered[turn])
 
         def decode_board(self, hash_: int) -> list[list[str]]:
+            """decodes the board state from its hash value"""
             board = [[Go.EMPTY for _ in range(self._width)] for _ in range(self._height)]
 
             def decoder(rem: int) -> list[int]:
+                """aux func"""
                 if rem > 0:
                     yield rem % (d := len(Go.symbols))
                     yield from decoder(rem // d)
@@ -78,8 +88,8 @@ class Go:  # LL 36 366 98 989
             return board
 
     alphas = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'
-    symbols = {0: '.', 1: 'x', 2: 'o'}
-    BLACK, WHITE, EMPTY = 'x', 'o', '.'
+    EMPTY, BLACK, WHITE = '.', 'x', 'o'
+    symbols = {0: EMPTY, 1: BLACK, 2: WHITE}
     HANDICAPS = {
         9: [5, [(2, 6), (6, 2), (6, 6), (2, 2), (4, 4)]],
         13: [9, [(3, 9), (9, 3), (9, 9), (3, 3), (6, 6), (6, 3), (6, 9), (3, 6), (9, 6)]],
@@ -132,6 +142,7 @@ class Go:  # LL 36 366 98 989
 
     @property
     def islands(self):
+        """returns string representation of all the black and white islands at the current turn"""
         def numerate(num: int) -> str:
             if num < 0:
                 raise ValueError(f'Value: {num} is invalid, num cannot be less than zero! ')
@@ -155,7 +166,7 @@ class Go:  # LL 36 366 98 989
         return self._height - int(re.findall(r'\d+', pos)[0]), Go.alphas.index(re.findall(r'[A-Z]+', pos)[0])
 
     def get_position(self, pos: str) -> str:
-        """gets status of a particular position on the board (x, o, or .)"""
+        """gets status of a particular position on the board ('x', 'o', or '.')"""
         y, x = self.parse_pos(pos)
         return self._board[y][x]
 
@@ -219,6 +230,7 @@ class Go:  # LL 36 366 98 989
         return island
 
     def move(self, *positions) -> None:
+        """makes a chained move"""
         for pos_ in positions:
             self.move_(pos_)
 
@@ -237,10 +249,10 @@ class Go:  # LL 36 366 98 989
                 self._board[y][x] = self.stone
                 allies, aliens = [], []
                 for black_island in self._black_islands:
-                    if stone in black_island.neighs:
+                    if black_island.check_neighs(stone):
                         (allies if self.black else aliens).append(black_island)
                 for white_island in self._white_islands:
-                    if stone in white_island.neighs:
+                    if white_island.check_neighs(stone):
                         (aliens if self.black else allies).append(white_island)
                 for alien in aliens:
                     if alien.liberties == 0:
@@ -328,7 +340,6 @@ class Go:  # LL 36 366 98 989
             raise ValueError(f'turns_back cannot be less than {0} or larger than the turns made: {self._turn}...')
         else:
             self._turn -= turns_back
-            # print(f'turn after rollback: {self._turn}')
             # rolling back the board state by 'turns_back' turns back:
             self._board = self._hash.get_board(self._turn)
             # core pars updating:
@@ -345,7 +356,7 @@ class Island:
     def __init__(self, board: list[list[str]], hash_: Go.Hash, stone: tuple[int, int] = None, black: bool = True):
         # outer link:
         self._board = board  # <<-- the link to the Go game board from Go class...
-        self._hash = hash_
+        self._hash = hash_  # <<-- the link to the Go class exemplar's ._hash mutable obj
         # True means black while False means white...
         self._player = black
         # core pars:
@@ -361,7 +372,7 @@ class Island:
 
     @property
     def liberties(self):
-        """gets the degree of liberty of the island"""
+        """gets the current degree of liberty of the island"""
         # TODO: can be easily optimized by implementing a simple for-cycle
         #  with break condition after finding the first empty neigh...
         return sum(1 for (y_, x_) in self._neighs if self._board[y_][x_] == Go.EMPTY)
@@ -389,6 +400,7 @@ class Island:
 
     @property
     def size(self):
+        """size of the island equals its number of stones"""
         return len(self._stones)
 
     def __str__(self) -> str:
@@ -415,11 +427,11 @@ class Island:
 
     def check_neighs(self, stone: tuple[int, int]) -> bool:
         """checks if the stone can be added to this Island"""
-        return True if stone in self._neighs else False
+        return stone in self._neighs
 
     def check_stone(self, stone: tuple[int, int]) -> bool:
         """check if the stone can be removed from this Island"""
-        return True if stone in self._stones else False
+        return stone in self._stones
 
     def get_neighs(self, stone: tuple[int, int]) -> None:
         """adds all the valid neighbouring cells (horizontally and vertically connected only)
@@ -460,6 +472,7 @@ class Island:
         (black_islands if self._player else white_islands).append(self)
 
     def update(self, stones: set[tuple[int, int]], neighs: set[tuple[int, int]]):
+        """fills the islands with the stones and neighs given"""
         if self._stones or self._neighs:
             raise ValueError(f'the island cannot be updated because it is not an empty one...'
                              f'it contains {self.size} stones and {self.liberties} neighs')
@@ -467,7 +480,7 @@ class Island:
         self._neighs |= neighs
 
 
-# PROFESIONAL GAMES:
+# PROFESSIONAL GAMES:
 
 # 1. Takemiya Masaki 9p (Black) vs. Okada Shinichiro:
 
