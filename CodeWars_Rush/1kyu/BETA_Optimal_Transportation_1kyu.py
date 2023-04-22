@@ -20,7 +20,8 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989 
     # table for X(j, i) --> optimal (min) total price:
     sol_table = [[None for _ in range(cols)] for _ in range(rows)]
     # building basic solution (it can be not optimal):
-    rows_basis_cells, columns_basis_cells, coords = get_basic_solution_min_price_method(sol_table, suppliers, consumers, costs)
+    rows_basis_cells, columns_basis_cells, coords = get_basic_solution_min_price_method(sol_table, suppliers, consumers,
+                                                                                        costs)
     # time section -->> needed for further testing:
     start_t, potentials_t, deltas_t, getting_cycle_t, cycle_recounting_t = 0, 0, 0, 0, 0
     # now cycling through all the approximating iterations needed until the optimal solution found:
@@ -60,7 +61,8 @@ def minimum_transportation_price(suppliers, consumers, costs):  # 36 366 98 989 
     print(f'optimal solution been found at {main_cycle_iterations}-th iteration')
     # return the aggregated min transportation price:
     # return sum([sol_table[j][i] * costs[j][i] for j in range(rows) for i in range(cols) if sol_table[j][i] is not None]) -->> optimized:
-    return sum(sum([sol_table[cell[0]][cell[1]] * costs[cell[0]][cell[1]] for cell in row_cells]) for row_cells in rows_basis_cells)
+    return sum(sum([sol_table[cell[0]][cell[1]] * costs[cell[0]][cell[1]] for cell in row_cells]) for row_cells in
+               rows_basis_cells)
 
 
 def get_basic_solution_min_price_method(table, suppliers, consumers, costs):
@@ -243,7 +245,9 @@ def get_cycle_path(start_j, start_i, row_basis_cells, columns_basis_cells):
 
 # auxiliary method for showing cycles:
 def show_cycle(table, rows_basis_cells, cycle):
-    np_table = reduce(lambda y, x: y + reduce(lambda m, n: m + ([table[n[0]][n[1]]] if table[n[0]][n[1]] is not None else []), x, []), rows_basis_cells, [])
+    np_table = reduce(
+        lambda y, x: y + reduce(lambda m, n: m + ([table[n[0]][n[1]]] if table[n[0]][n[1]] is not None else []), x, []),
+        rows_basis_cells, [])
     # print(f'np_table: {np_table}')
     # [[table[cell[0]][cell[1]] for cell in cells] for cells in rows_basis_cells]
     max_el = np.amax(np_table)
@@ -294,7 +298,7 @@ def connect_two(table, point1: tuple[int, int], point2: tuple[int, int], max_len
                 table[j][i] = symbol
 
 
-def colour_(char, colour, flag = False):
+def colour_(char, colour, flag=False):
     s = "\033[1m" if flag else ''
     return f"{(s + colour).format(char)}{END.format('')}"
 
@@ -319,7 +323,8 @@ def create_an_example(rows: int, columns: int, values_range=100):
     shuffled_columns = [column for column in range(columns)]
     random.shuffle(shuffled_columns)
     for ind, i in enumerate(shuffled_columns):
-        consumers[i] = np.random.randint(rem // int(math.sqrt(columns)) + 1) if ind != len(shuffled_columns) - 1 else rem
+        consumers[i] = np.random.randint(rem // int(math.sqrt(columns)) + 1) if ind != len(
+            shuffled_columns) - 1 else rem
         # print(f'i, consumers[i]: {i, consumers[i]}')
         rem -= consumers[i]
     # returning the lists built:
@@ -334,7 +339,6 @@ def create_an_example(rows: int, columns: int, values_range=100):
 
 # an example:
 costs_b, suppliers_b, consumers_b = create_an_example(35, 50)
-
 
 # examples from codewars.com
 
@@ -1270,25 +1274,6 @@ start = t.time_ns()
 print(minimum_transportation_price(suppliers_b, consumers_b, costs_b))  #
 finish = t.time_ns()
 print(f'total time: {(finish - start) // 10 ** 6} milliseconds')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 c = colour_('===', RED)
 print(f"{c}")

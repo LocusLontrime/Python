@@ -114,7 +114,20 @@ class Go:  # LL 36 366 98 989
         self._white_islands: list[Island] = []
 
     def __str__(self) -> str:
-        return '\n'.join([' '.join(row) for row in self._board])
+        return '\n'.join([' '.join(self.colorify(_) for _ in row) for row in self._board])
+
+    def colorify(self, symb: str):
+        RED = "\033[31m"
+        CYAN = "\033[36m"
+        END = "\033[0m"
+        match symb:
+            case self.BLACK:
+                res = RED + symb
+            case self.WHITE:
+                res = CYAN + symb
+            case _:
+                res = symb
+        return res + END
 
     @property
     def hash(self):
