@@ -94,4 +94,19 @@ print(f'sum: \n{m1 + m2}')
 print(f'product1: \n{m1 * m2}')
 print(f'product2: \n{m3 * m4}')
 
+# Exceptions:
 
+# ShapeMatrixError:
+m_error = Matrix(
+    [
+        [1, 1],
+        [1, 2, 3],
+        [989]
+    ]
+)
+
+# MatrixAdditionSubtractionError:
+m_sum_error = m1 + m3
+
+# MatrixMultiplicationError:
+m_mult_error = m2 * m4

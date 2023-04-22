@@ -4,10 +4,12 @@ import heapq
 import numpy as np
 from itertools import permutations as perms
 
+
 def four_pass(stations: list[int]):
     candy_f = CandyFactory(stations)
     the_path = candy_f.solve()
     return [candy_f.get_num(node.y, node.x) for node in the_path] if the_path else None
+
 
 class CandyFactory:
     # styles:
@@ -25,7 +27,8 @@ class CandyFactory:
     END = "\033[0m"
 
     def __init__(self, stations, j_max=10, i_max=10):
-        self.COLOURS = [self.RED, self.GREEN, self.YELLOW, self.BROWN, self.PURPLE, self.CYAN, self.LIGHT_GREEN, self.BLACK, self.X]
+        self.COLOURS = [self.RED, self.GREEN, self.YELLOW, self.BROWN, self.PURPLE, self.CYAN, self.LIGHT_GREEN,
+                        self.BLACK, self.X]
         self.J_MAX, self.I_MAX = j_max, i_max
         self.field = [[Node(j, i) for i in range(self.I_MAX)] for j in range(self.J_MAX)]
         self.max_a_star_iters = 0
@@ -36,7 +39,8 @@ class CandyFactory:
         # stations points and nodes:
         station_points = [self.get_point(s) for s in stations.copy()]
         self.station_nodes = [self.field[j][i] for (j, i) in station_points]
-        self.station_pairs = [(self.station_nodes[i], self.station_nodes[i + 1], i) for i in range(len(self.station_nodes) - 1)]
+        self.station_pairs = [(self.station_nodes[i], self.station_nodes[i + 1], i) for i in
+                              range(len(self.station_nodes) - 1)]
         self.the_shortest_possible = sum([pair[0].manhattan_distance(pair[1]) for pair in self.station_pairs]) + 1
         self.multiplier = -1
 
@@ -51,7 +55,9 @@ class CandyFactory:
 
     # visualisation of hint method:
     def get_hint(self):
-        return self.BOLD.format('') + (f"{self.BOLD + '{}'}".format(" --->>> ")).join([self.colour_str_inv(f'st{i + 1}', self.COLOURS[i]) for i in range(len(self.station_nodes))]) + self.colour_str('', self.END)
+        return self.BOLD.format('') + (f"{self.BOLD + '{}'}".format(" --->>> ")).join(
+            [self.colour_str_inv(f'st{i + 1}', self.COLOURS[i]) for i in
+             range(len(self.station_nodes))]) + self.colour_str('', self.END)
 
     def solve(self):
         print(f'stations: {self.station_nodes}')
@@ -94,7 +100,8 @@ class CandyFactory:
         return the_shortest_one
 
     def restore_path(self, path_dict):
-        return [self.station_nodes[0]] + sum([path_dict[k] for k in range(len(self.station_pairs))], []) if path_dict else []
+        return [self.station_nodes[0]] + sum([path_dict[k] for k in range(len(self.station_pairs))],
+                                             []) if path_dict else []
 
     # just for the visualization:
     def show_path(self, path_dict: dict[int, list['Node']]):
@@ -119,11 +126,11 @@ class CandyFactory:
     def colour_str(self, char, colour):
         return (self.BOLD + colour + self.END).format(char)
 
-
     def colour_str_inv(self, char, colour):
-        return char +  (self.BOLD + colour).format('')
+        return char + (self.BOLD + colour).format('')
 
-    def rec_path_seeker(self, permutation: tuple['Node', 'Node', int], used_nodes: set['Node'], path_dict: dict[int: list['Node']], path_parts_complete: int):
+    def rec_path_seeker(self, permutation: tuple['Node', 'Node', int], used_nodes: set['Node'],
+                        path_dict: dict[int: list['Node']], path_parts_complete: int):
         # print(f'depth: {path_parts_complete}')
         # self.show_path(path_dict)
         if path_parts_complete == len(self.station_pairs):
@@ -134,7 +141,8 @@ class CandyFactory:
         for i in range(2):
             self.multiplier *= -1
             # pathfinding:
-            path_part = permutation[path_parts_complete][0].a_star(permutation[path_parts_complete][1], used_nodes, self)
+            path_part = permutation[path_parts_complete][0].a_star(permutation[path_parts_complete][1], used_nodes,
+                                                                   self)
             if len(path_part) > 1:
                 # path dict building:
                 key = permutation[path_parts_complete][2]
@@ -245,6 +253,7 @@ class Node:
         # returning the reversed shortest path:
         return list(reversed(shortest_path))
 
+
 cf1 = CandyFactory([1, 69, 95, 70])
 cf2 = CandyFactory([0, 49, 40, 99])
 cf3 = CandyFactory([37, 61, 92, 36])
@@ -256,7 +265,8 @@ cf8 = CandyFactory([91, 85, 94, 22])
 cf9 = CandyFactory([59, 90, 10, 31])
 cf10 = CandyFactory([81, 10, 14, 98])
 cf12 = CandyFactory([89, 66, 75, 59])
-cf13 = CandyFactory([1, 624, 2, 979, 1000, 328, 213], 28, 36)  # approx 15 minutes of calcs with all printing... 36 366 98 989
+cf13 = CandyFactory([1, 624, 2, 979, 1000, 328, 213], 28,
+                    36)  # approx 15 minutes of calcs with all printing... 36 366 98 989
 cf = CandyFactory([1, 111, 223, 2, 198, 145, 95], 18, 18)
 cf15 = CandyFactory([43, 29, 14, 39])
 cf16 = CandyFactory([94, 90, 75, 92])
@@ -275,6 +285,3 @@ finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
 # print(f'PATTERNS: {CandyFactory.PATTERNS}')
-
-
-

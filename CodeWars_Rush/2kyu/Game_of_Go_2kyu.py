@@ -112,21 +112,28 @@ class Go:  # LL 36 366 98 989
         # core:
         self._black_islands: list[Island] = []
         self._white_islands: list[Island] = []
+        # aux pars for visualization:
+        self._stones_removed: dict[int, set[tuple[int, int]]] = dict()
+        self._stone_to_be_placed = None
 
     def __str__(self) -> str:
-        return '\n'.join([' '.join(self.colorify(_) for _ in row) for row in self._board])
+        return '\n'.join([' '.join(self.colorify(_, i, j) for i, _ in enumerate(row)) for j, row in enumerate(self._board)])
 
-    def colorify(self, symb: str):
+    def colorify(self, symb: str, i: int, j: int):
+        BOLD = "\033[1m"
+        PURPLE = "\033[35m"
         RED = "\033[31m"
+        GREEN = "\033[32m"
         CYAN = "\033[36m"
         END = "\033[0m"
+        emphasis = (BOLD + PURPLE if self._stone_to_be_placed == (j, i) else '')
         match symb:
             case self.BLACK:
-                res = RED + symb
+                res = GREEN + emphasis + symb
             case self.WHITE:
-                res = CYAN + symb
+                res = CYAN + emphasis + symb
             case _:
-                res = symb
+                res = (RED + self.stone) if (j, i) in self._stones_removed[self._turn] else symb
         return res + END
 
     @property
@@ -236,9 +243,9 @@ class Go:  # LL 36 366 98 989
                     icounter += 1
         print(f'{icounter} new islands have been found and appending to the list...')
 
-    def create_island(self, stone: tuple[int, int]) -> 'Island':
+    def create_island(self) -> 'Island':
         """creates an island with player's stone at (y, x)"""
-        island = Island(self._board, self._hash, stone, self.black)
+        island = Island(self._board, self._hash, self._stone_to_be_placed, self.black)
         island.append(self._black_islands, self._white_islands)
         return island
 
@@ -250,7 +257,8 @@ class Go:  # LL 36 366 98 989
     def move_(self, pos: str) -> None:
         """player makes a move"""
         flag = False
-        stone = (y, x) = self.parse_pos(pos)
+        self._stone_to_be_placed = (y, x) = self.parse_pos(pos)
+        self._stones_removed[self._turn + 1] = set()
         print(f'\nmove: {pos}, turn: {self._turn + 1}')
         print(f'Now {self.turn}s is moving... trying to locate a {self.turn} stone at {y, x} position!')
         if self.validate(y, x):
@@ -262,14 +270,15 @@ class Go:  # LL 36 366 98 989
                 self._board[y][x] = self.stone
                 allies, aliens = [], []
                 for black_island in self._black_islands:
-                    if black_island.check_neighs(stone):
+                    if black_island.check_neighs(self._stone_to_be_placed):
                         (allies if self.black else aliens).append(black_island)
                 for white_island in self._white_islands:
-                    if white_island.check_neighs(stone):
+                    if white_island.check_neighs(self._stone_to_be_placed):
                         (aliens if self.black else allies).append(white_island)
                 for alien in aliens:
                     if alien.liberties == 0:
                         # opponent stone-group's capturing:
+                        self._stones_removed[self._turn + 1] |= alien.stones
                         alien.remove(self._black_islands, self._white_islands)
                         print(f'{Go.STONE_PAIRS[self.stone]} group of {alien.size} stones has just been captured!')
                         for y_, x_ in alien.stones:
@@ -279,7 +288,7 @@ class Go:  # LL 36 366 98 989
                 if allies:
                     print(f'unifying {self.turn} islands: ')
                     sum_ = reduce(lambda a, b: a + b, allies)
-                    if not sum_.add_stone(stone):
+                    if not sum_.add_stone(self._stone_to_be_placed):
                         flag = True
                     else:
                         for ally in allies:
@@ -287,7 +296,7 @@ class Go:  # LL 36 366 98 989
                         sum_.append(self._black_islands, self._white_islands)
                 else:
                     print(f'a new Island has just been created')
-                    island = self.create_island(stone)
+                    island = self.create_island()
                     if not island.liberties:
                         flag = True
             else:

@@ -1,6 +1,7 @@
 import time
 from itertools import combinations as combs
 
+
 class MineSweeper:
     # [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
     walk = [(dy, dx) for dx in range(-1, 2) for dy in range(-1, 2) if (dy, dx) != (0, 0)]
