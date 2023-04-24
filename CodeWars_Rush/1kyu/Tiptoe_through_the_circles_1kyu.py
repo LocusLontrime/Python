@@ -40,7 +40,7 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle], flag=False) -> flo
     # removing the repeating circles from the list:
     circles = set(c)
     # if some circles lie in some others:
-    circles = [c for c in circles if all([not _in(c, c_) for c_ in circles - {c}])]
+    circles = [c for c in circles if all([not in_(c, c_) for c_ in circles - {c}])]
     # here we build a graph representing the circles-obstacles for further pathfinding,
     # v_hashes needed in order not to create new Vertexes if they have already been built:
     v_hashes = build_graph(a, b, circles, flag)
@@ -107,6 +107,15 @@ def shortest_path_length(a: Point, b: Point, c: list[Circle], flag=False) -> flo
         return NO_PATH
     # returns the result:
     return end_vertex.g
+
+
+class TipToe:
+    def __init__(self, start_point: Point, end_point: Point, circles: list[Circle]):
+        self._start = start_point
+        self._end = end_point
+        self._circles = circles
+
+    ...
 
 
 def intersect(p1: Point, p2: Point, circle: Circle, flag: bool = False) -> bool:
@@ -262,14 +271,12 @@ def build_graph(a: Point, b: Point, circles: list[Circle], flag=False) -> dict:
     return v_hashes
 
 
-def in_(obj: Point, circle: Circle) -> bool:
-    """checks if the point lies in the circle ( 'circle' )"""
-    return math.hypot(circle.ctr.y - obj.y, circle.ctr.x - obj.x) < circle.r
-
-
-def _in(c1: Circle, c2: Circle):
-    """checks if the circle: c1 lies in the circle: c2"""
-    return math.hypot(c2.ctr.y - c1.ctr.y, c2.ctr.x - c1.ctr.x) < c2.r - c1.r
+def in_(obj: Point | Circle, circle: Circle) -> bool:
+    """checks if the point or Circle lies in the circle ( 'circle' )"""
+    if isinstance(obj, Point):
+        return math.hypot(circle.ctr.y - obj.y, circle.ctr.x - obj.x) < circle.r
+    elif isinstance(obj, Circle):
+        return math.hypot(circle.ctr.y - obj.ctr.y, circle.ctr.x - obj.ctr.x) < circle.r - obj.r
 
 
 def validate_ab(a: Point, b: Point, circles: list[Circle]) -> bool:
@@ -602,6 +609,6 @@ c__q = [Circle(ctr=Point(x=0, y=0), r=0.38640867748763413), Circle(ctr=Point(x=0
 # 12.655151357393386
 
 start = time.time_ns()
-print(f'shortest_path: {shortest_path_length(a__q, b__q, c__q)}')
+print(f'shortest_path: {shortest_path_length(a__q, b__q, c__q, flag=True)}')
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
