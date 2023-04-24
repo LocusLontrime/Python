@@ -9,6 +9,7 @@ import math
 
 
 def is_prime(number: int):
+    """"""
     if number < 0 or number > 100_000:
         raise ValueError(f'the number is negative or too large (>100000)')
     # base cases:
@@ -28,4 +29,7 @@ print(f'Is {num1} prime? -->> {is_prime(num1)}')
 
 num2 = 1000
 print(f'Is {num2} prime? -->> {is_prime(num2)}')
+
+
+
 
