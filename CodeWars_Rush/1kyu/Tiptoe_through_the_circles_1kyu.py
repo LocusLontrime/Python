@@ -149,8 +149,11 @@ def circle_intersect(circle1: Circle, circle2: Circle) -> bool:
     return circle1.r + circle2.r > math.hypot(circle2.ctr.y - circle1.ctr.y, circle2.ctr.x - circle1.ctr.x)
 
 
-def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle], flag: bool = False) -> list[
-    tuple['Vertex', 'Vertex']]:
+def get_valid_edges(
+        c1_: Circle,
+        c2_: Circle,
+        circles: list[Circle], flag: bool = False
+) -> list[tuple['Vertex', 'Vertex']]:
     """defines all valid edges for 2 circles as list of tuples: (2 linked Vertices)"""
     global circle_pairs_counter
     # possible linked vertices:
@@ -183,7 +186,7 @@ def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle], flag: bool 
         poss_vertices.append((Vertex(c1_, 0), Vertex(c2_, 0)))
     # obstacles check:
     if flag:
-        print(f'{circle_pairs_counter}. for circles: {c1_, c2_} {len(poss_vertices)} possible vertices been found')
+        print(f'{circle_pairs_counter}th pair -->> for circles: {c1_, c2_} {len(poss_vertices)} possible vertices been found')
     vertices = [(v1, v2) for v1, v2 in poss_vertices if v1.validate_edge(v2, circles, flag)]
     if flag:
         print(f'{len(vertices)} vertices remained after validation')
@@ -192,11 +195,17 @@ def get_valid_edges(c1_: Circle, c2_: Circle, circles: list[Circle], flag: bool 
     return vertices
 
 
-def build_edges_circle(vertices: set['Vertex'], separators: set[float]):
+def build_edges_circle(vertices: set['Vertex'], separators: set[float], circle: Circle, index: int) -> tuple[int, int]:
     """builds all the links for all the vertices that belong to the same circle,
     taking into account the presence of circle-obstacles, called separators
     :param vertices: vertices of the same circle C
-    :param separators: directing angles of intersected circles C and O (obstacle)"""
+    :param separators: directing angles of intersected circles C and O (obstacle)
+    :param circle: the circle the 'vertices' are being connected on
+    :param index: the index of the circle in the list of all circles
+    """
+    print(f'building edges inside the {circle} circle...')
+    edges_counter = 0
+    counter = 0
     vertices_ = list(vertices)
     if vertices_:
         for j in range(len_ := len(vertices_)):
@@ -206,6 +215,7 @@ def build_edges_circle(vertices: set['Vertex'], separators: set[float]):
                         min_angle_v, max_angle_v = sorted([vertices_[j], vertices_[i]], key=lambda x: x.angle)
                         flag = True
                         for obstacle in separators:
+                            counter += 1
                             if min_angle_v.rot_dir == RotDir.ANTI_CLOCKWISE:
                                 # anti-clockwise:
                                 if min_angle_v.angle <= obstacle <= max_angle_v.angle:
@@ -216,9 +226,14 @@ def build_edges_circle(vertices: set['Vertex'], separators: set[float]):
                                 if 0 <= obstacle <= min_angle_v.angle or max_angle_v.angle <= obstacle <= 2 * math.pi:
                                     flag = False
                                     break
+                        else:
+                            counter += 1
                         if flag:
+                            edges_counter += 1
                             vertices_[j].connect(vertices_[i])
                             vertices_[i].connect(vertices_[j])
+    print(f'{index + 1}. {edges_counter} edges found, {counter} actions made')
+    return edges_counter, counter
 
 
 def build_graph(a: Point, b: Point, circles: list[Circle], flag=False) -> dict:
@@ -264,10 +279,15 @@ def build_graph(a: Point, b: Point, circles: list[Circle], flag=False) -> dict:
             print(f'{i}th circle: {k} has {len(v)} vertices')
             print(f'vertices: {v}\n')
     # getting all circle connections:
-    for c in circles_:
+    print(f'now connecting vertices on the every circle:')
+    edges, actions = 0, 0
+    for ind, c in enumerate(circles_):
         verts, seps = circle_vertices[c] if c in circle_vertices.keys() else {}, separators[
             c] if c in separators.keys() else {}
-        build_edges_circle(verts, seps)
+        d1, d2 = build_edges_circle(verts, seps, c, ind)
+        edges += d1
+        actions += d2
+    print(f'overall: {edges} edges found, {actions} actions made')
     return v_hashes
 
 
