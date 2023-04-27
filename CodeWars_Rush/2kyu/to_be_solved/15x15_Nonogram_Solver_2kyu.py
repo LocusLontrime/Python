@@ -15,3 +15,7 @@ clues = (
 )
 
 solve(clues)
+
+
+import sys
+sys.path.append('')
