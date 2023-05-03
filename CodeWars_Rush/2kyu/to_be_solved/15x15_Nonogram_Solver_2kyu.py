@@ -1,5 +1,28 @@
 def solve(clues_):  # 36 366 98 989 LL
-    pass
+    """solves the nonogram given"""
+    ...
+
+    def rec_line_solver():
+        ...
+
+    ...
+
+
+def solve_line(line: list[int], line_clues: tuple[int, ...]) -> dict[int, int]:
+    """finds all the necessary 1s and 0s for the lines given and its clues"""
+    length = len(line)
+    size = len(line_clues)
+    # dictionary for necessaries:
+    necessaries: dict[int, int] = dict()
+    ...
+
+    def rec_seeker():
+        ...
+
+    rec_seeker()
+
+    ...
+    return necessaries
 
 
 clues = (
