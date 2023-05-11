@@ -7,15 +7,16 @@ def dry_ground(mountain: list[str]):
         return 0, 0, 0, 0
     global step
     walk = [(dy, dx) for dx in range(-1, 2) for dy in range(-1, 2) if dy * dx == 0 and (dy, dx) != (0, 0)]
-    grid = [[(0 if (m := mountain[j][i]) == '^' else ('.' if m == ' ' else '-')) for i in range(len(mountain[0]))] for j in range(len(mountain))]
+    grid = [[(0 if (m := mountain[j][i]) == '^' else ('.' if m == ' ' else '-')) for i in range(len(mountain[0]))] for j
+            in range(len(mountain))]
 
     def get_neighs(y_, x_):
         return [(y_ + walk[i][0], x_ + walk[i][1]) for i in range(len(walk)) if
                 0 <= y_ + walk[i][0] < len(mountain) and 0 <= x_ + walk[i][1] < len(mountain[0])]
 
-    def wave_(wave_):
+    def wave_(w):
         global step
-        for cell_ in wave_:
+        for cell_ in w:
             for neigh_ in get_neighs(cell_[0], cell_[1]):
                 if grid[neigh_[0]][neigh_[1]] == 0:
                     grid[neigh_[0]][neigh_[1]] = step + 1
@@ -31,7 +32,8 @@ def dry_ground(mountain: list[str]):
     step, wave, river_front = 0, [], []
     for y, row in enumerate(mountain):
         for x, cell in enumerate(row):
-            if cell == '-': river_front.append((y, x))
+            if cell == '-':
+                river_front.append((y, x))
             elif cell == "^":
                 if y in [0, len(mountain) - 1] or x in [0, len(mountain[0]) - 1]:
                     grid[y][x] = 1
@@ -96,9 +98,6 @@ map_of_mountain_and_river = [
     "^^^^^        ^^^^^^^ ",
 ]
 
-
 print(f'Flooded regions: {dry_ground(map_of_mountain_and_river)}')
 # t = (1, 2, 3, 98)
 # print(f'length: {len(t)}')
-
-
