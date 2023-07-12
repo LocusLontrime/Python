@@ -32,12 +32,11 @@ class TipToe:
         self._end = end_point
         self._circles = circles
         self.flag = flag
-
+        # the shortest path of vertices:
         self.shortest_path = []
-
+        # important pars:
         self.circle_vertices = None  # vertices of the same circle C
         self.separators = None  # directing angles of intersected circles C and O (obstacle)
-
         # aux pars:
         self.circle_pairs_counter: int = 0
         self.trinity_counter: int = 0

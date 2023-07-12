@@ -1,0 +1,4 @@
+Morning
+Afternoon
+Evening
+Night

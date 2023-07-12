@@ -1,0 +1,16 @@
+backend_contest
+3
+monocarp
+1
+70 A OK
+polycarp
+3
+18 B WA
+63 A OK
+182 B OK
+megacarp
+3
+98 A TL
+56 B OK
+189 A OK
+
