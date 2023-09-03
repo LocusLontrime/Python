@@ -12,7 +12,7 @@ class BinHeap:  # approved...
         self._dict = {el: i for i, el in enumerate(self._heap)}
         print(f'_dict: {self._dict}')
 
-    def get(self, index: int):
+    def __getitem__(self, index: int):
         return self._heap[index]
 
     def index(self, el):
@@ -124,4 +124,6 @@ print(f'_dict: {bin_heap._dict}')
 bin_heap.remove(999)
 print(f'bin_heap: {bin_heap._heap}')
 print(f'_dict: {bin_heap._dict}')
+
+print(f'el: {bin_heap[3]}')
 

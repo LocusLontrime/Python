@@ -31,17 +31,23 @@ class MineSweeper:
                 print(f'SMART SECTION: ')
                 print(f'mines remained: {self.mines_remained}')
                 # cells groups building:
-                opened_cells = [(j, i) for i in range(self.i_max) for j in range(self.j_max) if '?' in [self.grid[y][x] for y, x in self.get_neighs((j, i))] and self.grid[j][i].isdigit()]
+                opened_cells = [(j, i) for i in range(self.i_max) for j in range(self.j_max) if
+                                '?' in [self.grid[y][x] for y, x in self.get_neighs((j, i))] and self.grid[j][
+                                    i].isdigit()]
                 closed_cells = [(j, i) for i in range(self.i_max) for j in range(self.j_max) if self.grid[j][i] == '?']
-                neighbouring_closed_cells = list({cc for oc in opened_cells for cc in self.get_neighs(oc) if cc in closed_cells})
+                neighbouring_closed_cells = list(
+                    {cc for oc in opened_cells for cc in self.get_neighs(oc) if cc in closed_cells})
                 print(f'{len(opened_cells)} opened_cells found:\n{opened_cells}')
                 print(f'{len(closed_cells)} closed_cells found:\n{closed_cells}')
                 print(f'{len(neighbouring_closed_cells)} neighbouring_closed_cells found:\n{neighbouring_closed_cells}')
                 # smart combs algorithm starts:
                 cells_to_be_opened = []
                 for ncc in neighbouring_closed_cells:
-                    for mines_q in range(max(0, self.mines_remained - 1 - (len(closed_cells) - len(neighbouring_closed_cells))), min(self.mines_remained, len(neighbouring_closed_cells))):
-                        poss_partitions = [list(comb) + [ncc] for comb in combs(neighbouring_closed_cells, mines_q) if ncc not in comb]
+                    for mines_q in range(
+                            max(0, self.mines_remained - 1 - (len(closed_cells) - len(neighbouring_closed_cells))),
+                            min(self.mines_remained, len(neighbouring_closed_cells))):
+                        poss_partitions = [list(comb) + [ncc] for comb in combs(neighbouring_closed_cells, mines_q) if
+                                           ncc not in comb]
                         if self.check_combs(poss_partitions): break
                     else:
                         print(f'the cell: {ncc} is openable!')
@@ -70,10 +76,12 @@ class MineSweeper:
         for comb in combs_list:
             for group in self.groups:
                 if group.val != len(group.group.intersection(comb)): break
-            else: return 1
+            else:
+                return 1
 
     def get_neighs(self, cell: tuple[int, int]):
-        return [(cell[0] + dy, cell[1] + dx) for dy, dx in self.walk if self.is_cell_valid((cell[0] + dy, cell[1] + dx))]
+        return [(cell[0] + dy, cell[1] + dx) for dy, dx in self.walk if
+                self.is_cell_valid((cell[0] + dy, cell[1] + dx))]
 
     def is_cell_valid(self, cell: tuple[int, int]):
         return 0 <= cell[0] < self.j_max and 0 <= cell[1] < self.i_max
@@ -95,7 +103,7 @@ class MineSweeper:
                         transform_actions += (k := self.groups[j].unify(self.groups[i], self.groups))
                         if k == 1: i -= 1  # case of deleting a group from groups' list:
                     i += 1
-            if transform_actions == 0: break # checks if there have been some transformation during the current step if no -->> breaks:
+            if transform_actions == 0: break  # checks if there have been some transformation during the current step if no -->> breaks:
 
     def get_groups(self):
         print(f'GETTING GROUPS...')
@@ -119,9 +127,12 @@ class MineSweeper:
     def show_grid(self):
         for row in self.grid:
             for cell in row:
-                if cell == '?': print("\033[1m\033[35m{}\033[0m".format('? '), end='')
-                elif cell == 'x': print("\033[1m\033[31m{}\033[0m".format('x '), end='')
-                else: print("\033[32m{}".format(f'{cell} '), end='')
+                if cell == '?':
+                    print("\033[1m\033[35m{}\033[0m".format('? '), end='')
+                elif cell == 'x':
+                    print("\033[1m\033[31m{}\033[0m".format('x '), end='')
+                else:
+                    print("\033[32m{}".format(f'{cell} '), end='')
             print()
         print("\033[0m{}".format(''))
 
@@ -133,9 +144,11 @@ class Group:
         self.cell = cell
 
     def get_closed_neighs(self, mine_sweeper):
-       for j, i in MineSweeper.get_neighs(mine_sweeper, self.cell):
-            if mine_sweeper.grid[j][i] == '?': self.group.add((j, i))
-            elif mine_sweeper.grid[j][i] == 'x': self.val -= 1
+        for j, i in MineSweeper.get_neighs(mine_sweeper, self.cell):
+            if mine_sweeper.grid[j][i] == '?':
+                self.group.add((j, i))
+            elif mine_sweeper.grid[j][i] == 'x':
+                self.val -= 1
 
     # check group after groups transformation:
     def check(self, mine_sweeper):
@@ -219,7 +232,6 @@ g = """
 0 0 0 ? ? ? 0 0 0 0 0 0 0 0 ? ? ? ? 0 0 0 0 0 0 0 ? ? ? 0 0
 """.strip()
 
-
 s = """
 0 0 1 x 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 2 1 1 0 0
 0 0 1 1 1 1 1 1 0 1 1 1 1 1 1 0 0 1 x 2 2 x 1 1 x 2 x 1 0 0
@@ -248,7 +260,6 @@ x 3 2 1 1 1 1 0 0 0 0 0 0 1 3 3 3 1 1 1 x 2 x 1 0 0 1 1 2 x
 0 0 0 1 x 1 0 0 0 0 0 0 0 0 1 3 x 2 0 0 1 1 1 1 1 2 1 1 0 0
 0 0 0 1 1 1 0 0 0 0 0 0 0 0 1 x x 2 0 0 0 0 0 0 0 1 x 1 0 0
 """.strip()
-
 
 g2 = """
 0 0 0 ? ? ? 0 0 0 0 0 0 0 0 0 0 ? ? ? ? ? ? ? ? ? ? ? ? 0 0
@@ -444,6 +455,7 @@ x 2 x 2 x 1 1 x 2 1
 0 0 0 0 0 1 1 2 2 2
 """.strip()
 
+
 # g = """
 #
 # """.strip()
@@ -471,6 +483,7 @@ x 2 x 2 x 1 1 x 2 1
 def solve_mine(game_map: str, n: int):
     return MineSweeper(game_map, n).solve()
 
+
 # built in method for tests at codewars.com:
 def open(j: int, i: int):
     grid_in = MineSweeper.make_grid_from_blueprint(s)
@@ -480,6 +493,7 @@ def open(j: int, i: int):
         Exception('NON-SOLVABLE CELL opening!!!')
     else:
         return int(g)
+
 
 ms = MineSweeper(g, s.count('x'))
 mines = MineSweeper(s, s.count('x'))
@@ -492,18 +506,3 @@ print(ms.solve())
 finish = time.time_ns()
 
 print(f'time elapsed: {get_ms(start, finish)} milliseconds')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -245,7 +245,7 @@ def create_map_blueprint(j_max: int, i_max: int, colours_q: int):
     return f'{s}\n{map_blueprint}{s}'
 
 
-game_map_huge = f'''{create_map_blueprint(18, 36, 7)}'''
+game_map_huge = f'''{create_map_blueprint(18, 36, 6)}'''
 
 # print(play_flou(game_map_1))
 # print(play_flou(game_map_2))

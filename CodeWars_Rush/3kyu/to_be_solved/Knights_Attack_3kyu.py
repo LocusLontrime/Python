@@ -68,9 +68,10 @@ class Board:
                 board[(y_, x_)] = Node(y_, x_)
                 yield board[(y_, x_)]
 
-    def heuristic(self, node_):
+    def heuristic(self, node_, inverse: bool):
         """Manhattan distance..."""
-        return abs(node_.y - self.end.y) + abs(node_.x - self.end.x)
+        end_ = self.end_inverse if inverse else self.end
+        return abs(node_.y - end_.y) + abs(node_.x - end_.x)
 
     def a_star(self):
         """A-star algorithm for the real time extending graph"""
@@ -107,8 +108,8 @@ class Board:
         for next_possible_node in self.gen_neighs(curr_node, inverse):
             if next_possible_node.g > curr_node.g + 1:  # a kind of dynamic programming
                 next_possible_node.g = curr_node.g + 1  # every step distance from one node to an adjacent one is equal to 1
-                # next_possible_node.h = self.heuristic(next_possible_node)  # heuristic function,
-                # # needed for sorting the nodes to be visited in priority order
+                # next_possible_node.h = self.heuristic(next_possible_node, inverse)  # heuristic function,
+                # needed for sorting the nodes to be visited in priority order
                 next_possible_node.previously_visited_node = curr_node  # constructing the path
                 # adding node to the heap:
                 heapq.heappush(self.vertexes_to_be_visited_inverse if inverse else self.vertexes_to_be_visited,
@@ -138,6 +139,12 @@ class Board:
         print(f'return dict size: {len(self.board_inverse)}')
         return l - 1 if l > 1 else None
 
+    @staticmethod
+    def vector_cross_product_deviation(start, end, neigh):
+        v1 = neigh.y - start.y, neigh.x - start.x
+        v2 = end.y - neigh.y, end.x - neigh.x
+        return abs(v1[0] * v2[1] - v1[1] * v2[0])
+
 
 # class, describing the node's signature:
 class Node:
@@ -149,6 +156,7 @@ class Node:
         self.g = np.Infinity  # aggregated cost of moving from start to the current Node, Infinity chosen for convenience and algorithm's logic
         self.h = 0  # approximated cost evaluated by heuristic for path starting from the current node and ending at the exit Node
         # f = h + g or total cost of the current Node is not needed here
+        self.tiebreaker = None
         ...
 
     def __eq__(self, other):
@@ -156,7 +164,8 @@ class Node:
 
     # this is needed for using Node objects in priority queue like heapq and so on
     def __lt__(self, other):
-        return self.h + self.g < other.h + other.g  # the right sigh is "-" for __lt__() method
+        # tiebreaker added:
+        return (self.h + self.g, self.y, self.x) < (other.h + other.g, other.y, other.x)  # the right sigh is "-" for __lt__() method
 
     def __hash__(self):
         return hash((self.y, self.x))
@@ -187,7 +196,7 @@ s = '''\
 **************** **  **  **  **  **  **  **  **
 **               **  **  **  **  **  **  **  **
 **               **  **  **  **  **  **  **  **
-**               **  **  **  **  **  **  **  **
+**               **  **  **  **  **  **  **  **                                                                   
 ** ****************  **  **  **  **  **  **  **
 ** ****************  **  **  **  **  **  **  **
 **                   **      **      **  **  **
@@ -235,6 +244,94 @@ S
                     
 '''
 
-b = Board(*(pars := get_pars(s)))
+s_XXX = '''
+                                                    
+                             *******                                  
+                           ***********                                
+                         ***************                              
+                        ****         ****                             
+                       ****           ****                            
+                       ***             ***                            
+                      ***               ***                           
+                      **                 **                           
+                     **                  ***                          
+                                         ***                          
+                                         ***                          
+                                       S ***                E         
+                                         ***                          
+                                         ***                          
+                     **                  ***                          
+                      **                 **                           
+                      ***               ***                           
+                       ***             ***                            
+                       ****           ****                            
+                        ****         ****                             
+                         ***************                              
+                           ***********                                
+                             *******     
+                              
+'''
+
+s_ZZZ = '''                                                                                                                                                                                                          
+                                                                      
+                             *******                                  
+                           ***********                                
+                         ***************                              
+                        ****         ****                             
+                       ****           ****                            
+                       ***             ***                            
+                      ***               ***                           
+                      **                 **                           
+                     **                  ***                          
+                                         ***                          
+                                         ***                          
+                                       E ***                S         
+                                         ***                          
+                                         ***                          
+                     **                  ***                          
+                      **                 **                           
+                      ***               ***                           
+                       ***             ***                            
+                       ****           ****                            
+                        ****         ****                             
+                         ***************                              
+                           ***********                                
+                             *******                                  
+                                                                      
+'''
+
+s_YYY = '''
+                                                                                                                                          
+                                                            *         
+                                                           ***        
+                                                          ****        
+                                                         ****         
+                                                        ****          
+                                                       ****           
+                                                      ****            
+                                                     ****             
+                                                    ****              
+                                                  *****               
+                                                 *****                
+                                                 ****                 
+                                                ******                
+     E                                          *******     S         
+                                                 * *****              
+                                                    *****             
+                                                     *****            
+                                                      *****           
+                                                       *****          
+                                                        *****         
+                                                         *****        
+                                                          *****       
+                                                           ****       
+                                                            ***       
+                                                             *        
+                                                                                                                                                                                           
+'''
+
+
+b = Board(*(pars := get_pars(s_YYY)))
+# b = Board((0, 0), (2 * 1000, 2 * 1000), ())
 print(f'pars: {pars}')
 print(f'res: {b.attack()}')

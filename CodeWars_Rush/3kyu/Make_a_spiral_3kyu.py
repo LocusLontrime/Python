@@ -4,6 +4,7 @@ import sys
 sys.setrecursionlimit(10000)
 directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
+
 def spiralize(size):
     # Making a snake
     spiral_m = [[0 for _ in range(size)] for _ in range(size)]
@@ -11,6 +12,7 @@ def spiralize(size):
     print(f'SPIRAL MATRIX of {size}x{size} size -->> ')
     for row in spiral_m:
         print(row)
+
 
 def spiral_order_rec(counter: int, j: int, i: int, spiral_m: list[list[int]], size: int):
     print(f'counter: {counter}')
@@ -38,9 +40,9 @@ def spiral_order_rec(counter: int, j: int, i: int, spiral_m: list[list[int]], si
         # direction change branch:
         spiral_order_rec(counter + 1, j, i, spiral_m, size)
 
+
 def is_valid(j: int, i: int, size: int):
     return 0 <= min(j, i) and max(j, i) < size
-
 
 
 spiralize(1000)
