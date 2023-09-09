@@ -7,7 +7,7 @@ def longest_1s_vector(vector: list[int]) -> tuple[int, int]:
         if vector[rp] == 1:
             if (ml := rp - lp + 1) > max_len:
                 max_len = ml
-                ji = rp, lp
+                ji = lp, rp
             rp += 1
         else:
             lp = rp + 1
@@ -16,6 +16,8 @@ def longest_1s_vector(vector: list[int]) -> tuple[int, int]:
     return ji if ji is not None else 'no seq'
 
 
+bv = [1]
+bv2 = [0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1]
 bin_vector = [0, 0, 0]
 
 print(f'longest vector of 1s: {longest_1s_vector(bin_vector)}')

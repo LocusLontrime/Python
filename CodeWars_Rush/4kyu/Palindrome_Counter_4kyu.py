@@ -29,6 +29,6 @@ def count_palindromes_before_power_of_ten(power_of_ten: int):
     return sum([count_palindromes_at_power_of_ten(p_) for p_ in range(power_of_ten + 1)])
 
 
-l, r = 56748922948543545847328463278, 97366778594947372920949843857843284637284627462141427896478568343767366878093  # 5, 55  # 35, 64
+l, r = 266 * 10 ** 1_500, 989 * 10 ** 15_000  # 5, 55  # 35, 64
 print(f'RES palindromes counter{l, r}: {count_palindromes(l, r)}')
 
