@@ -306,8 +306,8 @@ def colour_(char, colour, flag=False):
 # method for creating an example of closed transport task with parameters given:
 def create_an_example(rows: int, columns: int, values_range=100):
     # preparing the supp and cons arrays:
-    suppliers = [None for j in range(rows)]
-    consumers = [None for i in range(columns)]
+    suppliers = [None for _ in range(rows)]
+    consumers = [None for _ in range(columns)]
     # costs matrix building:
     costs = [[int(values_range * random.random()) for i in range(columns)] for j in range(rows)]
     # suppliers list filling:
