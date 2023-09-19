@@ -1,6 +1,7 @@
 # accepted on codewars.com
 alphabet = 'abcdefghijklmnopqrstuvwxyz'
 
+
 # Returns the Index of Coincidence for the part of cipher text
 def get_index_of_coincidence(cipher_text_part):
     N = float(len(cipher_text_part))

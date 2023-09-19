@@ -26,6 +26,7 @@ def count(matrix):
 
     return squares_dictionary
 
+
 chess_board = [
             [0, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],

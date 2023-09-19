@@ -21,9 +21,6 @@ def longest_palindrome(s):  # Manacher's algorithm
     currentRadius = 0
     maxRadius = 0
 
-    oldCenter = 0
-    oldMaxRadius = 0
-
     while center < len(sModified):
 
         while center - currentRadius >= 0 and center + currentRadius < len(sModified) and sModified[center - currentRadius] == sModified[center + currentRadius]:

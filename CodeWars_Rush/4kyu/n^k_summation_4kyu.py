@@ -170,7 +170,7 @@ class Polynomial:
 # print(f'{Fraction(1) / Fraction(3, 2)}')
 
 start = time.time_ns()
-eq = equation(500)
+eq = equation(98)
 finish = time.time_ns()
 print(f'eq: {eq}')
 print(f'rec counter: {rec_counter}')

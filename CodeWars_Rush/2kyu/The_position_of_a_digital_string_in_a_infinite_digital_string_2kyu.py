@@ -1,3 +1,4 @@
+# accepted on codewars.com
 def find_position(num_string):  # accepted on codewars.com
     # the min positions index for all the partitions of number given
     entries_indexes = []

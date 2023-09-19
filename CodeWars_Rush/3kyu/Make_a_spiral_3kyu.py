@@ -1,7 +1,7 @@
 # accepted on codewars.com
 import sys
 
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(10_000)
 directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
 

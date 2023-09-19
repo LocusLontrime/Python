@@ -2,6 +2,7 @@
 class Boggle:
     # delta j and i:
     WALK = [(dy, dx) for dx in range(-1, 2) for dy in range(-1, 2) if (dy, dx) != (0, 0)]
+
     def __init__(self, board: list[list[str]], word: str):
         self.word = word
         self.J, self.I = len(board), len(board[0])

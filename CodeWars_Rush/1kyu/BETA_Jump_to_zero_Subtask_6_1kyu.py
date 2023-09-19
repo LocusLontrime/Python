@@ -47,10 +47,11 @@ def get_digs_str(n: int):
     return [int(d) for d in str(n)]
 
 
-arrays = [[10 ** 29]]  # i * 10 ** 18 for i in range(98)
+arrays = [[k * 10 ** 18 for k in range(1_000)] for _ in range(1_000)]  # i * 10 ** 18 for i in range(98)
 start = time.time_ns()
 for arr_ in arrays:
-    print(f'STEPS: {jump_to_zero(arr_)}')  # 10 ** x for x in range(18 + 1)
+    res_ = jump_to_zero(arr_)
+    # print(f'STEPS: {res_}')  # 10 ** x for x in range(18 + 1)
 finish = time.time_ns()
 print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
 print(f'MEMO TABLE: ')
@@ -62,5 +63,27 @@ print(f'SIZE: {len(memo_table)}')
 # RES: [1, 2, 11, 81, 611, 4798, 39320, 333583, 2897573, 25632474]
 
 # steps per 100k -->> [4798, 9350, 13681, 17811, 21760, 25544, 29179, 32680, 36057, 39320]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

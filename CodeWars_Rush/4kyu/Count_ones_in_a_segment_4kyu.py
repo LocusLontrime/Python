@@ -1,8 +1,10 @@
 # accepted on codewars.com
 import math
 
+
 def count_ones(left, right):
     return count_ones_for_num(right) - count_ones_for_num(left - 1)
+
 
 def count_ones_for_num(num: int):
     res = 0

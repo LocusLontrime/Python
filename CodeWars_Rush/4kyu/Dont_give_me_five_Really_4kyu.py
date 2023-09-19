@@ -1,6 +1,5 @@
 # accepted on codewars.com
 import math
-from functools import reduce
 
 
 # max recursion depth exceeded for the max text value = 9000000000000000000
