@@ -47,7 +47,7 @@ def get_digs_str(n: int):
     return [int(d) for d in str(n)]
 
 
-arrays = [[k * 10 ** 18 for k in range(1_000)] for _ in range(1_000)]  # i * 10 ** 18 for i in range(98)
+arrays = [[k * 10 ** 18 for k in range(1_000)]]  # i * 10 ** 18 for i in range(98)
 start = time.time_ns()
 for arr_ in arrays:
     res_ = jump_to_zero(arr_)
