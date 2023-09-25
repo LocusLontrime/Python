@@ -24,11 +24,11 @@ def rec_seeker(i: int, sum_: int, shift_: int, restr: bool, digits: list[int], n
             # recurrent relation
             interim_res, next_shift = rec_seeker(i - 1, sum_ + d_, next_shift, restr and d_ == max_dig, digits, num, length)
             res += interim_res
-        # returning value:
         r = res, next_shift
         if not restr:
             memo_table[(i, sum_, shift_)] = r
         return r
+    # returning value:
     return memo_table[(i, sum_, shift_)]
 
 

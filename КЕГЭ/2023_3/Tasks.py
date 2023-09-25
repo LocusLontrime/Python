@@ -2,7 +2,7 @@ import time
 from collections import defaultdict as d
 
 
-def convert(n: int, base: int) -> str:
+def convert(n: int, base: int) -> str:  # 36 366 98 989
     res = ''
     n_ = n
     while n_ > 0:
@@ -42,11 +42,11 @@ def get_arr(file_name: str):
 
 
 array = [10, 13, 57, 68, 63, 39, 34, 68, 66, 53, 66]
-array_a = get_arr('27A.txt')
+array_a = get_arr('../../Yandex_int/27A.txt')
 print(f'array_a: ')
 # for el_ in array_a:
 #     print(f'{el_}')
-array_b = get_arr('27B.txt')
+array_b = get_arr('../../Yandex_int/27B.txt')
 print(f'occurred EX: {pairs(array, modulo=131)}')
 print(f'occurred A: {pairs(array_a, modulo=131)}')
 print(f'occurred B: {pairs(array_b, modulo=131)}')
