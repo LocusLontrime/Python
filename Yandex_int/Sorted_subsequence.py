@@ -11,7 +11,7 @@ def i_am_brut(arr: list[int]):
     ...
 
 
-def common_sequences(arr: list[int], non_decr: bool = True):
+def common_sequences(arr: list[int]):
     """counts all the common subsequences of the array given, so that subsequences that are not (non)increasing or (non)decreasing..."""
     return 2 ** len(arr) - 1 - sorted_subsequences(arr, non_decr=True) - sorted_subsequences(arr, non_decr=False) + len(arr)  # doubly-subtracted subsequences with the length of 1
 
