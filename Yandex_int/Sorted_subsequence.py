@@ -27,10 +27,11 @@ def sorted_subsequences(arr: list[int], non_decr: bool = True):
 
 
 def rec_core(i: int, arr: list[int], memo_table: dict[int, int], non_decr: bool):
+    ops = {True: operator.le, False: operator.ge}
     if i not in memo_table.keys():
         # border case:
         counter = 1  # the element itself as valid subsequence:
-        bin_op = operator.le if non_decr else operator.ge
+        bin_op = ops[non_decr]
         # cycling all left subs:
         if i != 0:
             for ind in range(i):

@@ -4,6 +4,8 @@
 # 2. leftmost element equals min el
 # 3. rightmost element equals max el
 
+# TODO: ADDITIONAL Q: all good subsequences?..
+
 # Notes:
 # all estimations based on the worst case...
 # 1. Bruteforce -->> runtime: O(n^3), additional memory: O(n)
