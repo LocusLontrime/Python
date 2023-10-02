@@ -101,11 +101,9 @@ def calculate(rectangles: list[tuple[int, int, int, int]]) -> int:
     for x in range(max_xs + 1):
         min_, freq = get_min(1, 0, max_ys - 1, 0, max_ys - 1)
         area += (y_interval - (0 if min_ else freq)) * (decompress_x[x] - decompress_x[prev_x])
-        for pos_event in x_rect_pos_events[x]:
-            yl, yr = pos_event
+        for yl, yr in x_rect_pos_events[x]:
             update(1, 0, max_ys - 1, yl, yr - 1, 1)
-        for neg_event in x_rect_neg_events[x]:
-            yl, yr = neg_event
+        for yl, yr in x_rect_neg_events[x]:
             update(1, 0, max_ys - 1, yl, yr - 1, -1)
         prev_x = x
     return area
@@ -119,12 +117,12 @@ def compress_coords(rectangles: list[tuple[int, int, int, int]]) -> tuple[d[int,
         ys |= {yl, yr}
     decompress_y, decompress_x = {}, {}
     compress_y, compress_x = {}, {}
-    for i, x in enumerate(sorted(xs)):
-        decompress_x[i] = x
-        compress_x[x] = i
-    for i, y in enumerate(sorted_ys := sorted(ys)):
-        decompress_y[i] = y
-        compress_y[y] = i
+    for ind, x in enumerate(sorted(xs)):
+        decompress_x[ind] = x
+        compress_x[x] = ind
+    for ind, y in enumerate(sorted_ys := sorted(ys)):
+        decompress_y[ind] = y
+        compress_y[y] = ind
     min_y, max_y = sorted_ys[0], sorted_ys[-1]
     x_rect_pos_events = d(list)
     x_rect_neg_events = d(list)
@@ -169,7 +167,7 @@ def compress_coords(rectangles: list[tuple[int, int, int, int]]) -> tuple[d[int,
 rects = [(random.randint(1, 1_000_000), random.randint(1, 1_000_000), random.randint(1, 1_000_000), random.randint(1, 1_000_000)) for _ in range(8_000)]
 
 start = time.time_ns()
-for i in range(3):
+for i_ in range(3):
     print(f'area: {calculate(rects)}')
 finish = time.time_ns()
 print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
