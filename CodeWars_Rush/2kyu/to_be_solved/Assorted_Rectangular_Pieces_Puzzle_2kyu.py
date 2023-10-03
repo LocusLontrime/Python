@@ -187,7 +187,7 @@ class DancingLinks:
         # next row step:
         self.row_num += 1
 
-    def knuth_x(self, solution: list) -> None:
+    def knuth_x(self, solution: list):
         """Knuth's algorithm X based on Dancing Links"""
         global rec_counter
         rec_counter += 1
@@ -201,7 +201,7 @@ class DancingLinks:
         if not self.root.R:
             print(f'SOLUTION FOUND!!!')
             self.sols.append(solution)
-            return
+            return solution
         best_col = self.choose_best_col()
         if not best_col.size:  # size == 0
             # there are no solutions in this branch
@@ -218,7 +218,8 @@ class DancingLinks:
             for node_ in (nodes := self.get_row(link_node_, False)):
                 self.cover_col(node_.col_link)
             # recursive deepening:
-            self.knuth_x(solution + [row_to_be_pushed])
+            if r := self.knuth_x(solution + [row_to_be_pushed]):
+                return r
             # uncovering columns (backtracking)
             for node_ in nodes[::-1]:
                 self.uncover_col(node_.col_link)
