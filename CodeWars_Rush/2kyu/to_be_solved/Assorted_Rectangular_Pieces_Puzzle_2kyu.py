@@ -184,16 +184,8 @@ class DancingLinks:
         # detaching crossed rows:
         for link_node_ in self.get_column_nodes(col):
             # UD-detaching (except the column's link_node_):
-            # a. left motion:
-            ln_ = link_node_.L
-            while ln_:
-                self.detach_ud(ln_)
-                ln_ = ln_.L
-            # b. right motion
-            ln_ = link_node_.R
-            while ln_:
-                self.detach_ud(ln_)
-                ln_ = ln_.R
+            for row_node_ in self.get_row(link_node_, False):
+                self.detach_ud(row_node_)
 
     def uncover_col(self, col):
         # LR-attaching the ColumnLink:
@@ -201,16 +193,8 @@ class DancingLinks:
         # attaching crossed rows:
         for link_node_ in list(self.get_column_nodes(col))[::-1]:  # TODO: optimize if it is possible!!!
             # UD-attaching (except the column's link_node_):
-            # a. left motion:
-            ln_ = link_node_.L
-            while ln_:
-                self.attach_ud(ln_)
-                ln_ = ln_.L
-            # b. right motion
-            ln_ = link_node_.R
-            while ln_:
-                self.attach_ud(ln_)
-                ln_ = ln_.R
+            for row_node_ in self.get_row(link_node_, False):
+                self.attach_ud(row_node_)
 
     # TODO: decrease the number of if-checks or eliminate them!..
     @staticmethod
