@@ -42,14 +42,6 @@ class LinkNode:
         # aux pars:
         ...
 
-    def copy(self) -> 'LinkNode':
-        copied_node = LinkNode(self.j, self.i, self.col_link)
-        copied_node.L = self.L
-        copied_node.R = self.R
-        copied_node.U = self.U
-        copied_node.D = self.D
-        return copied_node
-
     def __str__(self) -> str:
         return f'{self.j, self.i}'
 
@@ -156,24 +148,38 @@ class DancingLinks:
     def get_row(link_node_: LinkNode, full: bool = True) -> list[LinkNode]:
         """retrieves the full row (if full=True) or full row except the node given (if full=False)
         from the LinkNode given (from leftmost to rightmost)"""
+        # TODO: do we need leftmost->rightmost order for correct work?..
+        nodes = DancingLinks.get_lefts(link_node_)[::-1]
+        if full:
+            nodes.append(link_node_)
+        return nodes + DancingLinks.get_rights(link_node_)
+
+    @staticmethod
+    def get_lefts(link_node_: LinkNode) -> list[LinkNode]:
         nodes = []
         ln_ = link_node_.L
         while ln_:
             nodes.append(ln_)
             ln_ = ln_.L
-        nodes = nodes[::-1]
-        ln_ = link_node_ if full else link_node_.R
+        return nodes
+
+    @staticmethod
+    def get_rights(link_node_: LinkNode) -> list[LinkNode]:
+        nodes = []
+        ln_ = link_node_.R
         while ln_:
             nodes.append(ln_)
             ln_ = ln_.R
         return nodes
 
     @staticmethod
-    def get_column_nodes(col: LinkColumn):
+    def get_column_nodes(col: LinkColumn) -> list[LinkNode]:
+        nodes = []
         link_node_ = col.D
         while link_node_:
-            yield link_node_
+            nodes.append(link_node_)
             link_node_ = link_node_.D
+        return nodes
 
     def get_top_left(self):
         ...
@@ -191,7 +197,7 @@ class DancingLinks:
         # LR-attaching the ColumnLink:
         self.attach_lr(col)
         # attaching crossed rows:
-        for link_node_ in list(self.get_column_nodes(col))[::-1]:  # TODO: optimize if it is possible!!!
+        for link_node_ in self.get_column_nodes(col)[::-1]:  # TODO: optimize if it is possible!!!
             # UD-attaching (except the column's link_node_):
             for row_node_ in self.get_row(link_node_, False):
                 self.attach_ud(row_node_)
