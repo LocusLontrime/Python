@@ -6,10 +6,10 @@ rec_counter: int
 def solve_puzzle(board: list[str], pieces: list[list[int]]):  # 36 366 98 989 LL
     global rec_counter
     # your code goes here. you can do it!
-    print(f'len: {len(pieces)}')
-    print(f'pieces: {pieces}')
-    for row in board:
-        print(f'{row}')
+    # print(f'len: {len(pieces)}')
+    # print(f'pieces: {pieces}')
+    # for row in board:
+    #     print(f'{row}')
     # reconstructing the board:
     board_nums = []
     short_nums = {}
@@ -26,68 +26,71 @@ def solve_puzzle(board: list[str], pieces: list[list[int]]):  # 36 366 98 989 LL
                 short_nums[long_num] = short_num
                 long_nums[short_num] = long_num
                 short_num += 1
-    print(f'board: ')
-    for row in board_nums:
-        print(f'{row}')
-    print(f'short_nums: {short_nums}')
-    print(f'long_nums: {long_nums}')
+    # print(f'board: ')
+    # for row in board_nums:
+    #     print(f'{row}')
+    # print(f'short_nums: {short_nums}')
+    # print(f'long_nums: {long_nums}')
     area = sum([row.count(0) for row in board_nums])
-    print(f'area: {area}')
+    # print(f'area: {area}')
     shift = len(pieces)
     row_length = shift + area
-    print(f'shift: {shift}')
-    print(f'row_length: {row_length}')
+    # print(f'shift: {shift}')
+    # print(f'row_length: {row_length}')
+    # precalculating some prefix arrays:
+    prefix_sums = [[0 for _ in range(len(board[0]) + 1)] for _ in range(len(board))]
+    for j in range(len(board)):
+        for i in range(len(board[0])):
+            prefix_sums[j][i + 1] = prefix_sums[j][i] + board_nums[j][i]
     # dancing links initializing:
     dlx = DancingLinks(row_length)
     # building rows for every shape (piece):
     piece_number = 0
     for piece in pieces:
-        rows = construct_rows(board_nums, piece, short_nums, shift)
-        print(f'piece_number: {piece_number}')
+        rows = construct_rows(board_nums, piece, shift, short_nums, prefix_sums)
+        # print(f'piece_number: {piece_number}')
         for row in rows:
-            dlx.append_row([piece_number] + row)
+            dlx.append_row([piece_number] + row, 0)
         if piece[0] != piece[1]:
-            rows = construct_rows(board_nums, piece[::-1], short_nums, shift)
-            print(f'piece_number: {piece_number}')
+            rows = construct_rows(board_nums, piece[::-1], shift, short_nums, prefix_sums)
+            # print(f'piece_number: {piece_number}')
             for row in rows:
-                dlx.append_row([piece_number] + row)
+                dlx.append_row([piece_number] + row, 1)
         piece_number += 1
     # starting knuth's algorithm x:
     rec_counter = 0
-    dlx.knuth_x([])
-    print(f'solutions: ')
-    for sol in dlx.sols:
-        print(f'{sol}')
+    sol = dlx.knuth_x([])
+    sol = [[ln.j, *divmod(long_nums[ln.i - shift], len(board[0])), ln.orientation] for ln in sol]
+    sol.sort(key=lambda k: k[0])
+    sol = [el[1:] for el in sol]
+    # print(f'solutions: ')
+    print(f'{sol}')
     print(f'rec_counter: {rec_counter}')
+    return sol
 
 
-def get_indices(j: int, i: int, piece: list[int], i_max: int, short_nums: dict[int, int], shift: int):
+def get_indices(j: int, i: int, piece: list[int], i_max: int, shift: int, short_nums: dict[int, int]):
     return [short_nums[i_max * j_ + i_] + shift for i_ in range(i, i + piece[1]) for j_ in range(j, j + piece[0])]
 
 
-def construct_rows(board: list[list[int]], piece: list[int], short_nums: dict[int, int], shift: int):
-    print(f'piece: {piece}')
+def construct_rows(board: list[list[int]], piece: list[int], shift: int, short_nums: dict[int, int],
+                   prefix_sums: list[list[int]]):
+    # print(f'piece: {piece}')
     # rows:
-    rows = []  # like: (j, i)
+    rows = []
     # creating aux matrix:
     for i in range(len(board[0]) + 1 - piece[1]):
         consecutives = 0
-        for j in range(len(board)):  # + 1 - piece[0]
-            # sum_ = sum(board_nums[j][i: i + piece[1]])
-            i_ = 0
-            while i_ < piece[1]:
-                if board[j][i + i_]:
-                    break
-                i_ += 1
-            if i_ == piece[1]:
+        for j in range(len(board)):
+            if prefix_sums[j][i + piece[1]] - prefix_sums[j][i] == 0:
                 consecutives += 1
             else:
                 consecutives = 0
             if consecutives >= piece[0]:
-                rows.append(get_indices(j + 1 - piece[0], i, piece, len(board[0]), short_nums, shift))
-    print(f'rows built: ')
-    for row in rows:
-        print(f'{row}')
+                rows.append(get_indices(j + 1 - piece[0], i, piece, len(board[0]), shift, short_nums))
+    # print(f'rows built: ')
+    # for row in rows:
+    #     print(f'{row}')
     # returning rows built:
     return rows
 
@@ -112,8 +115,11 @@ class LinkColumn:
 
 
 class LinkNode:
-    def __init__(self, j: int, i: int, col_link: LinkColumn):
+    def __init__(self, j: int, i: int, orientation: int, col_link: LinkColumn):
+        # in our case: j -> piece's number, i -> shifted position...
         self.j, self.i = j, i
+        # piece's orientation: 0 -> angle of rotation = 0, 1 -> angle of rotation = 90 degrees
+        self.orientation = orientation
         # link to the corresponding LinkColumn (in order to change the size of it while covering a column)...
         self.col_link = col_link
         # LR-links:
@@ -143,11 +149,9 @@ class DancingLinks:
         self._initialize_cols_links()
         # solutions:
         self.sols = []
-        # rows counter:
-        self.row_num = 0
 
     def _initialize_cols_links(self):
-        print(f'cols: {self.cols}')
+        # print(f'cols: {self.cols}')
         # creating LinkColumns:
         prev_ = self.root
         for i in range(self.cols):
@@ -157,16 +161,13 @@ class DancingLinks:
             prev_ = current_col_link
             self.cols_list.append(current_col_link)
 
-    def __str__(self):
-        ...
-
-    def append_row(self, row: list[int]) -> None:  # 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1
-        print(f'appending row: {row}')
+    def append_row(self, row: list[int], piece_or: int) -> None:  # 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1
+        # print(f'appending row: {row}')
         # building new row in DancingLinks:
         prev_ = None
-        for i, val in enumerate(row):
+        for val in row:
             column_node_ = self.cols_list[val]
-            curr_link_node = LinkNode(self.row_num, i, column_node_)
+            curr_link_node = LinkNode(row[0], val, piece_or, column_node_)
             if not column_node_.tail:
                 # head'n'tail creation:
                 column_node_.D = column_node_.tail = curr_link_node
@@ -184,8 +185,6 @@ class DancingLinks:
             prev_ = curr_link_node
             # size updating:
             column_node_.size += 1
-        # next row step:
-        self.row_num += 1
 
     def knuth_x(self, solution: list):
         """Knuth's algorithm X based on Dancing Links"""
@@ -212,13 +211,13 @@ class DancingLinks:
         # iterating through all the column's LinkNodes:
         link_node_ = best_col.D
         while link_node_:
-            # preparing the row to be pushed into the stack of the current solution:
-            row_to_be_pushed = self.get_row(link_node_)
+            # preparing the leftmost LinkNode in the row to be pushed into the stack of the current solution:
+            leftmost_to_be_pushed = self.get_leftmost(link_node_)
             # covering all the crossed columns:
             for node_ in (nodes := self.get_row(link_node_, False)):
                 self.cover_col(node_.col_link)
             # recursive deepening:
-            if r := self.knuth_x(solution + [row_to_be_pushed]):
+            if r := self.knuth_x(solution + [leftmost_to_be_pushed]):
                 return r
             # uncovering columns (backtracking)
             for node_ in nodes[::-1]:
@@ -226,6 +225,13 @@ class DancingLinks:
             link_node_ = link_node_.D
         # uncovering the best column (backtracking):
         self.uncover_col(best_col)
+
+    @staticmethod
+    def get_leftmost(link_node_: LinkNode) -> LinkNode:
+        ln_ = link_node_
+        while ln_.L:
+            ln_ = ln_.L
+        return ln_.R
 
     @staticmethod
     def get_row(link_node_: LinkNode, full: bool = True) -> list[LinkNode]:
@@ -263,9 +269,6 @@ class DancingLinks:
             nodes.append(link_node_)
             link_node_ = link_node_.D
         return nodes
-
-    def get_top_left(self):
-        ...
 
     def cover_col(self, col: LinkColumn):  # col -> LinkNode or int?..
         # LR-detaching the ColumnLink:
@@ -323,7 +326,7 @@ class DancingLinks:
         col_ = self.root.R
         best_col, best_col_size = self.root.R, self.root.R.size
         while col_:
-            if (cs := col_.size) < 2:
+            if (cs := col_.size) < 1:
                 return col_
             if cs < best_col_size:
                 best_col, best_col_size = col_, cs
@@ -412,7 +415,163 @@ board_ = [
 pieces_ = [[1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 4], [1, 4], [2, 2], [2, 2], [2, 3], [2, 3],
            [2, 5]]
 
+board_2 = [
+    '          ',
+    '          ',
+    '  00  00  ',
+    '  00  00  ',
+    '          ',
+    ' 0  00  0 ',
+    ' 00    00 ',
+    '  000000  ',
+    '  000000  ',
+    '          '
+]
+
+pieces_2 = [[1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 4], [2, 2], [2, 2]]
+
+board_3 = [
+    "   0000000000   ",
+    "      0000      ",
+    "      0000      ",
+    " 00000000000000 ",
+    " 00000000000000 ",
+    "      0000      ",
+    "      0000      ",
+    "      0000      ",
+    "      0000      ",
+    "      0000      ",
+    "      0000      ",
+    "     00000      ",
+    "    000 00   00 ",
+    "  0000  0000000 ",
+    " 000    0000000 ",
+    "                "
+]
+
+pieces_3 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 3], [1, 4],
+            [1, 4], [1, 4], [1, 4], [1, 5], [1, 7], [1, 7], [1, 12], [2, 2], [2, 2], [2, 3], [2, 4], [2, 5]]
+
+board_4 = [
+    "  00       0    ",
+    "          00    ",
+    " 0000      00   ",
+    "  0000000   0000",
+    " 000   00   0000",
+    " 000  0000000000",
+    "0000  0 00000000",
+    "0   000 0000 000",
+    "0 000   0000 000",
+    "  000   0000  00",
+    "  000  00000   0",
+    "  000000        ",
+    "     000000     ",
+    " 00  00   00    ",
+    " 00  00    0    ",
+    " 00  00    0    "
+]
+
+pieces_4 = [[1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 3], [1, 4],
+            [1, 4], [1, 4], [1, 7], [2, 2], [2, 2], [2, 3], [2, 5], [3, 3], [3, 4], [4, 4], [4, 5]]
+
+board_5 = [
+    "     0          ",
+    "     0      0   ",
+    " 00000   0  0   ",
+    " 0000     0000  ",
+    " 0000000000  0  ",
+    " 000000000  00  ",
+    " 0000000000000  ",
+    " 000000000000   ",
+    "  00000000000   ",
+    "   0000000   0  ",
+    "    0  000   000",
+    "           0    ",
+    "        00 0    ",
+    "     0000000    ",
+    " 000000    0 0  ",
+    "00           0  "]
+
+pieces_5 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3],
+            [1, 3], [1, 3], [1, 3], [1, 4], [1, 4], [1, 6], [1, 6], [2, 2], [3, 3], [4, 6], [5, 5]]
+
+board_6 = [
+    "00     000     ",
+    " 000           ",
+    " 000  0  0000  ",
+    " 000  00 00000 ",
+    " 000  00  0000 ",
+    "  00  00     0 ",
+    "  00  00  00000",
+    "  00000000000  ",
+    "   00    0     ",
+    "   00  000 00  ",
+    "       000  00 ",
+    "       000  00 ",
+    "        0    0 ",
+    "            00 ",
+    "            0  "]
+
+pieces_6 = [[1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 3], [1, 3], [1, 4],
+            [1, 4], [1, 5], [1, 8], [2, 2], [2, 2], [2, 4], [3, 3], [3, 4]]
+
+board_7 = [
+    "              ",
+    "          000 ",
+    "  00 00000000 ",
+    "   0000 00000 ",
+    "    00  00000 ",
+    "    00     0  ",
+    "  0 000000 0  ",
+    " 00000   000  ",
+    " 00000   00   ",
+    "     0        ",
+    "   00000000   ",
+    "   00000000   ",
+    "   00000000   ",
+    "              "]
+
+pieces_7 = [[1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 4], [1, 5], [1, 6], [2, 2], [2, 2],
+            [2, 4], [3, 4], [3, 7]]
+
+board_8 = [
+    "             ",
+    "             ",
+    " 0000    00  ",
+    "000000  0000 ",
+    "00     00  00",
+    "00     00  00",
+    "00 000 00  00",
+    "00 000 00  00",
+    "00  00 00  00",
+    "000000  0000 ",
+    " 0000    00  ",
+    "             ",
+    "             "
+]
+
+pieces_8 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3],
+            [1, 3], [1, 4], [1, 4], [1, 4], [1, 4], [1, 5], [2, 2], [2, 4], [2, 5]]
+
+board_9 = [
+    "            ",
+    " 0 0     0  ",
+    "00000   00  ",
+    " 0 0  0000  ",
+    "00000   00  ",
+    " 0 0    00  ",
+    "        00  ",
+    "        00  ",
+    "        00  ",
+    "        00  ",
+    "      000000",
+    "            "
+]
+
+pieces_9 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 3], [1, 4],
+            [2, 2], [2, 5]]
+
 start = time.time_ns()
-solve_puzzle(board_, pieces_)
+solve_puzzle(board_9, pieces_9)
 finish = time.time_ns()
 print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
