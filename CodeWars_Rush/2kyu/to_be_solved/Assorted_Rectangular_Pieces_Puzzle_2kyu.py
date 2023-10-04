@@ -190,12 +190,14 @@ class DancingLinks:
         """Knuth's algorithm X based on Dancing Links"""
         global rec_counter
         rec_counter += 1
+        if rec_counter % 10_000 == 0:
+            print(f'rec_counter: {rec_counter}')
         node_ = self.root.R
-        print(f'cols sizes: ', end=' ')
-        while node_:
-            print(f'{node_.size}', end=' ')
-            node_ = node_.R
-        print()
+        # print(f'cols sizes: ', end=' ')
+        # while node_:
+        #     print(f'{node_.size}', end=' ')
+        #     node_ = node_.R
+        # print()
         # check for exact cover:
         if not self.root.R:
             print(f'SOLUTION FOUND!!!')
@@ -204,13 +206,12 @@ class DancingLinks:
         best_col = self.choose_best_col()
         if not best_col.size:  # size == 0
             # there are no solutions in this branch
-            print(f'NO SOLUTIONS BRANCH REACHED!!!')
+            # print(f'NO SOLUTIONS BRANCH REACHED!!!')
             return
         # covering the best column:
         self.cover_col(best_col)
         # iterating through all the column's LinkNodes:
-        link_node_ = best_col.D
-        while link_node_:
+        for link_node_ in self.get_column_nodes(best_col)[::-1]:
             # preparing the leftmost LinkNode in the row to be pushed into the stack of the current solution:
             leftmost_to_be_pushed = self.get_leftmost(link_node_)
             # covering all the crossed columns:
@@ -222,7 +223,6 @@ class DancingLinks:
             # uncovering columns (backtracking)
             for node_ in nodes[::-1]:
                 self.uncover_col(node_.col_link)
-            link_node_ = link_node_.D
         # uncovering the best column (backtracking):
         self.uncover_col(best_col)
 
@@ -398,7 +398,7 @@ rows_ = [
 #     print(f'{sol}')
 # print(f'rec_counter: {rec_counter}')
 
-board_ = [
+board_1 = [
     '            ',
     ' 00000      ',
     ' 00000      ',
@@ -412,8 +412,8 @@ board_ = [
     '  0       0 ',
     '000         '
 ]
-pieces_ = [[1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 4], [1, 4], [2, 2], [2, 2], [2, 3], [2, 3],
-           [2, 5]]
+pieces_1 = [[1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 4], [1, 4], [2, 2], [2, 2], [2, 3], [2, 3],
+            [2, 5]]
 
 board_2 = [
     '          ',
@@ -571,7 +571,37 @@ board_9 = [
 pieces_9 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 3], [1, 4],
             [2, 2], [2, 5]]
 
-start = time.time_ns()
-solve_puzzle(board_9, pieces_9)
-finish = time.time_ns()
-print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
+board_10 = [
+    "                    ",
+    "        0000        ",
+    "       000000       ",
+    "      00000000      ",
+    "      00000000      ",
+    "      00000000      ",
+    "      00000000      ",
+    "      00 00 00      ",
+    "     0000000000     ",
+    "    000000000000    ",
+    "   00000000000000   ",
+    "  0000000000000000  ",
+    "  0000000000000000  ",
+    " 00  0        0  00 ",
+    " 0   0        0   0 ",
+    " 0   0        0   0 ",
+    "        0  0        ",
+    "        0000        ",
+    "         00         ",
+    "                    "
+]
+
+pieces_10 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
+             [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 3], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 7], [1, 8],
+             [2, 2], [2, 2], [2, 2], [2, 3], [2, 3], [2, 7], [2, 8], [3, 3]]
+
+for ind, (b_, ps_) in enumerate(
+        [(board_1, pieces_1), (board_2, pieces_2), (board_3, pieces_3), (board_4, pieces_4), (board_5, pieces_5),
+         (board_6, pieces_6), (board_7, pieces_7), (board_8, pieces_8), (board_9, pieces_9), (board_10, pieces_10)], 1):
+    start = time.time_ns()
+    solve_puzzle(b_, ps_)
+    finish = time.time_ns()
+    print(f'time elapsed {ind}th case: {(finish - start) // 10 ** 6} milliseconds')
