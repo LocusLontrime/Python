@@ -46,20 +46,25 @@ def solve_puzzle(board: list[str], pieces: list[list[int]]):  # 36 366 98 989 LL
     dlx = DancingLinks(row_length)
     # building rows for every shape (piece):
     piece_number = 0
-    for piece in pieces:
-        rows = construct_rows(board_nums, piece, shift, short_nums, prefix_sums)
+    placements = {}
+    for h, w in pieces:
+        rows = construct_rows(board_nums, [h, w], shift, short_nums, prefix_sums)
+        rows_q = len(rows)
         # print(f'piece_number: {piece_number}')
         for row in rows:
-            dlx.append_row([piece_number] + row, piece, 0)
-        if piece[0] != piece[1]:
-            rows = construct_rows(board_nums, piece[::-1], shift, short_nums, prefix_sums)
+            dlx.append_row([piece_number] + row, [h, w], 0)
+        if h != w:
+            rows = construct_rows(board_nums, [w, h], shift, short_nums, prefix_sums)
+            rows_q += rows_q
             # print(f'piece_number: {piece_number}')
             for row in rows:
-                dlx.append_row([piece_number] + row, piece, 1)
+                dlx.append_row([piece_number] + row, [h, w], 1)
+        placements[(h, w)] = rows_q
         piece_number += 1
+    print(f'placements: {placements}')
     # starting knuth's algorithm x:
     rec_counter = 0
-    sol = dlx.knuth_x([])
+    sol = dlx.knuth_x([], placements)
     sol = [[ln.j, *divmod(long_nums[ln.i - shift], len(board[0])), ln.orientation] for ln in sol]
     sol.sort(key=lambda k: k[0])
     sol = [el[1:] for el in sol]
@@ -188,10 +193,12 @@ class DancingLinks:
             # size updating:
             column_node_.size += 1
 
-    def knuth_x(self, solution: list):
+    def knuth_x(self, solution: list, placements: dict[tuple[int, int], int]):
         """Knuth's algorithm X based on Dancing Links"""
         global rec_counter
         rec_counter += 1
+        if rec_counter % 10_000 == 0:
+            print(f'rec_counter: {rec_counter}')
         # node_ = self.root.R
         # print(f'cols sizes: ', end=' ')
         # while node_:
@@ -209,23 +216,24 @@ class DancingLinks:
             # print(f'NO SOLUTIONS BRANCH REACHED!!!')
             return
         # covering the best column:
-        self.cover_col(best_col)
+        self.cover_col(best_col, placements)
         # iterating through all the column's LinkNodes:
         column_nodes = self.get_column_nodes(best_col)  # [::-1]
-        for link_node_ in sorted(column_nodes, key=lambda ln: (-max((t := ln.piece)[1], t[0]), t[0] * t[1])):
+        for link_node_ in sorted(column_nodes, key=lambda ln: placements[(p := ln.piece)[0], p[1]]):
+            # lambda ln: (-(t := ln.piece)[1] * t[0], -max(t[0], t[1]))
             # preparing the leftmost LinkNode in the row to be pushed into the stack of the current solution:
             leftmost_to_be_pushed = self.get_leftmost(link_node_)
             # covering all the crossed columns:
             for node_ in (nodes := self.get_row(link_node_, False)):
-                self.cover_col(node_.col_link)
+                self.cover_col(node_.col_link, placements)
             # recursive deepening:
-            if r := self.knuth_x(solution + [leftmost_to_be_pushed]):
+            if r := self.knuth_x(solution + [leftmost_to_be_pushed], placements):
                 return r
             # uncovering columns (backtracking)
             for node_ in nodes[::-1]:
-                self.uncover_col(node_.col_link)
+                self.uncover_col(node_.col_link, placements)
         # uncovering the best column (backtracking):
-        self.uncover_col(best_col)
+        self.uncover_col(best_col, placements)
 
     @staticmethod
     def get_leftmost(link_node_: LinkNode) -> LinkNode:
@@ -271,20 +279,24 @@ class DancingLinks:
             link_node_ = link_node_.D
         return nodes
 
-    def cover_col(self, col: LinkColumn):  # col -> LinkNode or int?..
+    def cover_col(self, col: LinkColumn, placements):  # col -> LinkNode or int?..
         # LR-detaching the ColumnLink:
         self.detach_lr(col)
         # detaching crossed rows:
         for link_node_ in self.get_column_nodes(col):
+            h, w = link_node_.piece
+            placements[h, w] -= 1
             # UD-detaching (except the column's link_node_):
             for row_node_ in self.get_row(link_node_, False):
                 self.detach_ud(row_node_)
 
-    def uncover_col(self, col):
+    def uncover_col(self, col, placements):
         # LR-attaching the ColumnLink:
         self.attach_lr(col)
         # attaching crossed rows:
         for link_node_ in self.get_column_nodes(col)[::-1]:  # TODO: optimize if it is possible!!!
+            h, w = link_node_.piece
+            placements[h, w] += 1
             # UD-attaching (except the column's link_node_):
             for row_node_ in self.get_row(link_node_, False):
                 self.attach_ud(row_node_)
@@ -627,12 +639,16 @@ pieces_11 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2], [1, 2], [1, 2], [1,
              [2, 4], [2, 5], [2, 7], [3, 5], [4, 7]]
 
 start = time.time_ns()
-solve_puzzle(board_, pieces_)
-solve_puzzle(board_3, pieces_3)
-solve_puzzle(board_5, pieces_5)
-solve_puzzle(board_8, pieces_8)
-solve_puzzle(board_9, pieces_9)
-solve_puzzle(board_10, pieces_10)
+# solve_puzzle(board_, pieces_)
+# solve_puzzle(board_2, pieces_2)
+# solve_puzzle(board_3, pieces_3)
+# solve_puzzle(board_4, pieces_4)
+# solve_puzzle(board_5, pieces_5)
+# solve_puzzle(board_6, pieces_6)
+# solve_puzzle(board_7, pieces_7)
+# solve_puzzle(board_8, pieces_8)
+# solve_puzzle(board_9, pieces_9)
+# solve_puzzle(board_10, pieces_10)
 solve_puzzle(board_11, pieces_11)
 finish = time.time_ns()
 print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
