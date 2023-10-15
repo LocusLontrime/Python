@@ -63,23 +63,21 @@ def cycle(board, row_clues, column_clues, mj, mi, cells) -> tuple[int, int] | No
         prev_solved_cells = solved_cells
         iteration += 1
         # a. row lines solving
-        if (solved_cells := solve_lines(board, board, row_clues, _rows_changed, columns_changed_, solved_cells)) is None:
+        if (solved_cells := solve_lines(board, row_clues, _rows_changed, columns_changed_, solved_cells)) is None:
             return None
-        # board 90-degrees rotation:
-        zipped_board = list((zip(*board)))
-        # b. column lines solving:
-        if (solved_cells := solve_lines(zipped_board, board, column_clues, columns_changed_, rows_changed_, solved_cells, True)) is None:
+        # b. column lines solving (board 90-degrees rotation):
+        if (solved_cells := solve_lines(board, column_clues, columns_changed_, rows_changed_, solved_cells, True)) is None:
             return None
         # ops with sets:
         _rows_changed, columns_changed_ = rows_changed_, set()
     return solved_cells, iteration
 
 
-def solve_lines(board_, board, clues, _rows_changed, columns_changed_, solved_cells, zipped=False):
+def solve_lines(board, clues, _rows_changed, columns_changed_, solved_cells, zipped=False) -> int | None:
     # a. row lines solving
     for j in _rows_changed:
         # monochromatic line solving:
-        line = ''.join(board_[j])
+        line = ''.join([board[i][j] for i in range(len(board))]) if zipped else ''.join(board[j])  # row or column
         solved_line = solve_line(line, clues[j])
         if solved_line is None:
             return None
@@ -488,9 +486,17 @@ backtrack_clues6 = (
 )
 
 
-hellish_Clues_150x150 = NonogramsOrg.read(f'50861')
+hellish_clues_150x150 = NonogramsOrg.read(f'50861')
+# nana_deviluke_200x149 = NonogramsOrg.read(f'66644')
+# jaguar_200x200 = NonogramsOrg.read(f'66136')
+# motherland_140x200 = NonogramsOrg.read(f'47617')
+# b_letter_96x96 = NonogramsOrg.read(f'19043')
+# gargantua_200x200 = NonogramsOrg.read(f'51237')
+# pulp_fiction_155x190 = NonogramsOrg.read(f'52053')
+# gargoyle_148x120 = NonogramsOrg.read(f'18417')
+# biker_girl_90x100 = NonogramsOrg.read(f'65764')
 
 start = time.time_ns()
-solve(hellish_Clues_150x150)
+solve(hellish_clues_150x150)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
