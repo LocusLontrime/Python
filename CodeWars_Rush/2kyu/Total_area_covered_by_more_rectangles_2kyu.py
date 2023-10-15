@@ -164,11 +164,10 @@ def compress_coords(rectangles: list[tuple[int, int, int, int]]) -> tuple[d[int,
 
 # rects = [(0, i * 2, 9, i * 2 + 1) for i in range(5)] + [(i * 2, 0, i * 2 + 1, 9) for i in range(5)]
 
-rects = [(random.randint(1, 1_000_000), random.randint(1, 1_000_000), random.randint(1, 1_000_000), random.randint(1, 1_000_000)) for _ in range(8_000)]
+rects = [(random.randint(1, 1_000_000), random.randint(1, 1_000_000), random.randint(1, 1_000_000), random.randint(1, 1_000_000)) for _ in range(100_000)]
 
 start = time.time_ns()
-for i_ in range(3):
-    print(f'area: {calculate(rects)}')
+print(f'area: {calculate(rects)}')
 finish = time.time_ns()
 print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
 

@@ -1,5 +1,6 @@
 # accepted on codewars.com
 import time
+from CodeWars_Rush.tasks_1kyu.to_be_solved.Nonogram_ru_parser import NonogramsOrg
 
 
 def solve(clues: tuple):
@@ -46,14 +47,14 @@ def cycle(board, row_clues, column_clues, mj, mi, cells) -> tuple[int, int] | No
     iteration = 0
     # cells filled with 'X' or '.':
     solved_cells = 0
-    rows_changed, columns_changed = [{_ for _ in range(x)} for x in [mj, mi]]
+    _rows_changed, columns_changed_ = [{_ for _ in range(x)} for x in [mj, mi]]
     while prev_solved_cells < solved_cells < cells:
-        rows_changed_, columns_changed_ = set(), set()
+        rows_changed_ = set()
         # next step preparation:
         prev_solved_cells = solved_cells
         iteration += 1
         # a. row lines solving
-        for j in rows_changed:
+        for j in _rows_changed:
             # monochromatic line solving:
             line = ''.join(board[j])
             solved_line = solve_line(line, row_clues[j])
@@ -68,7 +69,7 @@ def cycle(board, row_clues, column_clues, mj, mi, cells) -> tuple[int, int] | No
         # board 90-degrees rotation:
         zipped_board = list((zip(*board)))
         # b. column lines solving:
-        for i in columns_changed:
+        for i in columns_changed_:
             # monochromatic line solving:
             line = ''.join(zipped_board[i])
             solved_line = solve_line(line, column_clues[i])
@@ -81,8 +82,28 @@ def cycle(board, row_clues, column_clues, mj, mi, cells) -> tuple[int, int] | No
                     rows_changed_.add(ind)
                 board[ind][i] = ch
         # ops with sets:
-        rows_changed, columns_changed = rows_changed_, columns_changed_
+        _rows_changed, columns_changed_ = rows_changed_, set()
     return solved_cells, iteration
+
+
+def solve_lines(board_, board, clues, _rows_changed, columns_changed_, solved_cells, zipped=False):
+    # a. row lines solving
+    for j in _rows_changed:
+        # monochromatic line solving:
+        line = ''.join(board_[j])
+        solved_line = solve_line(line, clues[j])
+        if solved_line is None:
+            return None
+        # board changing:
+        for ind, ch in enumerate(solved_line):
+            j_, ind_ = (ind, j) if zipped else (j, ind)
+            if board[j_][ind_] == '?' and ch != '?':
+                solved_cells += 1
+                columns_changed_.add(ind)
+            board[j_][ind_] = ch
+    # return already solved cells:
+    return solved_cells
+
 
 
 def solve_line(line: str, groups: list[int]) -> str | None:
@@ -472,9 +493,9 @@ backtrack_clues6 = (
 )
 
 
-
+# hellish_Clues_150x150 = NonogramsOrg.read(f'50861')
 
 start = time.time_ns()
-solve(backtrack_clues5)
+solve(backtracking_clues3)  # hellish_Clues_150x150
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')

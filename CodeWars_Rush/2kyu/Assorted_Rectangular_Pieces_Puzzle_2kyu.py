@@ -4,17 +4,20 @@ import time
 from collections import defaultdict as d
 
 rec_counter: int
+counter: int
 THRESHOLD = 1_000
 DELTA = 2  # important par for random run...
 
 
 def solve_puzzle(board: list[str], pieces: list[list[int]]):  # 36 366 98 989 LL
-    global rec_counter
-    rec_counter, counter = 0, 0
+    global rec_counter, counter
+    counter = 0
     print(f'len: {len(pieces)}')
     print(f'pieces: {pieces}')
     for row in board:
         print(f'"{row}",')
+    area = sum([h * w for h, w in pieces])
+    print(f'rectangles_area: {area}, rectangle_area: {len(board) * len(board[0])}')
     # pieces' indices dict and equal pieces counting::
     pieces_indices, pieces_dict = d(set), d(int)
     for i, (h, w) in enumerate(pieces):
@@ -33,17 +36,20 @@ def solve_puzzle(board: list[str], pieces: list[list[int]]):  # 36 366 98 989 LL
         pieces_placements[(h, w)] = construct_rows(board_nums, [h, w], prefix_sums, rotated=False)
         pieces_placements[(h, w)] += construct_rows(board_nums, [w, h], prefix_sums, rotated=True) if h != w else []
     # starting rec algo:
-    empty_cells = {j * len(board[0]) + i for i in range(len(board[0])) for j in range(len(board)) if board_nums[j][i] == 0}
+    empty_cells = {j * len(board[0]) + i for i in range(len(board[0])) for j in range(len(board)) if
+                   board_nums[j][i] == 0}
     sol = None
     while not sol:
         rec_counter = 0
         sol = rec_placement(pieces_placements, pieces_dict, empty_cells, [])
         counter += 1
+        print(f'counter: {counter}')
     res = [None for _ in range(len(pieces))]
     for piece, orientation, plcmnt in sol:
         i = pieces_indices[piece].pop()
         res[i] = [*divmod(min(plcmnt), len(board[0])), int(orientation)]
     print(f'res: {res}')
+    print(f'length of res: {len(res)}')
     print(f'rec counter: {rec_counter}')
     print(f'counter: {counter}')
     return res
@@ -79,12 +85,14 @@ def rec_placement(pieces_placements: dict[tuple[int, int], list[tuple[bool, set[
                   empty_cells: set[int], sol: list):
     global rec_counter
     rec_counter += 1
+    # print(f'rec_counter: {rec_counter}')
     if rec_counter <= THRESHOLD:
         # border case:
         if len(empty_cells) == 0:
             return sol
         # searching fo the best piece:
-        best_piece = sorted([k for k, v in pieces_dict.items() if v > 0], key=lambda k: (len(pieces_placements[k]), max(k)))[0]
+        best_piece = \
+            sorted([k for k, v in pieces_dict.items() if v > 0], key=lambda k: (len(pieces_placements[k]), max(k)))[0]
         if best_piece:
             pieces_dict[best_piece] -= 1
             #  cycling through all the possible placements of this piece:
@@ -95,16 +103,13 @@ def rec_placement(pieces_placements: dict[tuple[int, int], list[tuple[bool, set[
                     used.add(ind_)
                     orientation, placement = pieces_placements[best_piece][ind_]
                     if placement <= empty_cells:
-                        # pieces_placements' changes done:
-                        copy = {key: [(_, plcmnt) for _, plcmnt in val] for key, val in pieces_placements.items()}
-                        for j, piece in enumerate(pieces_dict.keys()):  # enumerate(pieces := [i for i, v in pieces_dict.items() if v > 0])
-                            pieces_placements[piece] = [(_, plcmnt) for _, plcmnt in pieces_placements[piece] if not plcmnt.intersection(placement)]
                         # recurrent relation:
-                        if r := rec_placement(pieces_placements, pieces_dict, empty_cells - placement, sol + [(best_piece, orientation, placement)]):
-                            return r
-                        # pieces_placements' changes undone (backtracking):
-                        for key, val in copy.items():
-                            pieces_placements[key] = val
+                        if rec_counter <= THRESHOLD:
+                            if r := rec_placement(
+                                    {piece: [(_, plcmnt) for _, plcmnt in pieces_placements[piece] if
+                                             not plcmnt.intersection(placement)] for piece in pieces_dict.keys()},
+                                    pieces_dict, empty_cells - placement, sol + [(best_piece, orientation, placement)]):
+                                return r
             # backtracking:
             pieces_dict[best_piece] += 1
 
@@ -466,32 +471,117 @@ board_17 = [
 ]
 pieces_17 = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 2],
              [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 3], [1, 3], [1, 3], [1, 4], [1, 4], [1, 4], [1, 4], [1, 5],
-             [1, 5],
-             [1, 6], [2, 2], [2, 2], [2, 2], [2, 2], [2, 3], [2, 3], [2, 3], [2, 4], [2, 4], [2, 4], [2, 4], [2, 4],
-             [2, 5],
-             [2, 9], [3, 6], [3, 7], [4, 5], [4, 6], [10, 10]]
+             [1, 5], [1, 6], [2, 2], [2, 2], [2, 2], [2, 2], [2, 3], [2, 3], [2, 3], [2, 4], [2, 4], [2, 4], [2, 4],
+             [2, 4], [2, 5], [2, 9], [3, 6], [3, 7], [4, 5], [4, 6], [10, 10]]
 
-inputs = [(board_1, pieces_1),
-          (board_2, pieces_2),
-          (board_3, pieces_3),
-          (board_4, pieces_4),
-          (board_5, pieces_5),
-          (board_6, pieces_6),
-          (board_7, pieces_7),
-          (board_8, pieces_8),
-          (board_9, pieces_9),
-          (board_10, pieces_10),
-          (board_11, pieces_11),
-          (board_12, pieces_12),
-          (board_13, pieces_13),
-          (board_14, pieces_14),
-          (board_15, pieces_15),
-          (board_16, pieces_16),
-          (board_17, pieces_17)]
+board_10x17 = [
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000",
+    "00000000000000000"
+]
 
-start = time.time_ns()
+pieces_10x17 = [[2, 3], [1, 3], [2, 4], [3, 1], [1, 3], [6, 4], [3, 2], [3, 4], [2, 1], [1, 7], [2, 2], [1, 8], [6, 2],
+                [2, 5], [2, 2], [2, 2], [6, 1], [1, 4], [1, 3], [4, 3], [9, 1], [5, 2], [1, 4], [1, 1], [1, 1], [1, 4]]
+
+board_15x24 = [
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+    "000000000000000000000000",
+]
+
+pieces_15x24 = [[2, 3], [1, 3], [2, 4], [3, 1], [1, 3], [6, 4], [3, 2], [3, 4], [2, 1], [1, 7], [2, 2], [1, 8], [6, 2],
+                [2, 5], [2, 2], [2, 2], [6, 1], [1, 4], [1, 3], [4, 3], [9, 1], [5, 2], [1, 4], [1, 1], [1, 1], [1, 4],
+                [3, 3], [2, 4], [9, 4], [2, 3], [9, 1], [4, 4], [1, 6], [3, 6], [6, 2], [5, 3], [2, 7], [1, 11], [4, 3],
+                [1, 4], [2, 5], [2, 2]]
+
+board_23x36 = [
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+    "000000000000000000000000000000000000",
+]
+
+pieces_23x36 = [[2, 3], [1, 3], [2, 4], [3, 1], [1, 3], [6, 4], [3, 2], [3, 4], [2, 1], [1, 7], [2, 2], [1, 8], [6, 2],
+                [2, 5], [2, 2], [2, 2], [6, 1], [1, 4], [1, 3], [4, 3], [9, 1], [5, 2], [1, 4], [1, 1], [1, 1], [1, 4],
+                [3, 3], [2, 4], [9, 4], [2, 3], [9, 1], [4, 4], [1, 6], [3, 6], [6, 2], [5, 3], [2, 7], [1, 11], [4, 3],
+                [1, 4], [2, 5], [2, 2], [16, 12], [5, 9], [7, 3], [5, 5], [2, 17], [1, 10], [5, 2], [4, 3], [5, 5],
+                [1, 5],
+                [1, 9], [6, 3], [2, 2], [1, 1], [1, 2], [1, 6], [1, 1], [1, 2], [4, 4], [1, 8], [5, 3], [1, 5], [1, 2]]
+
+inputs = [
+    (board_1, pieces_1),
+    (board_2, pieces_2),
+    (board_3, pieces_3),
+    (board_4, pieces_4),
+    (board_5, pieces_5),
+    (board_6, pieces_6),
+    (board_7, pieces_7),
+    (board_8, pieces_8),
+    (board_9, pieces_9),
+    (board_10, pieces_10),
+    (board_11, pieces_11),
+    (board_12, pieces_12),
+    (board_13, pieces_13),
+    (board_14, pieces_14),
+    (board_15, pieces_15),
+    (board_16, pieces_16),
+    (board_17, pieces_17),
+    # (board_10x17, pieces_10x17),
+    # (board_15x24, pieces_15x24),
+    # (board_23x36, pieces_23x36)
+]
+
+delta_times = []
+counters = []
 for ind, input_ in enumerate(inputs, 1):
+    start = time.time_ns()
     print(f'board {ind}: ')
     solve_puzzle(*input_)
-finish = time.time_ns()
-print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
+    finish = time.time_ns()
+    delta_time = (finish - start) // 10 ** 6
+    delta_times.append(delta_time)
+    counters.append(counter)
+
+print(f'STATISTIC: ')
+for index, delta_time in enumerate(delta_times):
+    print(f'{index + 1}th board takes {delta_time} milliseconds, counter: {counters[index]}')
+print()
+print(f'time elapsed: {sum(delta_times)} milliseconds')

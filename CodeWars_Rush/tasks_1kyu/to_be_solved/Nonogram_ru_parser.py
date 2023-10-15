@@ -171,6 +171,8 @@ class NonogramsOrg(object):
         column_clues = tuple(column_clues)
         print(f'column_clues: {column_clues}')
 
+        return column_clues, row_clues
+
     @classmethod
     def read(cls, _id, colored=False):
         """
