@@ -3,7 +3,13 @@ import time
 from CodeWars_Rush.tasks_1kyu.to_be_solved.Nonogram_ru_parser import NonogramsOrg
 
 
+lines_solved: int
+dp_iters: int
+
+
 def solve(clues: tuple):
+    global lines_solved, dp_iters
+    lines_solved, dp_iters = 0, 0
     # clues and sizes:
     column_clues, row_clues = clues
     mj, mi = len(row_clues), len(column_clues)
@@ -38,6 +44,9 @@ def solve(clues: tuple):
     # result
     print(f'RESULT: ')
     show_board(board)
+    print(f'aggr_iteration: {aggr_iteration}')
+    print(f'lines solved: {lines_solved}')
+    print(f'dp iters: {dp_iters}')
     return tuple(tuple(1 if board[j][i] == 'X' else 0 for i in range(mi)) for j in range(mj))
 
 
@@ -54,33 +63,13 @@ def cycle(board, row_clues, column_clues, mj, mi, cells) -> tuple[int, int] | No
         prev_solved_cells = solved_cells
         iteration += 1
         # a. row lines solving
-        for j in _rows_changed:
-            # monochromatic line solving:
-            line = ''.join(board[j])
-            solved_line = solve_line(line, row_clues[j])
-            if solved_line is None:
-                return None
-            # board changing:
-            for ind, ch in enumerate(solved_line):
-                if board[j][ind] == '?' and ch != '?':
-                    solved_cells += 1
-                    columns_changed_.add(ind)
-                board[j][ind] = ch
+        if (solved_cells := solve_lines(board, board, row_clues, _rows_changed, columns_changed_, solved_cells)) is None:
+            return None
         # board 90-degrees rotation:
         zipped_board = list((zip(*board)))
         # b. column lines solving:
-        for i in columns_changed_:
-            # monochromatic line solving:
-            line = ''.join(zipped_board[i])
-            solved_line = solve_line(line, column_clues[i])
-            if solved_line is None:
-                return None
-            # board changing:
-            for ind, ch in enumerate(solved_line):
-                if board[ind][i] == '?' and ch != '?':
-                    solved_cells += 1
-                    rows_changed_.add(ind)
-                board[ind][i] = ch
+        if (solved_cells := solve_lines(zipped_board, board, column_clues, columns_changed_, rows_changed_, solved_cells, True)) is None:
+            return None
         # ops with sets:
         _rows_changed, columns_changed_ = rows_changed_, set()
     return solved_cells, iteration
@@ -106,11 +95,15 @@ def solve_lines(board_, board, clues, _rows_changed, columns_changed_, solved_ce
 
 
 def solve_line(line: str, groups: list[int]) -> str | None:
+    global lines_solved
+    lines_solved += 1
     ll, gl = len(line), len(groups)
+    # is it possible to place black or white at every index?
     whites = [0 for _ in range(ll + 1)]
     blacks = [0 for _ in range(ll + 1)]
+    # blacks already placed (for convenience and speed):
     blacks_filled = [0 if ch == 'X' else 1 for ch in line]
-    # buiding prefix arrays:
+    # building prefix arrays:
     prefix_whites = [0 for _ in range(ll + 1)]
     for i in range(ll):
         prefix_whites[i + 1] = prefix_whites[i] + (1 if line[i] == '.' else 0)
@@ -131,8 +124,11 @@ def solve_line(line: str, groups: list[int]) -> str | None:
     return res
 
 
+# bottleneck of OPTIMIZATION!!!
 def dp(n: int, k: int, black: bool, ll: int, gl: int, groups: list[int], whites: list[int], blacks: list[int],
        blacks_filled: list[int], prefix_whites: list[int], memo_table: dict[tuple[int, int, int], bool]) -> bool:
+    global dp_iters
+    dp_iters += 1
     if (n, k, black) not in memo_table.keys():
         # border cases:
         if n > ll:
@@ -492,9 +488,9 @@ backtrack_clues6 = (
 )
 
 
-# hellish_Clues_150x150 = NonogramsOrg.read(f'50861')
+hellish_Clues_150x150 = NonogramsOrg.read(f'50861')
 
 start = time.time_ns()
-solve(backtracking_clues3)  # hellish_Clues_150x150
+solve(hellish_Clues_150x150)
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
