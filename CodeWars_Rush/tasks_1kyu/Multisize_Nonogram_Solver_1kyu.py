@@ -105,7 +105,6 @@ def solve_lines(board_, board, clues, _rows_changed, columns_changed_, solved_ce
     return solved_cells
 
 
-
 def solve_line(line: str, groups: list[int]) -> str | None:
     ll, gl = len(line), len(groups)
     whites = [0 for _ in range(ll + 1)]
