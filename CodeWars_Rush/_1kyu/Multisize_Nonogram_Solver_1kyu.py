@@ -3,13 +3,13 @@ import time
 from CodeWars_Rush.tasks_1kyu.to_be_solved.Nonogram_ru_parser import NonogramsOrg
 
 
-lines_solved: int
-dp_iters: int
+# lines_solved: int
+# dp_iters: int
 
 
 def solve(clues: tuple):
-    global lines_solved, dp_iters
-    lines_solved, dp_iters = 0, 0
+    # global lines_solved, dp_iters
+    # lines_solved, dp_iters = 0, 0
     # clues and sizes:
     column_clues, row_clues = clues
     mj, mi = len(row_clues), len(column_clues)
@@ -45,8 +45,8 @@ def solve(clues: tuple):
     print(f'RESULT: ')
     show_board(board)
     print(f'aggr_iteration: {aggr_iteration}')
-    print(f'lines solved: {lines_solved}')
-    print(f'dp iters: {dp_iters}')
+    # print(f'lines solved: {lines_solved}')
+    # print(f'dp iters: {dp_iters}')
     return tuple(tuple(1 if board[j][i] == 'X' else 0 for i in range(mi)) for j in range(mj))
 
 
@@ -93,8 +93,8 @@ def solve_lines(board, clues, _rows_changed, columns_changed_, solved_cells, zip
 
 
 def solve_line(line: str, groups: list[int]) -> str | None:
-    global lines_solved
-    lines_solved += 1
+    # global lines_solved
+    # lines_solved += 1
     ll, gl = len(line), len(groups)
     # is it possible to place black or white at every index?
     whites = [0 for _ in range(ll + 1)]
@@ -125,8 +125,8 @@ def solve_line(line: str, groups: list[int]) -> str | None:
 # bottleneck of OPTIMIZATION!!!
 def dp(n: int, k: int, black: bool, ll: int, gl: int, groups: list[int], whites: list[int], blacks: list[int],
        blacks_filled: list[int], prefix_whites: list[int], memo_table: dict[tuple[int, int, int], bool]) -> bool:
-    global dp_iters
-    dp_iters += 1
+    # global dp_iters
+    # dp_iters += 1
     if (n, k, black) not in memo_table.keys():
         # border cases:
         if n > ll:
@@ -169,7 +169,6 @@ def main():
     finish_ = time.time_ns()
     print(f's: {s}')
     print(f'time elapsed: {(finish_ - start_) // 10 ** 6} milliseconds')
-
 
 
 # thread = threading.Thread(target=main)
