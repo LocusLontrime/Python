@@ -1,6 +1,6 @@
 # accepted on codewars.com
 import time
-from CodeWars_Rush.tasks_1kyu.to_be_solved.Nonogram_ru_parser import NonogramsOrg
+from CodeWars_Rush._1kyu.to_be_solved.Nonogram_ru_parser import NonogramsOrg
 
 
 # lines_solved: int
@@ -97,10 +97,10 @@ def solve_line(line: str, groups: list[int]) -> str | None:
     # lines_solved += 1
     ll, gl = len(line), len(groups)
     # is it possible to place black or white at every index?
-    whites = [0 for _ in range(ll + 1)]
-    blacks = [0 for _ in range(ll + 1)]
+    whites = [False for _ in range(ll + 1)]
+    blacks = [False for _ in range(ll + 1)]
     # blacks already placed (for convenience and speed):
-    blacks_filled = [0 if ch == 'X' else 1 for ch in line]
+    blacks_filled = [False if ch == 'X' else True for ch in line]
     # building prefix arrays:
     prefix_whites = [0 for _ in range(ll + 1)]
     for i in range(ll):
@@ -123,8 +123,8 @@ def solve_line(line: str, groups: list[int]) -> str | None:
 
 
 # bottleneck of OPTIMIZATION!!!
-def dp(n: int, k: int, black: bool, ll: int, gl: int, groups: list[int], whites: list[int], blacks: list[int],
-       blacks_filled: list[int], prefix_whites: list[int], memo_table: dict[tuple[int, int, int], bool]) -> bool:
+def dp(n: int, k: int, black: bool, ll: int, gl: int, groups: list[int], whites: list[bool], blacks: list[bool],
+       blacks_filled: list[bool], prefix_whites: list[int], memo_table: dict[tuple[int, int, int], bool]) -> bool:
     # global dp_iters
     # dp_iters += 1
     if (n, k, black) not in memo_table.keys():
@@ -138,17 +138,18 @@ def dp(n: int, k: int, black: bool, ll: int, gl: int, groups: list[int], whites:
         # 1. whites check:
         if blacks_filled[n]:
             if dp(n + 1, k, False, ll, gl, groups, whites, blacks, blacks_filled, prefix_whites, memo_table):
-                whites[n] = 1
+                whites[n] = True
                 res = True
         # 2. blacks check:
         if k < gl and not black:
-            if n + (grk := groups[k]) <= ll:
-                if prefix_whites[n + grk] - prefix_whites[n] == 0:
-                    if dp(n + grk, k + 1, True, ll, gl, groups, whites, blacks, blacks_filled, prefix_whites,
+            if (n_ := n + groups[k]) <= ll:
+                if prefix_whites[n_] - prefix_whites[n] == 0:
+                    if dp(n_, k + 1, True, ll, gl, groups, whites, blacks, blacks_filled, prefix_whites,
                           memo_table):
-                        for ind in range(grk):
-                            blacks[n + ind] = 1
+                        for ind in range(n, n_):
+                            blacks[ind] = True
                         res = True
+        # memo table update:
         memo_table[(n, k, black)] = res
     # returns res:
     return memo_table[(n, k, black)]
