@@ -3,13 +3,13 @@ import time
 from CodeWars_Rush._1kyu.to_be_solved.Nonogram_ru_parser import NonogramsOrg
 
 
-# lines_solved: int
-# dp_iters: int
+lines_solved: int
+dp_iters: int
 
 
 def solve(clues: tuple):
-    # global lines_solved, dp_iters
-    # lines_solved, dp_iters = 0, 0
+    global lines_solved, dp_iters
+    lines_solved, dp_iters = 0, 0
     # clues and sizes:
     column_clues, row_clues = clues
     mj, mi = len(row_clues), len(column_clues)
@@ -21,8 +21,15 @@ def solve(clues: tuple):
     solved_cells, iteration = cycle(board, row_clues, column_clues, mj, mi, cells)
     aggr_solved_cells = solved_cells
     aggr_iteration = iteration
-    # guessing:
+    # guessing (not smart):
+    # TODO: SAT or something else...
     questioned_cells = [(j, i) for j in range(mj) for i in range(mi) if board[j][i] == '?']
+    questioned_cells.sort(  # chooses the cell that belongs to most solved row/column...
+        key=lambda x: min(
+            sum(row_clues[x[0]]) - sum(1 for ch in board[x[0]] if ch == 'X'),
+            sum(column_clues[x[1]]) - sum(1 for j in range(len(board)) if board[j][x[1]] == 'X')
+        )
+    )
     for qj, qi in questioned_cells:
         # tries to place 'X:
         temp_board = [[board[j][i] for i in range(mi)] for j in range(mj)]
@@ -45,7 +52,7 @@ def solve(clues: tuple):
     print(f'RESULT: ')
     show_board(board)
     print(f'aggr_iteration: {aggr_iteration}')
-    # print(f'lines solved: {lines_solved}')
+    print(f'lines solved: {lines_solved}')
     # print(f'dp iters: {dp_iters}')
     return tuple(tuple(board[j]) for j in range(mj))
 
@@ -86,8 +93,8 @@ def solve_lines(board, clues, _rows_changed, columns_changed_, solved_cells, zip
 
 
 def solve_line(line: str, groups: list[int], columns_changed_, board: list[list[str]], j: int, zipped=False) -> int | None:
-    # global lines_solved
-    # lines_solved += 1
+    global lines_solved
+    lines_solved += 1
     ll, gl = len(line), len(groups)
     # is it possible to place black or white at every index?
     whites = [False for _ in range(ll + 1)]
@@ -190,7 +197,7 @@ _clues = (
     )
 )
 
-big_clues = (
+big_clues = (  # 50x50
     (
         (), (13,), (9, 13), (9, 27), (9, 27), (9, 27), (9, 6, 27), (9, 6, 27), (9, 6, 27), (9, 6, 6, 2, 16),
         (9, 6, 6, 2, 16), (9, 6, 6, 2, 16), (6, 2, 16), (23, 2, 5), (18, 7, 5), (18, 3, 2, 5), (18, 3, 2, 5),
@@ -475,7 +482,7 @@ backtrack_clues6 = (
 )
 
 
-hellish_clues_150x150 = NonogramsOrg.read(f'50861')
+# hellish_clues_150x150 = NonogramsOrg.read(f'50861')
 # nana_deviluke_200x149 = NonogramsOrg.read(f'66644')
 # jaguar_200x200 = NonogramsOrg.read(f'66136')
 # motherland_140x200 = NonogramsOrg.read(f'47617')
@@ -486,6 +493,6 @@ hellish_clues_150x150 = NonogramsOrg.read(f'50861')
 # biker_girl_90x100 = NonogramsOrg.read(f'65764')
 
 start = time.time_ns()
-solve(hellish_clues_150x150)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100
+solve(big_clues)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')

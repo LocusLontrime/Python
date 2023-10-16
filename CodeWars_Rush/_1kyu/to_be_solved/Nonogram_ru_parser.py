@@ -88,24 +88,24 @@ class NonogramsOrg(object):
         height = x[0] % x[3] + x[1] % x[3] - x[2] % x[3]
 
         x = cyphered[3]
-        colors_number = x[0] % x[3] + x[1] % x[3] - x[2] % x[3]
+        colours_number = x[0] % x[3] + x[1] % x[3] - x[2] % x[3]
 
-        colors = []
+        colours = []
         x = cyphered[4]
-        for i in range(colors_number):
-            color_x = cyphered[i + 5]
+        for i in range(colours_number):
+            colour_x = cyphered[i + 5]
 
-            a = color_x[0] - x[1]
-            b = color_x[1] - x[0]
-            c = color_x[2] - x[3]
+            a = colour_x[0] - x[1]
+            b = colour_x[1] - x[0]
+            c = colour_x[2] - x[3]
             # unknown_flag = color_x[3] - a - x[2]
 
             rgb = hex(a + 256)[3:] + hex((b + 256 << 8) + c)[3:]
-            colors.append(rgb)
+            colours.append(rgb)
 
         solution = [[0] * width for _ in range(height)]
 
-        a = colors_number + 5
+        a = colours_number + 5
         x = cyphered[a]
         solution_size = x[0] % x[3] * (x[0] % x[3]) + x[1] % x[3] * 2 + x[2] % x[3]
 
@@ -118,7 +118,7 @@ class NonogramsOrg(object):
                 v = j + vv
                 solution[y[3] - x[3] - 1][v] = y[2] - x[2]
 
-        return [colors, solution]
+        return [colours, solution]
 
     def definition(self):
         """
@@ -133,9 +133,12 @@ class NonogramsOrg(object):
         Find and parse the colors and solution of
         a 'nonograms.org' puzzle by id
         """
-        colors, solution = self.definition()
-        print(f'colors: {colors}')
+        colours, solution = self.definition()
+        print(f'colors: {colours}')
         print(f'solution: {solution}')
+        colours_dict = {i: colour for i, colour in enumerate(colours, 1)}
+        colours_dict[0] = f'ffffff'
+        print(f'colours_dict: {colours_dict}')
         # building row and column clues:
         # 1. row clues:
         row_clues = []
@@ -145,11 +148,10 @@ class NonogramsOrg(object):
             i = 0
             while i < mi:
                 temp_i = i
-                while i < mi and row[i] == 1:
+                while i < mi and row[i] == row[temp_i]:
                     i += 1
-                clue.append(i - temp_i)
-                while i < mi and row[i] == 0:
-                    i += 1
+                if row[i - 1] > 0:
+                    clue.append((i - temp_i, row[i - 1]))
             row_clues.append(tuple(clue))
         row_clues = tuple(row_clues)
         print(f'row_clues: {row_clues}')
@@ -162,16 +164,15 @@ class NonogramsOrg(object):
             i = 0
             while i < mi:
                 temp_i = i
-                while i < mi and row[i] == 1:
+                while i < mi and row[i] == row[temp_i]:
                     i += 1
-                clue.append(i - temp_i)
-                while i < mi and row[i] == 0:
-                    i += 1
+                if row[i - 1] > 0:
+                    clue.append((i - temp_i, row[i - 1]))
             column_clues.append(tuple(clue))
         column_clues = tuple(column_clues)
         print(f'column_clues: {column_clues}')
 
-        return column_clues, row_clues
+        return (column_clues, row_clues), colours_dict
 
     @classmethod
     def read(cls, _id, colored=False):
