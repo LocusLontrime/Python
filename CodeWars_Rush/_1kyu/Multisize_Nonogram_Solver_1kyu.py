@@ -47,7 +47,7 @@ def solve(clues: tuple):
     print(f'aggr_iteration: {aggr_iteration}')
     # print(f'lines solved: {lines_solved}')
     # print(f'dp iters: {dp_iters}')
-    return tuple(tuple(1 if board[j][i] == 'X' else 0 for i in range(mi)) for j in range(mj))
+    return tuple(tuple(board[j]) for j in range(mj))
 
 
 def cycle(board, row_clues, column_clues, mj, mi, cells) -> tuple[int, int] | None:
@@ -78,21 +78,14 @@ def solve_lines(board, clues, _rows_changed, columns_changed_, solved_cells, zip
     for j in _rows_changed:
         # monochromatic line solving:
         line = ''.join([board[i][j] for i in range(len(board))]) if zipped else ''.join(board[j])  # row or column
-        solved_line = solve_line(line, clues[j])
-        if solved_line is None:
+        if (delta_solved_cells := solve_line(line, clues[j], columns_changed_, board, j, zipped)) is None:
             return None
-        # board changing:
-        for ind, ch in enumerate(solved_line):
-            j_, ind_ = (ind, j) if zipped else (j, ind)
-            if board[j_][ind_] == '?' and ch != '?':
-                solved_cells += 1
-                columns_changed_.add(ind)
-            board[j_][ind_] = ch
+        solved_cells += delta_solved_cells
     # return already solved cells:
     return solved_cells
 
 
-def solve_line(line: str, groups: list[int]) -> str | None:
+def solve_line(line: str, groups: list[int], columns_changed_, board: list[list[str]], j: int, zipped=False) -> int | None:
     # global lines_solved
     # lines_solved += 1
     ll, gl = len(line), len(groups)
@@ -109,17 +102,25 @@ def solve_line(line: str, groups: list[int]) -> str | None:
     memo_table = {}
     dp(0, 0, False, ll, gl, groups, whites, blacks, blacks_filled, prefix_whites, memo_table)
     # line recovering:
-    res = ''
+    solved_cells = 0
     for i in range(ll):
-        if whites[i] and blacks[i]:
-            res += '?'
-        elif whites[i]:
-            res += '.'
-        elif blacks[i]:
-            res += 'X'
+        j_, i_ = (i, j) if zipped else (j, i)
+        wi, bi = whites[i], blacks[i]
+        if wi and bi:
+            board[j_][i_] = '?'
+        elif wi:
+            board[j_][i_] = '.'
+            if line[i] == '?':
+                solved_cells += 1
+                columns_changed_.add(i)
+        elif bi:
+            board[j_][i_] = 'X'
+            if line[i] == '?':
+                solved_cells += 1
+                columns_changed_.add(i)
         else:
             return None
-    return res
+    return solved_cells
 
 
 # bottleneck of OPTIMIZATION!!!
@@ -144,8 +145,7 @@ def dp(n: int, k: int, black: bool, ll: int, gl: int, groups: list[int], whites:
         if k < gl and not black:
             if (n_ := n + groups[k]) <= ll:
                 if prefix_whites[n_] - prefix_whites[n] == 0:
-                    if dp(n_, k + 1, True, ll, gl, groups, whites, blacks, blacks_filled, prefix_whites,
-                          memo_table):
+                    if dp(n_, k + 1, True, ll, gl, groups, whites, blacks, blacks_filled, prefix_whites, memo_table):
                         for ind in range(n, n_):
                             blacks[ind] = True
                         res = True
@@ -159,17 +159,6 @@ def show_board(board: list[list[str | int]]):
     for row in board:
         r = ''.join(row)
         print(f'{r}')
-
-
-def main():
-    m = 100
-    groups_ = [_ for _ in range(1, m + 1)]  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
-    line_ = f'?' * (s := sum(groups_) + m - 1)
-    start_ = time.time_ns()
-    print(f'res: {solve_line(line_, groups_)}')
-    finish_ = time.time_ns()
-    print(f's: {s}')
-    print(f'time elapsed: {(finish_ - start_) // 10 ** 6} milliseconds')
 
 
 # thread = threading.Thread(target=main)
