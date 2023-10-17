@@ -137,23 +137,18 @@ def solve_line(line: list[ColoredCell], groups: list[tuple[int, int]], columns_c
     lines_solved += 1
     ll, gl = len(line), len(groups)
     # is it possible to place colour j at index i (for the every index i in the line and every colour j in the roster)?
-    colours = [[False for _ in range(ll + 1)] for _ in range(colours_q)]
-    # building prefix colours arrays:
-    prefix_whites = [[0 for _ in range(ll + 1)] for _ in range(colours_q)]
-    for i in range(ll):
-        for colour_ in range(colours_q):
-            prefix_whites[colour_][i + 1] = prefix_whites[colour_][i] + (1 if colour_ not in line[i].colours else 0)
+    # colours = [[False for _ in range(ll + 1)] for _ in range(colours_q)]
+    colours = {i: set() for i in range(ll)}
     # memoization and dynamic programming start:
     memo_table = {}
-    dp(0, 0, 0, ll, gl, line, groups, prefix_whites, colours, memo_table)
+    dp(0, 0, 0, ll, gl, line, groups, colours, memo_table)
+    # print(f'COLOURS: ')
+    # for colour_ in range(colours_q):
+    #     print(f'{colour_}: {["T" if el else "F" for el in colours[colour_]]}')
     # line recovering:
     solved_cells = 0
-    for i in range(ll):
+    for i, colours_set_ in colours.items():
         j_, i_ = (i, j) if zipped else (j, i)
-        colours_set_ = set()
-        for colour_ in range(colours_q):
-            if colours[colour_][i]:
-                colours_set_.add(colour_)
         if line[i].colour == '?' and len(colours_set_) == 1:
             solved_cells += 1
         if len(colours_set_) < line[i].colours_q:
@@ -166,7 +161,7 @@ def solve_line(line: list[ColoredCell], groups: list[tuple[int, int]], columns_c
 
 # bottleneck of OPTIMIZATION!!!
 def dp(n: int, k: int, last_colour: int, ll: int, gl: int, line: list[ColoredCell], groups: list[tuple[int, int]],
-       prefix_whites: list[list[int]], colours: list[list[bool]], memo_table: dict[tuple[int, int, int], bool]) -> bool:
+       colours: dict[int, set[int]], memo_table: dict[tuple[int, int, int], bool]) -> bool:
     # print(f'n, k, last_colour: {n, k, last_colour}')
     global dp_iters
     dp_iters += 1
@@ -180,17 +175,20 @@ def dp(n: int, k: int, last_colour: int, ll: int, gl: int, line: list[ColoredCel
         # main part:
         # 1. whites check:
         if 0 in line[n].colours:  # checks if white colour can be placed...
-            if dp(n + 1, k, 0, ll, gl, line, groups, prefix_whites, colours, memo_table):
-                colours[0][n] = True  # white colour is already 0 (empty colour)
+            if dp(n + 1, k, 0, ll, gl, line, groups, colours, memo_table):
+                colours[n].add(0)  # white colour is already 0 (empty colour)
                 res = True
         # 2. blacks check:
         if k < gl:
             if (colour_ := groups[k][1]) != last_colour:
                 if (n_ := n + groups[k][0]) <= ll:
-                    if prefix_whites[colour_][n_] - prefix_whites[colour_][n] == 0:
-                        if dp(n_, k + 1, colour_, ll, gl, line, groups, prefix_whites, colours, memo_table):
+                    for cell_ in line[n: n_]:  # ind in (rng := range(n, n_))
+                        if colour_ not in cell_.colours:
+                            break
+                    else:
+                        if dp(n_, k + 1, colour_, ll, gl, line, groups, colours, memo_table):
                             for ind in range(n, n_):
-                                colours[colour_][ind] = True
+                                colours[ind].add(colour_)
                             res = True
         # memo table update:
         memo_table[(n, k, last_colour)] = res
@@ -210,6 +208,7 @@ def show_colours_cell(board: list[list[ColoredCell]]):
         print(f'{r}')
 
 
+# BLACK'n'WHITE:
 # hellish_clues_150x150 = NonogramsOrg.read(f'50861')
 # nana_deviluke_200x149 = NonogramsOrg.read(f'66644')
 # jaguar_200x200 = NonogramsOrg.read(f'66136')
@@ -219,14 +218,23 @@ def show_colours_cell(board: list[list[ColoredCell]]):
 # pulp_fiction_155x190 = NonogramsOrg.read(f'52053')
 # gargoyle_148x120 = NonogramsOrg.read(f'18417')
 # biker_girl_90x100 = NonogramsOrg.read(f'65764')
+
+# COLOURED:
 # link_11x12 = NonogramsOrg.read(f'67122')
 poppy_139_166 = NonogramsOrg.read(f'9596')
 # lovers_120x120 = NonogramsOrg.read(f'36040')
 # queen_sektonia_121x104 = NonogramsOrg.read(f'59615')
 # doggy_22x28 = NonogramsOrg.read(f'26828')
+# schooner_80x120 = NonogramsOrg.read(f'11824')
+# wolf_89x87 = NonogramsOrg.read(f'11617')
+# northern_america_200x200 = NonogramsOrg.read(f'21553')
+# villina_with_book_150x200 = NonogramsOrg.read(f'57147')
+# goth_dream_girl_161x200 = NonogramsOrg.read(f'53826')
+# too_big_momo_125x200 = NonogramsOrg.read(f'33190')
+# brunette_105x185 = NonogramsOrg.read(f'59505')
 
 start = time.time_ns()  # 36 366 98 989 LL
-solve(*poppy_139_166)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100, poppy_139_166, lovers_120x120, queen_sektonia_121x104
+solve(*poppy_139_166)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100, poppy_139_166, lovers_120x120, queen_sektonia_121x104, doggy_22x28, schooner_80x120, wolf_89x87, northern_america_200x200, villina_with_book_150x200, goth_dream_girl_161x200, too_big_momo_125x200, brunette_105x185
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
