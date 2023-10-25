@@ -49,11 +49,11 @@ def solve(clues: tuple):
             # backtracking:
             board = [[temp_board[j][i] for i in range(mi)] for j in range(mj)]
     # result
-    print(f'RESULT: ')
-    show_board(board)
+    # print(f'RESULT: ')
+    # show_board(board)
     print(f'aggr_iteration: {aggr_iteration}')
     print(f'lines solved: {lines_solved}')
-    # print(f'dp iters: {dp_iters}')
+    print(f'dp iters: {dp_iters}')
     return tuple(tuple(board[j]) for j in range(mj))
 
 
@@ -482,7 +482,7 @@ backtrack_clues6 = (
 )
 
 
-# hellish_clues_150x150 = NonogramsOrg.read(f'50861')
+hellish_clues_150x150 = NonogramsOrg.read(f'50861')
 # nana_deviluke_200x149 = NonogramsOrg.read(f'66644')
 # jaguar_200x200 = NonogramsOrg.read(f'66136')
 # motherland_140x200 = NonogramsOrg.read(f'47617')
@@ -492,7 +492,15 @@ backtrack_clues6 = (
 # gargoyle_148x120 = NonogramsOrg.read(f'18417')
 # biker_girl_90x100 = NonogramsOrg.read(f'65764')
 
+
+def parse_clues(clues):
+    # usable only for black'n'white nongrams:
+    (column_clues, row_clues), colours_dict = clues
+    return [[length for length, colour in column_clue] for column_clue in column_clues], [[length for length, colour in row_clue] for row_clue in row_clues]
+
+
+clues_parsed = parse_clues(hellish_clues_150x150)
 start = time.time_ns()
-solve(big_clues)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100
+solve(clues_parsed)  # hellish_clues_150x150, nana_deviluke_200x149, jaguar_200x200, motherland_140x200, b_letter_96x96, gargantua_200x200, pulp_fiction_155x190, gargoyle_148x120, biker_girl_90x100
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')

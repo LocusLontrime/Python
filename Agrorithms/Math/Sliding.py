@@ -209,6 +209,7 @@ class Case():
         # print(f'part of path: {list(reversed(path))}')
         return list(reversed(path))
 
+
 simple_example = [
     [1, 11, 3, 4, 16],
     [5, 13, 6, 8, 23],

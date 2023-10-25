@@ -134,11 +134,11 @@ class NonogramsOrg(object):
         a 'nonograms.org' puzzle by id
         """
         colours, solution = self.definition()
-        print(f'colors: {colours}')
-        print(f'solution: {solution}')
+        # print(f'colors: {colours}')
+        # print(f'solution: {solution}')
         colours_dict = {i: colour for i, colour in enumerate(colours, 1)}
         colours_dict[0] = f'ffffff'
-        print(f'colours_dict: {colours_dict}')
+        # print(f'colours_dict: {colours_dict}')
         # building row and column clues:
         # 1. row clues:
         row_clues = []
@@ -154,7 +154,7 @@ class NonogramsOrg(object):
                     clue.append((i - temp_i, row[i - 1]))
             row_clues.append(tuple(clue))
         row_clues = tuple(row_clues)
-        print(f'row_clues: {row_clues}')
+        # print(f'row_clues: {row_clues}')
         # 2. column_clues:
         column_clues = []
         zipped_solution = list(zip(*solution))
@@ -170,7 +170,7 @@ class NonogramsOrg(object):
                     clue.append((i - temp_i, row[i - 1]))
             column_clues.append(tuple(clue))
         column_clues = tuple(column_clues)
-        print(f'column_clues: {column_clues}')
+        # print(f'column_clues: {column_clues}')
 
         return (column_clues, row_clues), colours_dict
 
