@@ -5,32 +5,23 @@ import time
 
 
 def time_palindrome(n: str, m: str) -> int:
-    # n_, m_ = int(n), int(m)  # n, m = input().split(' ')
-    # n_, m_ = n_ - 1, m_ - 1
-    n_str, m_str = subtract_one(n), subtract_one(m)
+    n_str, m_str = subtract_one(n), subtract_one(m)  # n, m = input().split(' ')
     steps = min(len(n_str), len(m_str))
     min_str, max_str = (m_str, n_str) if len(n_str) > len(m_str) or len(n_str) == len(m_str) and n_str > m_str else (n_str, m_str)
-    min_rev_str = min_str[::-1]
     palindromes = (int(min_str) + 1) % MODULO  # 0 included
     # pre-calculation:
-    min_, max_ = '', ''
     pre_calc = [0 for _ in range(steps)]
-    for step_ in range(steps):
-        min_ = min_rev_str[step_] + min_
-        max_ = max_str[step_] + max_
-        if max_ > min_:
+    for step_, (max_dig, min_dig) in enumerate(zip(max_str, min_str[::-1])):
+        if max_dig > min_dig or (max_dig > min_dig and pre_calc[step_ - 1] == 1):
             pre_calc[step_] = 1
-    pre_calc[-1] = 0
+    pre_calc = [0] + pre_calc[:-1]
     # palindromes quantity calculation:
     product_ = 0
-    for step_ in range(steps):
-        multiplier = 10
-        dig_ = int(max_str[steps - 1 - step_])
-        _dig = int(min_str[step_])
-        d_ = pre_calc[steps - step_ - 1 - 1]
-        dl, dr = (multiplier - dig_ - 1 if multiplier - 1 > dig_ else 0) * product_, (_dig - dig_ - d_ if _dig - dig_ - d_ > 0 else 0)
-        palindromes -= (dl + dr)
-        # print(f'{step_ + 1}th step -> _dig, dig_, d_, product_, dl, dr, delta, pre_estimation: {_dig, dig_, d_, product_, dl, dr, dl + dr, palindromes}')
+    for step_, (dig_, _dig, d_) in enumerate(zip(max_str[:steps][::-1], min_str, pre_calc[::-1])):
+        dig_, _dig = int(dig_), int(_dig)
+        dl, dr = (9 - dig_ if 9 > dig_ else 0) * product_, (_dig - dig_ - d_ if _dig - dig_ - d_ > 0 else 0)
+        palindromes -= dl + dr
+        print(f'{step_ + 1}th step -> _dig, dig_, d_, product_, dl, dr, delta, pre_estimation: {_dig, dig_, d_, product_, dl, dr, dl + dr, palindromes}')
         product_ = (product_ * 10 + _dig) % MODULO
     return palindromes % MODULO
 
@@ -86,6 +77,8 @@ print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 # print(f'n__, m__: {n__, m__}')
 # print(f'res1, res2: {res1, res2}')
 # print(f'res1 - res2: {res1 - res2}')
+
+print(f'{[1, 2, 3, 4, 5][:-1]}')
 
 # s = f'98'
 # print(f'{subtract_one(s)}')
