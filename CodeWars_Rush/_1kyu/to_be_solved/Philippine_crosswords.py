@@ -16,7 +16,7 @@ path_found: list['Cell']
 
 
 # TODO: 0. implement an algo part which can adjust THRESHOLD value depending on the situation on the board...
-THRESHOLD = 10_000  # ??? questionable value...
+THRESHOLD = 1_000  # ??? questionable value...
 
 
 class Cell:
@@ -69,39 +69,42 @@ class Cell:
         # TODO: if passable cells quantity equals to the bridge length required -> the first path found is all we need to calculate!!!
         global dfs_iters, sols, path_found
         if dfs_iters < THRESHOLD:
-            dfs_iters += 1
-            # validation:
-            if length <= aim.length:
-                # border case:
-                if self == aim:
-                    # print(f'length: [{length}/{aim.length}]')
-                    if length == aim.length:
-                        # print(f'BINGO!!!')
-                        # path recovering:
-                        path = start.recover_path(aim)
-                        if sols == 0:
-                            # the first path found:
-                            path_found = path
-                            sols += 1
-                        else:
-                            # another one found:
-                            if set(path) != set(
-                                    path_found):  # checks if the path identical in the sense of cells covered or not
-                                # the path seems to draw a different ornament:
+            # main condition of path building:
+            if length + self.manhattan(aim) <= aim.length:
+                dfs_iters += 1
+                # validation:
+                if length <= aim.length:
+                    # border case:
+                    if self == aim:
+                        # print(f'length: [{length}/{aim.length}]')
+                        if length == aim.length:
+                            # print(f'BINGO!!!')
+                            # path recovering:
+                            path = start.recover_path(aim)
+                            if sols == 0:
+                                # the first path found:
+                                path_found = path
                                 sols += 1
-                # visiting:
-                self.visited = True
-                # body or rec:
-                if sols <= 1:
-                    # manhattan sort (heuristical speed boost):
-                    for next_cell in sorted(self.possible_ways(board, height, width),
-                                            key=lambda c: abs(aim.length - length - c.manhattan(aim))):
-                        if not next_cell.solved and not next_cell.visited and (next_cell.length == 0 or next_cell == aim):
-                            if sols <= 1:
-                                next_cell.prev_cell = self
-                                next_cell.dfs(length + 1, start, aim, board, height, width)
-                # unvisiting:
-                self.visited = False
+                            else:
+                                # another one found:
+                                if set(path) != set(
+                                        path_found):  # checks if the path identical in the sense of cells covered or not
+                                    # the path seems to draw a different ornament:
+                                    sols += 1
+                                    # print(f'another path found...')
+                    # visiting:
+                    self.visited = True
+                    # body or rec:
+                    if sols <= 1:
+                        # manhattan sort (heuristical speed boost):
+                        # TODO: CHECK THIS FOR PERFORMANCE INCREASE!!!
+                        for next_cell in self.possible_ways(board, height, width): # sorted(, key=lambda c: abs(aim.length - length - c.manhattan(aim))):
+                            if not next_cell.solved and not next_cell.visited and (next_cell.length == 0 or next_cell == aim):
+                                if sols <= 1:
+                                    next_cell.prev_cell = self
+                                    next_cell.dfs(length + 1, start, aim, board, height, width)
+                    # unvisiting:
+                    self.visited = False
 
     def recover_path(self, aim: 'Cell') -> list['Cell']:
         # the last point of the path found
@@ -118,10 +121,10 @@ class Cell:
         return path
 
 
-def solve(board: list[list[int]], height: int, width: int):
+def solve(board: list[list[int]], height: int, width: int, cells_to_be_solved: int):
     # TODO: 1. too hard for backtracking pairs need to be postponed to the next iterations... (dfs iterations threshold)
     # TODO: 2. some structures like square of 2s can be solved in different ways, therefore one appropriate solution should be chosen... (backtracking)
-    global dfs_iters, sols, path_found
+    global dfs_iters, sols, path_found, THRESHOLD
     dfs_iters, sols, path_found = 0, 0, []
     # board of cells constructing:
     board_processed = process_board(board, height, width)
@@ -154,81 +157,96 @@ def solve(board: list[list[int]], height: int, width: int):
     #         print(f'...cell {key}: {val}')
     # core:
     iteration = 0
-    prevs = {}
-    while reachables:
-        iteration += 1
-        print(f'ITERATION: {iteration}')
-        solved_cells = set()
-        no_path_counter = 0
-        for k in sorted(reachables.keys()):
-            # print(f'NOW PROCESSING {k} LENGTH: ')
-            inner_iters = 0
-            for start_cell, neighbouring_cells in sorted(reachables[k].items(), key=lambda x: len(reachables[k][x[0]])):
-                if start_cell not in solved_cells:
-                    # searching for a path:
-                    if len(neighbouring_cells) == 1:
-                        inner_iters += 1
-                        aim_cell = neighbouring_cells.pop()
-                        # print(f'start_cell, aim_cell: {start_cell, aim_cell}')
-                        sols = 0  # sols counter nullifying:
-                        dfs_iters = 0
-                        path_found = []
-                        start_cell.dfs(1, start_cell, aim_cell, board_processed, height, width)
-                        # print(f'{inner_iters}th paths_q: {sols}')
-                        # print(f'dp_iters: {dfs_iters}')
-                        if dfs_iters < THRESHOLD:
-                            if sols == 1:
-                                # board updating:
-                                # print(f'board updating: ')
-                                for path_cell in path_found:
-                                    path_cell.solved = True
-                            elif sols == 0:
-                                raise ValueError(f'NO PATH!!!')
-                            else:
-                                neighbouring_cells.add(aim_cell)
-                        else:
-                            ...
-                        # solved cells set updating:
-                        solved_cells.add(start_cell)
-                        solved_cells.add(aim_cell)
-                    else:
-                        # 2 or more cells in set:
-                        for neighbouring_cell in list(neighbouring_cells):
+    proceed = True
+    overall_solved = 0
+    overall_dfs_steps = 0
+    while proceed:
+        proceed = False
+        prevs = {}
+        print(f'THRESHOLD: {THRESHOLD}, solved: [{overall_solved}/{cells_to_be_solved}]')
+        while reachables:
+            iteration += 1
+            print(f'ITERATION: {iteration}')
+            solved_cells = set()
+            no_path_counter = 0
+            for k in sorted(reachables.keys()):
+                # print(f'NOW PROCESSING {k} LENGTH: ')
+                inner_iters = 0
+                for start_cell, neighbouring_cells in sorted(reachables[k].items(), key=lambda x: len(reachables[k][x[0]])):
+                    if start_cell not in solved_cells:
+                        # searching for a path:
+                        if len(neighbouring_cells) == 1:
+                            inner_iters += 1
+                            aim_cell = neighbouring_cells.pop()
+                            # print(f'start_cell, aim_cell: {start_cell, aim_cell}')
                             sols = 0  # sols counter nullifying:
                             dfs_iters = 0
                             path_found = []
-                            start_cell.dfs(1, start_cell, neighbouring_cell, board_processed, height, width)
+                            start_cell.dfs(1, start_cell, aim_cell, board_processed, height, width)
+                            overall_dfs_steps += dfs_iters
+                            # print(f'{inner_iters}th paths_q: {sols}')
+                            # print(f'dp_iters: {dfs_iters}')
                             if dfs_iters < THRESHOLD:
-                                if not sols:
-                                    no_path_counter += 1
-                                    # print(f'NO PATH for {start_cell} and {neighbouring_cell}')
-                                    neighbouring_cells.remove(neighbouring_cell)
+                                if sols == 1:
+                                    # board updating:
+                                    # print(f'board updating: ')
+                                    for path_cell in path_found:
+                                        path_cell.solved = True
+                                elif sols == 0:
+                                    raise ValueError(f'NO PATH!!!')
+                                else:
+                                    neighbouring_cells.add(aim_cell)
                             else:
-                                ...
-        solved_cells = {cell for cell in solved_cells if cell.solved}
-        # print(f'solved_cells: {solved_cells}')
-        print(f'{len(solved_cells)} cells solved')
-        print(f'{no_path_counter} no-path bridges removed')
-        # dict updating:
-        update_dict(reachables, solved_cells)
-        if prevs == solved_cells:
-            print(f'ERROR!!!')
-            break
-        prevs = solved_cells
+                                neighbouring_cells.add(aim_cell)
+                                proceed = True
+                            # solved cells set updating:
+                            solved_cells.add(start_cell)
+                            solved_cells.add(aim_cell)
+                        else:
+                            # 2 or more cells in set:
+                            for neighbouring_cell in list(neighbouring_cells):
+                                sols = 0  # sols counter nullifying:
+                                dfs_iters = 0
+                                path_found = []
+                                start_cell.dfs(1, start_cell, neighbouring_cell, board_processed, height, width)
+                                overall_dfs_steps += dfs_iters
+                                if dfs_iters < THRESHOLD:
+                                    if not sols:
+                                        no_path_counter += 1
+                                        # print(f'NO PATH for {start_cell} and {neighbouring_cell}')
+                                        neighbouring_cells.remove(neighbouring_cell)
+                                else:
+                                    proceed = True
+            solved_cells = {cell for cell in solved_cells if cell.solved}
+            overall_solved += len(solved_cells)
+            print(f'solved_cells: {solved_cells}')
+            print(f'{len(solved_cells)} cells solved')
+            print(f'{no_path_counter} no-path bridges removed')
+            # dict updating:
+            update_dict(reachables, solved_cells)
+            if prevs == solved_cells:
+                print(f'ERROR!!!')
+                break
+            prevs = solved_cells
 
-    print(f'reachables after: ')
-    for k in reachables.keys():
-        print(f'cells of length = {k}, size: {len(reachables[k])} -->> ')
-        for key, val in sorted(reachables[k].items(), key=lambda x: len(reachables[k][x[0]])):
-            print(f'...cell {key}: {val}')
+        if proceed:
+            THRESHOLD *= 2
+
+        print(f'reachables after: ')
+        for k in reachables.keys():
+            print(f'cells of length = {k}, size: {len(reachables[k])} -->> ')
+            for key, val in sorted(reachables[k].items(), key=lambda x: len(reachables[k][x[0]])):
+                print(f'...cell {key}: {val}')
 
     print(f'board processed AFTER: ')  # 36 366 98 989
     for row in board_processed:
         print(f'{"".join(["*" if cell.solved else "." for cell in row])}')
 
+    print(f'FINAL THRESHOLD: {THRESHOLD}')
     print(f'reachables: {reachables}')
     print(f'{iteration} global iterations made')
-    print(f'dfs made {dfs_iters} steps ')
+    print(f'overall solved: [{overall_solved}/{cells_to_be_solved}]')
+    print(f'overall dfs iters: {overall_dfs_steps}')
 
 
 def update_dict(reachables: dict, solved_cells: set):
@@ -256,7 +274,7 @@ def parse_board(board: list[str]):
     return board_parsed
 
 
-def get_board_from_site(id_: int) -> tuple[list[list[int]], int, int]:  # 55825
+def get_board_from_site(id_: int) -> tuple[list[list[int]], int, int, int]:  # 55825
     url = f'https://grandgames.net/filippinskie/id{id_}'                                # 36 366 98 989 98989 LL
     try:
         page = requests.get(url)
@@ -271,13 +289,16 @@ def get_board_from_site(id_: int) -> tuple[list[list[int]], int, int]:  # 55825
         print(f'something: {something}')
         # board parsing:
         board = [[0 for _ in range(width)] for _ in range(height)]
+        counter = 0
         for i in range(width):
             for j in range(height):
                 info = something[j * width + i].text
                 if info:
                     board[j][i] = int(info)
+                    if board[j][i] > 1:
+                        counter += 1
                 # print(f'val: {board[j][i]}')
-        return board, height, width
+        return board, height, width, counter
     except HTTPError as ex:
         if ex.code != 404:
             raise ValueError(f'404 error!!!')
@@ -413,7 +434,7 @@ mega_board = [
     [0, 5, 7, 0, 0, 3, 0, 3, 0, 5, 3, 0, 3, 4, 0, 0, 4, 0, 3, 0, 6, 4, 4, 0, 3, 13, 0, 0, 3, 4, 0, 0, 2, 2, 5, 3, 3, 0,
      2, 2, 3, 0, 3, 3, 0, 3, 1]
 ]
-data = get_board_from_site(55825)
+data = get_board_from_site(54510)
 start_ = time.time_ns()
 solve(*data)  # 56076, 55825, 54510, 54891, 55032
 # solve(mega_board, 45, 47)
