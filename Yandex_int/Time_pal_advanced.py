@@ -81,3 +81,7 @@ def pairs():
         ri -= 1
     return numset.pop()
 
+
+k = 12
+print(f'1s: {k.bit_count()}')
+

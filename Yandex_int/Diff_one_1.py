@@ -1,4 +1,4 @@
-# The Task: Count all the good subarrays of the array given.
+# The Task: Count all the good subarrays of the array given.  # 36 366 98 989 LL
 # Subarray is good if
 # 1. length is greater than 1;
 # 2. leftmost element equals min el
