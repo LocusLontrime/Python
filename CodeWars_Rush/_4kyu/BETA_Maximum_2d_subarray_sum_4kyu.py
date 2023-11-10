@@ -1,10 +1,14 @@
+# accepted on codewars.com
 import math
 
-max_res: tuple[int, int, int]
+
+max_res: tuple[int, int, int]  # 36 36698 989 98989 LL
 
 
 def max_sum(arr: list[list[int]]):
-    best_res = 0, 0, 0, 0, -math.inf
+    if not arr or not arr[0]:
+        return [0 for _ in range(5)]
+    best_res = [0, 0, 0, 0, -math.inf]
     mj, mi = len(arr), len(arr[0])
     # prefix arrays building:
     columns_prefixes = []
@@ -19,8 +23,10 @@ def max_sum(arr: list[list[int]]):
             row_sums = [columns_prefixes[i][je + 1] - columns_prefixes[i][js] for i in range(0, mi)]
             ist, ie, res_ = max_sequence(row_sums)
             if res_ > best_res[4]:
-                best_res = js, ist, je, ie, res_
+                best_res = [ist, js, ie, je, res_]
     # returning res:
+    best_res = best_res if best_res[4] > 0 else [0 for _ in range(5)]
+    print(f'best_res: {best_res}')
     return best_res
 
 
@@ -36,6 +42,8 @@ def dp_1d(i: int, arr: list[int]) -> tuple[int, int]:
     global max_res
     # border case:
     if i == 0:
+        if arr[i] > max_res[2]:
+            max_res = i, i, arr[i]
         return 0, arr[i]
     _i, _res = dp_1d(i - 1, arr)
     best_i, res = (i, arr[i]) if (r := _res + arr[i]) < arr[i] else (_i, r)
