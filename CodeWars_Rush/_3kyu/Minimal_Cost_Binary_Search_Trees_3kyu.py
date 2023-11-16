@@ -1,3 +1,4 @@
+# accepted on codewars.com
 import math
 
 
@@ -99,7 +100,7 @@ def make_min_tree(node_list: list[Node]):
     # tree that can be formed from keys[i] to keys[j].
     # cost[0][n-1] will store the resultant cost
     n_ = len(node_list)
-    costs = [[(0, None) for x in range(n_ + 1)] for y in range(n_ + 1)]
+    costs = [[(0, None) for _ in range(n_ + 1)] for _ in range(n_ + 1)]
     # For a single key, cost is equal to
     # frequency of the key
     for ind in range(n_):
