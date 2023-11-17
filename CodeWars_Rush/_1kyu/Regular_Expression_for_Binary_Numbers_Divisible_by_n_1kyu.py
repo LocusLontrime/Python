@@ -1,4 +1,7 @@
 # accepted on codewars.com
+import time
+
+
 BASE = 2
 EMPTY = 'e'
 
@@ -7,12 +10,8 @@ def regex_divisible_by(n: int):
     # base case:
     if n == 1:
         return f'^(0|1)+$'
-    fsm, fsm_rev, bridges = build_fsm(n)
-    print(f'fsm: {fsm}')
-    print(f'fsm_rev: {fsm_rev}')
-    print(f'bridges: {bridges}')
     # now let us convert fsm to a regular expression:
-    reg_exp = convert_fsm_to_regex(n, fsm, fsm_rev, bridges)
+    reg_exp = convert_fsm_to_regex(n, *build_fsm(n))
     return reg_exp
 
 
@@ -42,11 +41,9 @@ def delete_bridge(from_: int, to_: int, fsm: dict[int, set[int]], fsm_rev: dict[
 
 
 def convert_fsm_to_regex(n: int, fsm: dict[int, set[int]], fsm_rev: dict[int, set[int]], bridges: list[list[str]]) -> str:
-    for q in range(1, n):  # 0 is not included...
-        # print(f'q: {q}')
+    for q in (range(1, n) if n % 2 else reversed(range(1, n))):
         eliminate_state(q, fsm, fsm_rev, bridges)
-    # print(f'bridges: {bridges}')
-    return f'^(?:{bridges[0][0]})+$'
+    return f'^({bridges[0][0]})+$'
 
 
 def eliminate_state(state_to_be_eliminated: int, fsm: dict[int, set[int]], fsm_rev: dict[int, set[int]], bridges: list[list[str]]):
@@ -54,7 +51,6 @@ def eliminate_state(state_to_be_eliminated: int, fsm: dict[int, set[int]], fsm_r
     successors = set(fsm[state_to_be_eliminated])
     for q_predecessor in predecessors:
         for q_successor in successors:
-            # print(f'...qp, qs: {q_predecessor, q_successor}')
             # pred->succ and succ->pred bridges elimination:
             delete_bridge(q_predecessor, q_successor, fsm, fsm_rev, bridges)
             pre_suc_bridge = bridges[q_predecessor][q_successor]  # d
@@ -62,22 +58,18 @@ def eliminate_state(state_to_be_eliminated: int, fsm: dict[int, set[int]], fsm_r
             state_suc_bridge = bridges[state_to_be_eliminated][q_successor]  # c
             if b := bridges[state_to_be_eliminated][state_to_be_eliminated]:  # b
                 # d+ab*c
-                if len(b) > 1:
-                    aux = f'(?:{b})*'
-                else:
-                    aux = f'{b}*'
+                aux = f'({b})*' if len(b) > 1 else f'{b}*'
             else:
                 # d+ac
                 aux = EMPTY
             # bridges update:
-            name_ = sup_up_exp(pre_suc_bridge, process_exp(pre_state_bridge, aux, state_suc_bridge))
-            # print(f'......name_: {name_}')
+            name_ = sum_up_exp(pre_suc_bridge, process_exp(pre_state_bridge, aux, state_suc_bridge))
             add_bridge(q_predecessor, q_successor, name_, fsm, fsm_rev, bridges)
             delete_bridge(q_predecessor, state_to_be_eliminated, fsm, fsm_rev, bridges)  # a
             delete_bridge(state_to_be_eliminated, q_successor, fsm, fsm_rev, bridges)  # c
 
 
-def sup_up_exp(*expressions):
+def sum_up_exp(*expressions):
     good_ones = [exp for exp in expressions if exp and exp != EMPTY]
     return aggregate(good_ones, '|')
 
@@ -88,17 +80,16 @@ def process_exp(*expressions):
 
 
 def aggregate(expressions, separator):
-    if len(expressions) == 1:
+    if len(expressions) == 1:                                                    # 36 366 98 989 98989 LL
         return expressions[0]
-    return separator.join([f'(?:{exp})' if '|' in exp else exp for exp in expressions])
+    return separator.join([f'({exp})' if '|' in exp else exp for exp in expressions])
 
 
-# print(f'fsm, fsm_rev: {build_fsm(3)}')
-# print(f'fsm, fsm_rev: {build_fsm(5)}')
-# print(f'fsm, fsm_rev: {build_fsm(7)}')
-# fsm_, fsm_rev_, bridges_ = build_fsm(7)
-
-print(f'regexp: {(r := regex_divisible_by(3))}')
+start = time.time_ns()
+r = regex_divisible_by(29)
+# print(f'regexp: {r}')
 print(f'size: {len(r)}')
+finish = time.time_ns()
+print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
 
