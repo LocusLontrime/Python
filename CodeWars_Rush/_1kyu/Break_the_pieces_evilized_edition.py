@@ -1,4 +1,5 @@
 import math
+import time
 from typing import Any
 
 hor = {(0, 1), (0, -1)}
@@ -315,10 +316,14 @@ ex_xxx = f'\n' \
          f'|        | |                | |                +-+        |\n' \
          f'+--------+-+----------------+-+----------------+-+--------+'
 
+
+start = time.time_ns()
 figures_ = break_evil_pieces(ex_xxx)
+finish = time.time_ns()
 print(f'res: ')
 for ind, figure_ in enumerate(figures_, 1):
     print(f'{ind}th figure:\n{figure_}')
+print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
 # print(f'set_: {set(f"abcdeefcbxyz")}')
 
