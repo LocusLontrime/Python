@@ -1,3 +1,4 @@
+# accepted on codewars.com
 import re
 from collections import defaultdict as d
 
@@ -35,6 +36,7 @@ def find_out_mr_wrong(conversation: list[str]):
         visited: dict[str, Person] = {}
         indexed: dict[int, Person] = {}
         flag = True
+        liar_conditions = []
         for condition in conditions:
             speaker, a, b = condition
             if speaker != name:
@@ -108,6 +110,8 @@ def find_out_mr_wrong(conversation: list[str]):
                         if b + 1 in indexed.keys():
                             # print(f'left connection... visited[a]: {visited[a]}, indexed[b + 1]: {indexed[b + 1]}')
                             connect(indexed[b + 1], visited[a])
+            else:
+                liar_conditions.append((a, b))
         if flag:
             print(f'...THERE HAVE BEEN NO ERRORS')
         else:
@@ -117,53 +121,57 @@ def find_out_mr_wrong(conversation: list[str]):
         print(f'...indexed: {indexed}')
         for name_, person in visited.items():
             print(f'......{person.left}<<--{person}-->>{person.right}')
-        queue = [0 for _ in range(queue_size)]
+        queue = [False for _ in range(queue_size)]
         interim_flag = True
-        for key in indexed.keys():
+        for key, val in indexed.items():
             # print(f'key: {key}, val: {indexed[key]}')
             if key < 1 or key > queue_size:
                 interim_flag = False
                 break
-            queue[key - 1] = 1
+            queue[key - 1] = val.name
         if not interim_flag:
             print(f'ERROR OCCURRED -->> {name} is not Mr.Wong!!!')
             continue
         print(f'...queue: {queue}')
-        segments = d(int)
+        segments = d(list[list[str]])
         used = set()
         interim_flag = True
         for key, val in visited.items():
-            print(f'key, val: {key, val}')
             if not val.placed() and val not in used:
+                print(f'key, val: {key, val}')
                 node_ = val
-                used.add(val)
                 counter = 1
-                while node_.left is not None:
-                    if counter > len(visited):
-                        interim_flag = False
-                        break
-                    counter += 1
-                    node_ = node_.left
-                    used.add(node_)
-                node_ = val
+                # getting the leftmost element of the chain:
                 while node_.right is not None:
                     if counter > len(visited):
                         interim_flag = False
                         break
                     counter += 1
                     node_ = node_.right
+                counter = 1
+                chain = [node_.name]
+                used.add(node_)
+                while node_.left is not None:
+                    if counter > len(visited):
+                        interim_flag = False
+                        break
+                    counter += 1
+                    node_ = node_.left
+                    chain.append(node_.name)
                     used.add(node_)
-                segments[counter] += 1
-            if not interim_flag:
-                break
+                print(f'...chain: {chain}')
+                print(f'...used: {used}')
+                segments[counter].append(chain)
+                if not interim_flag:
+                    break
         if not interim_flag:
             print(f'ERROR OCCURRED -->> {name} is not Mr.Wong!!!')
             continue
         if name not in visited.keys():
-            segments[1] += 1
+            segments[1].append([name])
         print(f'...segments: {segments}')
         # backtracking:
-        res = backtrack(0, queue, segments)
+        res = backtrack(0, queue, segments, liar_conditions)
         print(f'...VERDICT -->> {name} is Mr.Wrong: {res}')
         if res is not None:
             if wrongs_counter == 0:
@@ -175,28 +183,49 @@ def find_out_mr_wrong(conversation: list[str]):
     return mr_wrong
 
 
-def backtrack(j: int, queue: list[int], segments: dict[int, int]):
+def check_liars_condition(queue: list[str], conditions: list[tuple[str, str | int]]) -> bool:
+    for a, b in conditions:
+        if isinstance(a, str) and isinstance(b, str):
+            if queue.index(b) == queue.index(a) + 1:
+                return False
+        else:
+            b = int(b)
+            if queue[b - 1] == a:
+                return False
+    return True
+
+
+def backtrack(j: int, queue: list[str | bool], segments: d[int, list[list[str]]], liar_conditions):
     print(f'j: {j}')
+    print(f'...queue: {queue}')
     # base cases:
     if j == len(queue):
         print(f'SOLUTION FOUND')
         print(f'segments: {segments}')
-        return True
-    if queue[j] == 1:
+        print(f'queue: {queue}')
+        if check_liars_condition(queue, liar_conditions):
+            print(f'SOLUTION IS RIGHT!!!')
+            return True
+        return False
+    if queue[j]:
         # placed Person:
-        return backtrack(j + 1, queue, segments)
+        return backtrack(j + 1, queue, segments, liar_conditions)
     # body of recursion:
     res = False
     for key, val in segments.items():
-        if val > 0:
-            print(f'LALA!')
-            if not all(queue[j: j + key]):
-                segments[key] -= 1
-                res = res or backtrack(j + key, queue, segments)
-                # backtracking:
-                segments[key] += 1
-                if res:
-                    return res
+        if len(val) > 0:
+            if not any(queue[j: j + key]):
+                for i, chain in enumerate(val):
+                    segments[key] = segments[key][:i] + segments[key][i + 1:]
+                    for ind, name_ in enumerate(chain):
+                        queue[j + ind] = name_
+                    res = res or backtrack(j + key, queue, segments, liar_conditions)
+                    # backtracking:
+                    for ind, name_ in enumerate(chain):
+                        queue[j + ind] = False
+                    segments[key] = segments[key][:i] + [chain] + segments[key][i:]
+                    if res:
+                        return res
 
 
 def connect(left: Person, right: Person):
@@ -266,7 +295,6 @@ def scan_conversation(conversation: list[str]) -> tuple[set[str], list[tuple[str
                     conditions.append((name, second_name, name))
             case 'Ther':
                 if condition[-10] == 'b':
-                    print(f'!!!{name}!!!')
                     conditions.append((name, name, queue_size - num))
                 else:
                     conditions.append((name, name, num + 1))
@@ -864,8 +892,15 @@ conv_nnn = [
     'Chnoobbie:The man behind me is Iymauoyda.'
 ]
 
+conv_none = [
+    'John:The man behind me is Peter.',
+    'Peter:There is 1 people in front of me.',
+    'Tom:There are 2 people behind me.',
+    'Peter:The man behind me is Tom.'
+]
+
 # expected result: Gbnt
-RES = find_out_mr_wrong(conv_nnn)
+RES = find_out_mr_wrong(conv_none)
 print(f'RES: {RES}')
 
 # segments_ = {7: 1, 5: 1, 3: 3, 2: 2, 1: 1}
