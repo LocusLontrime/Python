@@ -106,14 +106,12 @@ def process_conditions_except_name(name, conditions, queue_size, visited, indexe
                     # error during lr-passing:
                     return False
                 # merging with neighbouring ones:
-                if b != 1:
-                    # right connection:
-                    if b - 1 in indexed.keys():
-                        connect(visited[a], indexed[b - 1])
-                if b != queue_size:
-                    # left connection:
-                    if b + 1 in indexed.keys():
-                        connect(indexed[b + 1], visited[a])
+                # 1. right connection:
+                if b - 1 in indexed.keys():
+                    connect(visited[a], indexed[b - 1])
+                # 2. left connection:
+                if b + 1 in indexed.keys():
+                    connect(indexed[b + 1], visited[a])
         else:
             # building liar's conditions:
             liar_conditions.append((a, b))
