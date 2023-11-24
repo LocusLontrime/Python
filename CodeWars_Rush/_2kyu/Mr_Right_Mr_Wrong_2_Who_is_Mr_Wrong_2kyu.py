@@ -60,7 +60,9 @@ def process_conditions_except_name(name, conditions, queue_size, visited, indexe
         speaker, a, b = condition
         if speaker != name:
             if isinstance(a, str) and isinstance(b, str):
+                # parsed case: 'a' in front of (to the right of) 'b':
                 if a == b:
+                    # the same person in two places simultaneously:
                     return False
                 if a not in visited.keys():
                     visited[a] = Person(a)
@@ -68,24 +70,30 @@ def process_conditions_except_name(name, conditions, queue_size, visited, indexe
                     visited[b] = Person(b)
                 if visited[a].left is not None and visited[a].left != visited[b] or visited[b].right is not None and \
                         visited[b].right != visited[a]:
+                    # 'a' or 'b' already have an another neigh != 'b' or 'a' relatively:
                     return False
                 connect(visited[b], visited[a])
                 if visited[a].placed() and visited[b].placed():
                     if visited[b].ind != visited[a].ind + 1:
+                        # 'a' and 'b' been already placed and are not neighs:
                         return False
                 elif visited[a].placed():
                     if not l_pass(visited[a], indexed, queue_size):
+                        # error during l-passing:
                         return False
                 elif visited[b].placed():
                     if not r_pass(visited[b], indexed, queue_size):
+                        # error during r-passing:
                         return False
             else:  # it means -> 'a' is str and 'b' is int:
                 b = int(b)
                 if a not in visited.keys():
                     visited[a] = Person(a, b)
                 if visited[a].placed() and visited[a].ind != b:
+                    # the person 'a' been already placed at the different position:
                     return False
                 if b in indexed.keys() and indexed[b] != visited[a]:
+                    # at the 'b' position been already placed another person (!= 'a'):
                     return False
                 if a in visited.keys():
                     visited[a].ind = b
@@ -95,6 +103,7 @@ def process_conditions_except_name(name, conditions, queue_size, visited, indexe
                     indexed[b].ind = b
                 # indexation:
                 if not lr_pass(visited[a], indexed, queue_size):
+                    # error during lr-passing:
                     return False
                 # merging with neighbouring ones:
                 if b != 1:
@@ -106,6 +115,7 @@ def process_conditions_except_name(name, conditions, queue_size, visited, indexe
                     if b + 1 in indexed.keys():
                         connect(indexed[b + 1], visited[a])
         else:
+            # building liar's conditions:
             liar_conditions.append((a, b))
     return True
 
@@ -114,6 +124,7 @@ def prepare_for_backtracking(name, queue_size, visited, indexed, queue, segments
     # queue building:
     for key, val in indexed.items():
         if key < 1 or key > queue_size:
+            # the wrong (out of bounds) index (place) error:
             return False
         queue[key - 1] = val.name
     # segments building:
@@ -125,14 +136,17 @@ def prepare_for_backtracking(name, queue_size, visited, indexed, queue, segments
             # getting the leftmost element of the chain:
             while node_.right is not None:
                 if counter > len(visited):
+                    # loop error:
                     return False
                 counter += 1
                 node_ = node_.right
             counter = 1
             chain = [node_.name]
             used.add(node_)
+            # chaining all the elements together (in one segment):
             while node_.left is not None:
                 if counter > len(visited):
+                    # loop error:
                     return False
                 counter += 1
                 node_ = node_.left
@@ -146,6 +160,7 @@ def prepare_for_backtracking(name, queue_size, visited, indexed, queue, segments
 
 
 def check_liars_condition(queue: list[str], conditions: list[tuple[str, str | int]]) -> bool:
+    # errors like in the main part...
     for a, b in conditions:
         if isinstance(a, str) and isinstance(b, str):
             if queue.index(b) == queue.index(a) + 1:
@@ -160,8 +175,11 @@ def check_liars_condition(queue: list[str], conditions: list[tuple[str, str | in
 def backtrack(j: int, queue: list[str | bool], segments: d[int, list[list[str]]], liar_conditions):
     # base cases:
     if j == len(queue):
+        # the queue completed:
         if check_liars_condition(queue, liar_conditions):
+            # the 'name' lies in the all conditions:
             return True
+        # one or more conditions are true:
         return False
     if queue[j]:
         # placed Person:
@@ -172,7 +190,9 @@ def backtrack(j: int, queue: list[str | bool], segments: d[int, list[list[str]]]
         if len(val) > 0:
             if not any(queue[j: j + key]):
                 for i, chain in enumerate(val):
+                    # excluding the chain from the segment list:
                     segments[key] = segments[key][:i] + segments[key][i + 1:]
+                    # filling in the queue with the chain's people:
                     for ind, name_ in enumerate(chain):
                         queue[j + ind] = name_
                     res = res or backtrack(j + key, queue, segments, liar_conditions)
@@ -185,6 +205,7 @@ def backtrack(j: int, queue: list[str | bool], segments: d[int, list[list[str]]]
 
 
 def connect(left: Person, right: Person):
+    # inner connection of 'left' and 'right' people:
     left.right = right
     right.left = left
 
@@ -193,9 +214,11 @@ def l_pass(neigh_: Person, indexed: dict, size: int) -> bool:
     counter = 0
     while neigh_.left is not None:
         if counter > size:
+            # loop error:
             return False
         if neigh_.ind + 1 in indexed.keys():
             if indexed[neigh_.ind + 1] != neigh_.left:
+                # at this position another person have already placed:
                 return False
         i = neigh_.left.ind = neigh_.ind + 1
         indexed[i] = neigh_.left
@@ -208,9 +231,11 @@ def r_pass(neigh_: Person, indexed: dict, size: int) -> bool:
     counter = 0
     while neigh_.right is not None:
         if counter > size:
+            # loop error:
             return False
         if neigh_.ind - 1 in indexed.keys():
             if indexed[neigh_.ind - 1] != neigh_.right:
+                # at this position another person have already placed:
                 return False
         i = neigh_.right.ind = neigh_.ind - 1
         indexed[i] = neigh_.right
@@ -225,6 +250,7 @@ def lr_pass(neigh_: Person, indexed: dict, size: int) -> bool:
 
 
 def scan_conversation(conversation: list[str]) -> tuple[set[str], list[tuple[str, str, str | int]], int]:
+    # just parsing:
     data = [c.split(':') for c in conversation]
     names = {c[0] for c in data}
     queue_size = len(names)
