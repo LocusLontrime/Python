@@ -25,155 +25,27 @@ def find_out_mr_wrong(conversation: list[str]):
     mr_wrong = None
     wrongs_counter = 0
     people, conditions, queue_size = scan_conversation(conversation)
-    print(f'people: {people}')
-    print(f'conditions: ')
-    print(f'queue_size: {queue_size}')
-    for condition in conditions:
-        print(f'{condition}')
     # the main cycle:
     for i, name in enumerate(people, 1):
-        print(f'{i}th name: {name}')
+        # all people we have encountered so far:
         visited: dict[str, Person] = {}
+        # all people we know the indices of:
         indexed: dict[int, Person] = {}
-        flag = True
         liar_conditions = []
-        for condition in conditions:
-            speaker, a, b = condition
-            if speaker != name:
-                print(f'...a, b: {a, b}')
-                # TODO: check for the possibility of insertion of a non-indexed nodes chain to the queue formed...
-                # TODO: decide how to process the liar's condition...
-                # TODO: check for negative indices possibilities!!!
-                if isinstance(a, str) and isinstance(b, str):
-                    if a == b:
-                        flag = False
-                        print(f'err(a == b)')
-                        break
-                    if a not in visited.keys():
-                        visited[a] = Person(a)
-                    if b not in visited.keys():
-                        visited[b] = Person(b)
-                    if visited[a].left is not None and visited[a].left != visited[b] or visited[b].right is not None and \
-                            visited[b].right != visited[a]:
-                        flag = False
-                        print(
-                            f'visited[a], visited[a].left: {visited[a], visited[a].left} | visited[b], visited[b].right: {visited[b], visited[b].right}')
-                        print(f'err(1)')
-                        break
-                    connect(visited[b], visited[a])
-                    if visited[a].placed() and visited[b].placed():
-                        # check for error:
-                        if visited[b].ind != visited[a].ind + 1:
-                            flag = False
-                    elif visited[a].placed():
-                        print(f'l_pass...')
-                        flag = l_pass(visited[a], indexed, queue_size)
-                    elif visited[b].placed():
-                        print(f'r_pass...')
-                        flag = r_pass(visited[b], indexed, queue_size)
-                    if not flag:
-                        print(f'err(2)')
-                        break
-                else:  # it means -> a is str and b is int:
-                    b = int(b)
-                    if a not in visited.keys():
-                        visited[a] = Person(a, b)
-                    else:
-                        visited[a].ind = b
-                    if visited[a].placed() and visited[a].ind != b:
-                        flag = False
-                        print(f'err(3)')
-                        break
-                    if b in indexed.keys() and indexed[b] != visited[a]:
-                        print(f'indexed[b] != visited[a] -->> {indexed[b]} != {visited[a]}')
-                        flag = False
-                        print(f'err(4)')
-                        break
-                    if b not in indexed.keys():
-                        indexed[b] = visited[a]
-                    else:
-                        indexed[b].ind = b
-                    # indexation:
-                    print(f'lr_pass...')
-                    flag = lr_pass(visited[a], indexed, queue_size)
-                    if not flag:
-                        print(f'err(5)')
-                        break
-                    # merging with neighbouring ones:
-                    if b != 1:
-                        # right connection:
-                        if b - 1 in indexed.keys():
-                            # print(f'right connection...')
-                            connect(visited[a], indexed[b - 1])
-                    if b != queue_size:
-                        # left connection:
-                        if b + 1 in indexed.keys():
-                            # print(f'left connection... visited[a]: {visited[a]}, indexed[b + 1]: {indexed[b + 1]}')
-                            connect(indexed[b + 1], visited[a])
-            else:
-                liar_conditions.append((a, b))
-        if flag:
-            print(f'...THERE HAVE BEEN NO ERRORS')
-        else:
-            print(f'ERROR OCCURRED -->> {name} is not Mr.Wong!!!')
+        # filling visited and indexed structures and check for errors during the process:
+        if not process_conditions_except_name(name, conditions, queue_size, visited, indexed, liar_conditions):
             continue
-            # raise ValueError(f'...ERROR OCCURRED!!!')
-        print(f'...indexed: {indexed}')
-        for name_, person in visited.items():
-            print(f'......{person.left}<<--{person}-->>{person.right}')
+        # final queue of people:
         queue = [False for _ in range(queue_size)]
-        interim_flag = True
-        for key, val in indexed.items():
-            # print(f'key: {key}, val: {indexed[key]}')
-            if key < 1 or key > queue_size:
-                interim_flag = False
-                break
-            queue[key - 1] = val.name
-        if not interim_flag:
-            print(f'ERROR OCCURRED -->> {name} is not Mr.Wong!!!')
-            continue
-        print(f'...queue: {queue}')
+        # people chains remained without indices given:
         segments = d(list[list[str]])
-        used = set()
-        interim_flag = True
-        for key, val in visited.items():
-            if not val.placed() and val not in used:
-                print(f'key, val: {key, val}')
-                node_ = val
-                counter = 1
-                # getting the leftmost element of the chain:
-                while node_.right is not None:
-                    if counter > len(visited):
-                        interim_flag = False
-                        break
-                    counter += 1
-                    node_ = node_.right
-                counter = 1
-                chain = [node_.name]
-                used.add(node_)
-                while node_.left is not None:
-                    if counter > len(visited):
-                        interim_flag = False
-                        break
-                    counter += 1
-                    node_ = node_.left
-                    chain.append(node_.name)
-                    used.add(node_)
-                print(f'...chain: {chain}')
-                print(f'...used: {used}')
-                segments[counter].append(chain)
-                if not interim_flag:
-                    break
-        if not interim_flag:
-            print(f'ERROR OCCURRED -->> {name} is not Mr.Wong!!!')
+        # building queue and segments structures:
+        if not prepare_for_backtracking(name, queue_size, visited, indexed, queue, segments):
             continue
-        if name not in visited.keys():
-            segments[1].append([name])
-        print(f'...segments: {segments}')
         # backtracking:
         res = backtrack(0, queue, segments, liar_conditions)
-        print(f'...VERDICT -->> {name} is Mr.Wrong: {res}')
-        if res is not None:
+        # multiple liars case:
+        if res:
             if wrongs_counter == 0:
                 mr_wrong = name
                 wrongs_counter += 1
@@ -181,6 +53,96 @@ def find_out_mr_wrong(conversation: list[str]):
                 return None
     # returning result:
     return mr_wrong
+
+
+def process_conditions_except_name(name, conditions, queue_size, visited, indexed, liar_conditions) -> bool:
+    for condition in conditions:
+        speaker, a, b = condition
+        if speaker != name:
+            if isinstance(a, str) and isinstance(b, str):
+                if a == b:
+                    return False
+                if a not in visited.keys():
+                    visited[a] = Person(a)
+                if b not in visited.keys():
+                    visited[b] = Person(b)
+                if visited[a].left is not None and visited[a].left != visited[b] or visited[b].right is not None and \
+                        visited[b].right != visited[a]:
+                    return False
+                connect(visited[b], visited[a])
+                if visited[a].placed() and visited[b].placed():
+                    if visited[b].ind != visited[a].ind + 1:
+                        return False
+                elif visited[a].placed():
+                    if not l_pass(visited[a], indexed, queue_size):
+                        return False
+                elif visited[b].placed():
+                    if not r_pass(visited[b], indexed, queue_size):
+                        return False
+            else:  # it means -> 'a' is str and 'b' is int:
+                b = int(b)
+                if a not in visited.keys():
+                    visited[a] = Person(a, b)
+                if visited[a].placed() and visited[a].ind != b:
+                    return False
+                if b in indexed.keys() and indexed[b] != visited[a]:
+                    return False
+                if a in visited.keys():
+                    visited[a].ind = b
+                if b not in indexed.keys():
+                    indexed[b] = visited[a]
+                else:
+                    indexed[b].ind = b
+                # indexation:
+                if not lr_pass(visited[a], indexed, queue_size):
+                    return False
+                # merging with neighbouring ones:
+                if b != 1:
+                    # right connection:
+                    if b - 1 in indexed.keys():
+                        connect(visited[a], indexed[b - 1])
+                if b != queue_size:
+                    # left connection:
+                    if b + 1 in indexed.keys():
+                        connect(indexed[b + 1], visited[a])
+        else:
+            liar_conditions.append((a, b))
+    return True
+
+
+def prepare_for_backtracking(name, queue_size, visited, indexed, queue, segments) -> bool:
+    # queue building:
+    for key, val in indexed.items():
+        if key < 1 or key > queue_size:
+            return False
+        queue[key - 1] = val.name
+    # segments building:
+    used = set()
+    for key, val in visited.items():
+        if not val.placed() and val not in used:
+            node_ = val
+            counter = 1
+            # getting the leftmost element of the chain:
+            while node_.right is not None:
+                if counter > len(visited):
+                    return False
+                counter += 1
+                node_ = node_.right
+            counter = 1
+            chain = [node_.name]
+            used.add(node_)
+            while node_.left is not None:
+                if counter > len(visited):
+                    return False
+                counter += 1
+                node_ = node_.left
+                chain.append(node_.name)
+                used.add(node_)
+            segments[counter].append(chain)
+    # if we have not meet any condition about name:
+    if name not in visited.keys():
+        segments[1].append([name])
+    return True
 
 
 def check_liars_condition(queue: list[str], conditions: list[tuple[str, str | int]]) -> bool:
@@ -196,15 +158,9 @@ def check_liars_condition(queue: list[str], conditions: list[tuple[str, str | in
 
 
 def backtrack(j: int, queue: list[str | bool], segments: d[int, list[list[str]]], liar_conditions):
-    print(f'j: {j}')
-    print(f'...queue: {queue}')
     # base cases:
     if j == len(queue):
-        print(f'SOLUTION FOUND')
-        print(f'segments: {segments}')
-        print(f'queue: {queue}')
         if check_liars_condition(queue, liar_conditions):
-            print(f'SOLUTION IS RIGHT!!!')
             return True
         return False
     if queue[j]:
@@ -238,7 +194,6 @@ def l_pass(neigh_: Person, indexed: dict, size: int) -> bool:
     while neigh_.left is not None:
         if counter > size:
             return False
-        # print(f'neigh_, nl: {neigh_, neigh_.left}')
         if neigh_.ind + 1 in indexed.keys():
             if indexed[neigh_.ind + 1] != neigh_.left:
                 return False
@@ -254,7 +209,6 @@ def r_pass(neigh_: Person, indexed: dict, size: int) -> bool:
     while neigh_.right is not None:
         if counter > size:
             return False
-        # print(f'neigh_, nr: {neigh_, neigh_.right}')
         if neigh_.ind - 1 in indexed.keys():
             if indexed[neigh_.ind - 1] != neigh_.right:
                 return False
@@ -275,14 +229,10 @@ def scan_conversation(conversation: list[str]) -> tuple[set[str], list[tuple[str
     names = {c[0] for c in data}
     queue_size = len(names)
     conditions = []
-    # print(f'data: {data}')
-    # print(f'names: {names}')
     for datum in data:
         name, condition = datum
         res = re.findall(r"\d+", condition)
         num = int(res[0]) if res else None
-        print(f'name, condition: {name, condition}')
-        print(f'...num found: {num}')
         match condition[:4]:
             case "I'm ":
                 conditions.append((name, name, num))
@@ -899,8 +849,37 @@ conv_none = [
     'Peter:The man behind me is Tom.'
 ]
 
+conv_strange = [
+    'Qimuohkap:There are 0 people in front of me.',
+    'Amdwo:The man in front of me is Eedee.',
+    'Eedee:The man behind me is Amdwo.',
+    'Iwhwroi:The man in front of me is Nekvnpl.',
+    "Iwhwroi:I'm in 5th position.",
+    'Qimuohkap:The man behind me is Avvfj.',
+    'Nekvnpl:There is 1 people behind me.',
+    'Oyxoo:There are 5 people in front of me.',
+    "Zfer:I'm in 8th position.",
+    'Zfer:There are 7 people in front of me.',
+    "Mmjiqmeyt:I'm in 3rd position.",
+    'Avvfj:There are 8 people behind me.',
+    "Qimuohkap:I'm in 1st position.",
+    'Ayei:The man in front of me is Oyxoo.',
+    'Mmjiqmeyt:The man in front of me is Avvfj.',
+    'Mmjiqmeyt:There are 7 people behind me.',
+    'Iwhwroi:There are 5 people behind me.',
+    'Zfer:There are 2 people behind me.',
+    'Ayei:There are 6 people in front of me.'
+]  # Nekvnpl
+
+conv_g = [
+    "Greg:I'm in 1st position.",
+    "Daniel:There are 2 people in front of me.",
+    "Ramone:I'm in 3rd position.",
+    "Daniel:There are 2 people behind me."
+]
+
 # expected result: Gbnt
-RES = find_out_mr_wrong(conv_none)
+RES = find_out_mr_wrong(conv_g)
 print(f'RES: {RES}')
 
 # segments_ = {7: 1, 5: 1, 3: 3, 2: 2, 1: 1}
