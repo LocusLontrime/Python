@@ -1,6 +1,6 @@
 # accepted on codewars.com
 walk = ((0, 1), (1, 0), (0, -1), (-1, 0))
-cols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+cols: dict[str, int] = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 SIZE = 8
 symbols = ['p', 'P']  # 'P' means whites and 'p' means blacks...
 
