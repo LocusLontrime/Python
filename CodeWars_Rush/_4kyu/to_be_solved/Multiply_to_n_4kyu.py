@@ -15,7 +15,7 @@ def multiply(n, k):
 
         memo_num = reduce(lambda x, y: x * y ** factors[y], factors.keys(), 1)
 
-        print(memo_num)
+        # print(memo_num)
 
         if (memo_num, slots) not in memo_table.keys():
 
@@ -40,13 +40,14 @@ def multiply(n, k):
         return memo_table[(memo_num, slots)]
 
     prime_factors_dict = factorint(n)  # need to be incremented by 2 (1 and number itself)
+    print(f'prime_factors_dict: {prime_factors_dict}')
 
     return rec_seeker(prime_factors_dict, k) // k
 
 
-print(multiply(182, 9))
-print(multiply(219, 8))
-# print(multiply(210, 4))
+# print(f'res: {multiply(182, 9)}')
+# print(multiply(219, 8))
+print(multiply(210, 4))
 # print(multiply(10, 2))
 # print(multiply(36, 4))
 #

@@ -67,3 +67,22 @@ def get_pars():
 
 
 process_queries()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
