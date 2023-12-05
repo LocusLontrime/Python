@@ -5,10 +5,12 @@ from math import sqrt
 
 m_score: int
 best_product_permut: list[int] = []
+rec_counter: int
 
 
 def find_spec_prod_part(n: int, com: str):
-    global m_score
+    global m_score, rec_counter
+    rec_counter = 0
     is_max = com == 'max'
     m_score = 98 if is_max else math.inf
     # your code here
@@ -41,7 +43,8 @@ def factorize(n: int) -> d[int, int]:
 
 def rec_seeker(i: int, pre_key: int, counter: int, max_counter: int, n: int, product_partition: list[int],
                factors: d[int, int], product_partitions, is_max: bool):
-    global m_score, best_product_permut
+    global m_score, best_product_permut, rec_counter
+    rec_counter += 1
     # base case:
     # print(f'i, counter: {i, counter}, product_partition: {product_partition}')
     if counter >= max_counter and product_partition[i] >= product_partition[i - 1] and product_partition[1] != n:
@@ -75,7 +78,8 @@ def get_scores(permut: list[int]) -> int:
 
 # print(list(permutations([2, 2, 3, 3, 3, 5], r=3)))  # prime: 9674579
 
-k_ = 2 ** 5 * 3 ** 3 * 5 * 7 * 13 * 17
+k_ = 2 ** 5 * 3 ** 3 * 5 * 7  # * 13 * 17
 print(f'k: {k_}')
 print(f'res: {find_spec_prod_part(k_, f"max")}')
+print(f'rec_counter: {rec_counter}')
 

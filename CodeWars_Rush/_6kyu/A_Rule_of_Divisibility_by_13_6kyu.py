@@ -1,3 +1,4 @@
+# accepted on codewars.com
 pattern = [1, 10, 9, 12, 3, 4]
 
 
