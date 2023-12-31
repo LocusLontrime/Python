@@ -91,10 +91,10 @@ def get_ms(time_ns_start: int, time_ns_finish: int):
 
 
 def main():
-    r_array = get_random_array(100000, 100000)
+    r_array = get_random_array(100_000, 100_000)
     # print(f'random array: {r_array}')
     start = time.time_ns()
-    # heap_sort_bottom_up(r_array)
+    heap_sort_bottom_up(r_array)
     finish = time.time_ns()
     # print(f'Sorted array: {r_array}')
     print(f'rec counter: {rec_counter}')
