@@ -39,7 +39,7 @@ def top_down_max_leaf_search(array: list[int], upper_ind: int, size: int):
     # indexes of leafs:
     left_leaf_index = curr_index * 2 + 1
     right_leaf_index = curr_index * 2 + 2
-    # checks if the right leaf exist:
+    # checks if the right leaf exists:
     if right_leaf_index >= size:
         if left_leaf_index < size:
             return left_leaf_index
@@ -58,7 +58,7 @@ def bottom_up_root_sifting(array: list[int], upper_ind: int, size: int):
     # find the max leaf position:
     curr_index = top_down_max_leaf_search(array, upper_ind, size)
     # print(f'curr_index: {curr_index}, size: {size}')
-    # ascending until the first bigger
+    # ascending until the first bigger:
     while array[curr_index] < array[upper_ind]:
         # proceeding to the parent (on the one level higher)
         curr_index = (curr_index - 1) // 2

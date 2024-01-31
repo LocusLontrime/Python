@@ -21,7 +21,7 @@ def build_fsm(n: int) -> tuple[dict, dict, list[list[str]]]:
     bridges = [['' for _ in range(n)] for _ in range(n)]
     for i in range(n):
         for bit_ in range(BASE):
-            add_bridge(i, (2 * i + bit_) % n, f'{bit_}', fsm, fsm_rev, bridges)
+            add_bridge(i, (BASE * i + bit_) % n, f'{bit_}', fsm, fsm_rev, bridges)
     # returning res:
     return fsm, fsm_rev, bridges
 
@@ -41,7 +41,7 @@ def delete_bridge(from_: int, to_: int, fsm: dict[int, set[int]], fsm_rev: dict[
 
 
 def convert_fsm_to_regex(n: int, fsm: dict[int, set[int]], fsm_rev: dict[int, set[int]], bridges: list[list[str]]) -> str:
-    for q in (range(1, n) if n % 2 else reversed(range(1, n))):
+    for q in (range(1, n) if n % BASE else reversed(range(1, n))):
         eliminate_state(q, fsm, fsm_rev, bridges)
     return f'^({bridges[0][0]})+$'
 

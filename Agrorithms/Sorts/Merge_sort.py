@@ -49,5 +49,5 @@ def merge(left_array: list[int], right_array: list[int]):
     return result
 
 
-array = [1, 5, 67, 7, 9, 0, 9, 98, 989, 98989, 36666]
+array = [1, 5, 67, 7, 9, 0, 9, 98, 989, 11, 23, 2, 0, 99, 77, 78, 1, 1, 0, 1, 8, 98, 98989, 36666]
 print(merge_sort(array))
