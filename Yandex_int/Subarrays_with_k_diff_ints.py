@@ -44,4 +44,4 @@ nums_x = [1, 2, 3, 3, 3, 2, 1]
 k_ = 30  # 2, 3
 k_x = 3
 
-print(f'res: {subs_k_distincts(nums_x, k_x)}')
+print(f'res: {subs_k_distincts(nums_x, k_x)}')                                 # 98

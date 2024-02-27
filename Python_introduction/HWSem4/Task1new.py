@@ -5,8 +5,8 @@ import random
 import time
 from functools import reduce
 
-from Agrorithms.Sorts.Merge_sort import Merge
-from Agrorithms.Sorts.QuickSort import Quick
+from Agrorithms.Sorts.Merge_sort import merge_sort
+from Agrorithms.Sorts.QuickSort import quick_sort
 
 
 def fill_in_random(quantity: int, abs_val: int):
@@ -19,7 +19,7 @@ def sort():
     with open("number_4_task.txt", "r") as file:
         numbers_list_int = [int(x) for x in file.readlines()]
         print(f'initial numbers to be sorted: {numbers_list_int}')
-        sorted_ints = Merge.merge_sort(numbers_list_int)
+        sorted_ints = merge_sort(numbers_list_int)
         print(f'sorted ones: {sorted_ints}')
     with open("number_4_task.txt", "w") as file:
         for num in sorted_ints:
@@ -46,13 +46,13 @@ array_to_be_merged_new = get_array(1000000, 100000000000000000000000000000000000
 # comparison of two sorts
 tic = time.perf_counter()
 
-sorted_sort = Merge.merge_sort(array_to_be_merged_new)
+sorted_sort = merge_sort(array_to_be_merged_new)
 # print(sorted_sort)
 
 toc1 = time.perf_counter()
 print(f"Time elapsed for merged sort: {toc1 - tic:0.4f} seconds")
 
-Quick.quick_sort(array_to_be_merged_new)
+quick_sort(array_to_be_merged_new)
 # print(array_to_be_merged)
 
 toc2 = time.perf_counter()

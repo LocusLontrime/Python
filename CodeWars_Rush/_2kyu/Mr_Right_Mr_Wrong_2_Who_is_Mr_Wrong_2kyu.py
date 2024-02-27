@@ -94,7 +94,7 @@ def process_conditions_except_name(name, conditions, queue_size, visited, indexe
                     return False
                 if b in indexed.keys() and indexed[b] != visited[a]:
                     # at the 'b' position been already placed another person (!= 'a'):
-                    return False
+                    return False                                                       # 36 366 98 989 LL
                 if a in visited.keys():
                     visited[a].ind = b
                 if b not in indexed.keys():

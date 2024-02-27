@@ -1,5 +1,10 @@
+import sys
+
 MODULO = 10 ** 9 + 7
 import time
+
+
+sys.set_int_max_str_digits(100_000 + 1)
 
 
 def time_palindrome(n: str, m: str) -> int:  # diff version
