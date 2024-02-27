@@ -19,28 +19,39 @@ def fib_prod(n: int) -> int:
 
     print(f'{n = }')  # | {fibs = }
 
-    return rec(n, len(fibs) - 1, [])
+    ways, paths = rec(n, len(fibs) - 1)
+
+    print(f'PATHS: ')
+
+    for i, path in enumerate(paths[::-1], 1):
+        print(f'{i}th {path = }')
+
+    return ways  # rec_(n, len(fibs) - 1)
 
 
-def rec(n, i, path) -> int:
-    # print(f'{n = } | {path = }')
+# for visual purpose only!
+def rec(n, i) -> tuple[int, list[list[int]]]:
 
     if n == 1:
-        # print(f'{path = }')
-        return 1
+        return 1, [[]]
 
-    result = 0
+    if (n, i) not in memo_table.keys():
 
-    for j in range(i, -1, -1):
+        memo_table[(n, i)] = [0, []]
 
-        if n % fibs[j] == 0:
-            result += rec(n // fibs[j], j, path + [fibs[j]])
+        for j in range(i, -1, -1):
 
-    return result
+            if n % fibs[j] == 0:
+                q, paths = rec(n // fibs[j], j)
+                memo_table[(n, i)][0] += q
+                memo_table[(n, i)][1] += [path + [fibs[j]] for path in paths]
+
+    return memo_table[(n, i)]
 
 
 # faster!!!
 def rec_(n, i) -> int:
+
     if n == 1:
         return 1
 
@@ -54,13 +65,13 @@ def rec_(n, i) -> int:
     return memo_table[(n, i)]
 
 
-super_shit = 69464323276488295902609408
+super_shit = 62036862929638945581957120000000000000000000000000000000 * 2 ** 16 * 5 ** 5 * 8 ** 4 * 89 ** 3
 
 start = time.time_ns()
-ways = fib_prod(super_shit)
+ways_ = fib_prod(super_shit)
 finish = time.time_ns()
 
-print(f'{ways = }')
+print(f'{ways_ = }')
 
 print(f'Time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
