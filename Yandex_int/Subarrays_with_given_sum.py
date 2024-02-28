@@ -3,7 +3,7 @@ import time
 from collections import defaultdict
 
 
-def find_subarrays(array: list[int], sum_: int):
+def find_subarrays(array: list[int], sum_: int):   # 36 366 98 989 LL
 
     good_subs = []
     prefix_sums = precalc(array)
