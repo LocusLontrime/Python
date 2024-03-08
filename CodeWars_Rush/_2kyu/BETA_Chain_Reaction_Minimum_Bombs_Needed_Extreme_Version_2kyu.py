@@ -95,7 +95,7 @@ def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
     vertices_out.pop(non_repr_)
     vertices_in.pop(non_repr_)
 
-    print(f'--> {repr_}[{dsu.sizes[repr_]}]')
+    print(f'--> {repr_}[{dsu.sizes[repr_]}]')                                         #
 
     return repr_                                                                      #
 
