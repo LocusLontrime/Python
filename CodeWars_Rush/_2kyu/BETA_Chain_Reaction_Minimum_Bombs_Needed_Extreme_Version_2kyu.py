@@ -30,16 +30,10 @@ class DSU:
                 # y set is incremented by x set size:
                 self.sizes[y_set_repr] += self.sizes[x_set_repr]
                 repr_ = y_set_repr
-                # elements updating:
-                self.elements[y_set_repr] |= self.elements[x_set_repr]
-                self.elements[x_set_repr].clear()
             else:
                 self.dsu_tree[y_set_repr] = x_set_repr
                 # x set is incremented by y set size:
                 self.sizes[x_set_repr] += self.sizes[y_set_repr]
-                # elements updating:
-                self.elements[x_set_repr] |= self.elements[y_set_repr]
-                self.elements[y_set_repr].clear()
             # ccq decrementing:
             self.ccq -= 1
         return repr_
@@ -58,6 +52,8 @@ def deep_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
                vertices_in: dict[int, set[int]]):
     repr_ = full_union(dsu_repr, neigh_repr, dsu, vertices_out, vertices_in)
 
+    # iteratively makes unions for every vertex occurred in vertices_out and vertices_in simultaneously
+    # and then cyclically repeats the procedure until no such vertices found:
     while inter_set_ := vertices_out[repr_].intersection(vertices_in[repr_]):
         for v in inter_set_:
             if v != repr_:
@@ -69,27 +65,36 @@ def deep_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
 
 def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int, set[int]],
                vertices_in: dict[int, set[int]]):
+    # not a part of a common DSU, therefore it lies here, not in class of DSU.
 
     global union_counter
     union_counter += 1
 
     print(f'{union_counter}th union: {dsu_repr}[{dsu.sizes[dsu_repr]}] and {neigh_repr}[{dsu.sizes[neigh_repr]}]')
 
+    # 1. removing crossing vertices from the both sets:
     vertices_out[dsu_repr] -= dsu.elements[neigh_repr]
     vertices_in[dsu_repr] -= dsu.elements[neigh_repr]
     vertices_out[neigh_repr] -= dsu.elements[dsu_repr]
     vertices_in[neigh_repr] -= dsu.elements[dsu_repr]
 
+    # 2. making a common dsu-union:
     repr_ = dsu.union(dsu_repr, neigh_repr)
     non_repr_ = dsu_repr if repr_ == neigh_repr else neigh_repr
 
-    # after union update:
+    # 3. after union update and deletion of less union data:
+    # 3.1. elements updating:
+    dsu.elements[repr_] |= dsu.elements[non_repr_]
+    dsu.elements[non_repr_].clear()
+
+    # 3.2. remapping all vertices participating in the union above to its reprs:
     for v_out in vertices_out[non_repr_]:
         vertices_in[v_out] = {dsu.find(x) for x in vertices_in[v_out]}
 
     for v_in in vertices_in[non_repr_]:
         vertices_out[v_in] = {dsu.find(x) for x in vertices_out[v_in]}
 
+    # 3.3. union of vertices out/in dicts:
     vertices_out[repr_] |= vertices_out[non_repr_]
     vertices_in[repr_] |= vertices_in[non_repr_]
     vertices_out.pop(non_repr_)
@@ -97,6 +102,7 @@ def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
 
     print(f'--> {repr_}[{dsu.sizes[repr_]}]')                                         #
 
+    # returns repr_ of the union:
     return repr_                                                                      #
 
 
@@ -112,11 +118,13 @@ def find_loops(vertices_out: dict[int, set[int]], vertices_in: dict[int, set[int
             if colours[neigh_v] == 0:
                 _dfs(neigh_v, cycle + [neigh_v])
             if colours[neigh_v] == 1:
-                cycles.append(cycle_ := cycle + [neigh_v])
+                # a cycle found:
+                cycles.append(cycle + [neigh_v])
 
-        # black now:
+        # processed vertex turns black now:
         colours[v] = 2
 
+    # for every white vertex we run dfs:
     for vertex in vertices_out.keys():
         if colours[vertex] == 0:  # it means the vertex is white...
             _dfs(vertex, [vertex])
@@ -137,14 +145,15 @@ def min_bombs_needed(grid: str):
 
     union_counter = 0
 
+    # forward and backward graph-mapping:
     vertices_in = {_: set() for _ in range(symbols_q)}
     vertices_out = {_: set() for _ in range(symbols_q)}
 
     vertex_index = -1
 
+    # the core cycle, appends an edge and makes necessary ops in order to find all strongly connected components as a result:
     for j in range(max_j := len(grid)):
         for i in range(max_i := len(grid[0])):
-            q = j * max_i + i
             ch = grid[j][i]
             if ch != '0':
                 vertex_index += 1
@@ -152,19 +161,20 @@ def min_bombs_needed(grid: str):
                 for dj, di in dirs[ch == 'x']:
                     if 0 <= (j_ := j + dj) < max_j and 0 <= (i_ := i + di) < max_i:
                         if grid[j_][i_] != '0':
-                            dsu_repr = dsu.find(
-                                vertex_index)  # can be changed during the inner cycle as a result of some union...
-                            neigh_repr = dsu.find(
-                                translator[(j_, i_)])  # the same neigh can have diff repr during the runtime too...
+                            # can be changed during the inner cycle as a result of some union...
+                            dsu_repr = dsu.find(vertex_index)
+                            # the same neigh can have diff repr during the runtime too...
+                            neigh_repr = dsu.find(translator[(j_, i_)])
 
-                            if dsu_repr != neigh_repr:
+                            if dsu_repr != neigh_repr:  # appends an edge...
                                 vertices_out[dsu_repr].add(neigh_repr)
                                 vertices_in[neigh_repr].add(dsu_repr)
 
+                                # if two regions can be connected -> let's unite them:
                                 if neigh_repr in vertices_in[dsu_repr] or dsu_repr in vertices_out[neigh_repr]:
-                                    repr_ = deep_union(dsu_repr, neigh_repr, dsu, vertices_out, vertices_in)
+                                    deep_union(dsu_repr, neigh_repr, dsu, vertices_out, vertices_in)
 
-    # now loops:
+    # now we need to find all the graph-loops:
     print(f'now searching for loops: ')
     cycles = find_loops(vertices_out, vertices_in)
     print(f'{cycles = }')
@@ -191,7 +201,7 @@ def min_bombs_needed(grid: str):
             if repr_ != cycle_repr_:
                 repr_ = deep_union(cycle_repr_, repr_, dsu, vertices_out, vertices_in)
 
-    # areas without any ins must be surely set off:
+    # areas (we mean css) without any ins must be surely set off:
     return sum(not x for x in vertices_in.values())
 
 
