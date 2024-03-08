@@ -51,6 +51,8 @@ dsu.union(1, 2)
 dsu.union(2, 3)
 dsu.union(3, 4)
 
+dsu.print()
+
 dsu.union(5, 7)
 dsu.union(7, 6)
 
@@ -60,8 +62,8 @@ dsu.union(1, 6)
 dsu.union(8, 7)
 dsu.union(9, 10)
 
-x_el = 4
-print(f'x_el repr: {dsu.find(x_el)}')
+# x_el = 4
+# print(f'x_el repr: {dsu.find(x_el)}')
 
 dsu.print()
 
