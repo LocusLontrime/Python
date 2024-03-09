@@ -56,9 +56,8 @@ def deep_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
     # and then cyclically repeats the procedure until no such vertices found:
     while inter_set_ := vertices_out[repr_].intersection(vertices_in[repr_]):
         for v in inter_set_:
-            if v != repr_:
-                if v in vertices_out.keys():  # and v in vertices_in.keys():
-                    repr_ = full_union(v, repr_, dsu, vertices_out, vertices_in)
+            if v in vertices_out.keys():  # and v in vertices_in.keys():
+                repr_ = full_union(v, repr_, dsu, vertices_out, vertices_in)
 
     return repr_
 
@@ -69,6 +68,11 @@ def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
 
     global union_counter
     union_counter += 1
+
+    # 0. check for equality of reprs:
+    if dsu_repr == neigh_repr:
+        print(f'cannot unite the same regions...')
+        return dsu_repr
 
     print(f'{union_counter}th union: {dsu_repr}[{dsu.sizes[dsu_repr]}] and {neigh_repr}[{dsu.sizes[neigh_repr]}]')
 
@@ -96,14 +100,14 @@ def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
 
     # 3.3. union of vertices out/in dicts:
     vertices_out[repr_] |= vertices_out[non_repr_]
-    vertices_in[repr_] |= vertices_in[non_repr_]
+    vertices_in[repr_] |= vertices_in[non_repr_]  # 36 366 98 989 98989 LL
     vertices_out.pop(non_repr_)
     vertices_in.pop(non_repr_)
 
-    print(f'--> {repr_}[{dsu.sizes[repr_]}]')                                         #
+    print(f'--> {repr_}[{dsu.sizes[repr_]}]')  #
 
     # returns repr_ of the union:
-    return repr_                                                                      #
+    return repr_  #
 
 
 def find_loops(vertices_out: dict[int, set[int]], vertices_in: dict[int, set[int]]) -> list[list[int]]:  #
@@ -135,7 +139,7 @@ def find_loops(vertices_out: dict[int, set[int]], vertices_in: dict[int, set[int
 def min_bombs_needed(grid: str):
     global union_counter
 
-    symbols_q = sum(c in '+x' for c in grid)  # works for disconnected bombs as returned value  # 36 366 98 989 LL
+    symbols_q = sum(c in '+x' for c in grid)  # works for disconnected bombs as returned value
     grid = [row for row in grid.split('\n')]
 
     k = -1
@@ -197,9 +201,7 @@ def min_bombs_needed(grid: str):
     for cycle_ in valid_cycles:
         repr_ = dsu.find(cycle_[0])
         for i in range(1, len(cycle_)):
-            cycle_repr_ = dsu.find(cycle_[i])
-            if repr_ != cycle_repr_:
-                repr_ = deep_union(cycle_repr_, repr_, dsu, vertices_out, vertices_in)
+            repr_ = deep_union(dsu.find(cycle_[i]), repr_, dsu, vertices_out, vertices_in)
 
     # areas (we mean css) without any ins must be surely set off:
     return sum(not x for x in vertices_in.values())
@@ -225,7 +227,7 @@ grid_2 = "0+000x000xx\n" + \
 grid_2_matrix = [
     ['0', '+', '0', '0', '0', 'x', '0', '0', '0', 'x', 'x'],
     ['+', '+', '0', '0', '0', '+', '+', '0', '0', '0', '+'],
-    ['0', '0', 'x', '0', 'x', '0', '0', '0', '0', '0', 'x'],                            #
+    ['0', '0', 'x', '0', 'x', '0', '0', '0', '0', '0', 'x'],  #
     ['0', '+', '0', '0', '0', '0', '0', '0', 'x', '+', '0']
 ]
 
