@@ -86,7 +86,7 @@ def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
     repr_ = dsu.union(dsu_repr, neigh_repr)
     non_repr_ = dsu_repr if repr_ == neigh_repr else neigh_repr
 
-    # 3. after union update and deletion of less union data:
+    # 3. after union update and deletion of less union data:                          #
     # 3.1. elements updating:
     dsu.elements[repr_] |= dsu.elements[non_repr_]
     dsu.elements[non_repr_].clear()
