@@ -1,4 +1,4 @@
-# accepted on codewars (VERY RARE ERRORS -1 from the right answer...))
+# accepted on codewars (VERY RARE ERRORS approx -1 from the right answer...))
 import time
 
 dirs = (((0, 1), (1, 0), (0, -1), (-1, 0)), ((-1, 1), (1, 1), (1, -1), (-1, -1)))

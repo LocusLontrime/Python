@@ -16,4 +16,4 @@ def find_x_optimized(n):
     return (3 * (pow(2, n + 1, 10 ** 9 + 7) - n - 2)) % (10 ** 9 + 7)
 
 
-print(find_x_optimized(500000))
+print(find_x_optimized(11213352145500000))
