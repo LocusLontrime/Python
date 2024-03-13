@@ -5,7 +5,7 @@ import numpy as np
 from itertools import permutations as perms
 
 
-def four_pass(stations: list[int]):
+def four_pass(stations: list[int]):                                                   # 36 366 98 989 98989 LL
     candy_f = CandyFactory(stations)
     the_path = candy_f.solve()
     return [candy_f.get_num(node.y, node.x) for node in the_path] if the_path else None

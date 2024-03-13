@@ -14,9 +14,9 @@ def cheapest_route(road: list[list[int]]):                                      
     min_route = math.inf
     for j in range(max_j):
         min_route = min(min_route, dp_ := dp(j, 0, max_j, max_i, road))
-        # print(f'{j = } | {dp_}')
+        print(f'{j = } | {dp_}')
 
-    # print(f'{memo_table = }')
+    print(f'{memo_table = }')
 
     return min_route
 
