@@ -90,13 +90,13 @@ def maze_solver(ar: tuple):
 
     path = grid[sj][si][0].dijkstra(ej, ei, grid, max_j, max_i)
 
-    if path is None:  # 36 366 98 989 98989 LL
+    if path is None:
         return None
 
     print(f'{path = }')
     # path translating:
     res = []
-    interval_res = ''
+    interval_res = ''                                                                 # 36 366 98 989 98989 LL
     for i in range(len(path) - 1):
         print(f'{i} -> {path[i + 1], path[i] = }')
         if (p_ := path[i + 1])[2] == (_p := path[i])[2]:
