@@ -96,11 +96,11 @@ def full_union(dsu_repr: int, neigh_repr: int, dsu: DSU, vertices_out: dict[int,
         vertices_in[v_out] = {dsu.find(x) for x in vertices_in[v_out]}
 
     for v_in in vertices_in[non_repr_]:
-        vertices_out[v_in] = {dsu.find(x) for x in vertices_out[v_in]}
+        vertices_out[v_in] = {dsu.find(x) for x in vertices_out[v_in]}                # 36 366 98 989 98989 LL
 
     # 3.3. union of vertices out/in dicts:
     vertices_out[repr_] |= vertices_out[non_repr_]
-    vertices_in[repr_] |= vertices_in[non_repr_]  # 36 366 98 989 98989 LL
+    vertices_in[repr_] |= vertices_in[non_repr_]
     vertices_out.pop(non_repr_)
     vertices_in.pop(non_repr_)
 
