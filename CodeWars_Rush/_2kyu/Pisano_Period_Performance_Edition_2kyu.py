@@ -9,6 +9,7 @@ MR_THRESHOLD = 2  # only one Miller-Rabin check
 FACTORIZATION_THRESHOLD = 3  # (only 3, 5, 7)
 
 
+# brent from stackoverflow or smth similar...
 def brent(n: int):
     if n % 2 == 0:
         return 2
@@ -37,14 +38,10 @@ def brent(n: int):
 
 
 def factorize(n: int) -> d[int, int]:
-    MAX_ = 1_000  # ???
+    MAX_ = 1_000  # approx const...
 
     factors = d(int)
     print(f'factorization of {n}:')
-
-    if is_prime(n):
-        factors[n] = 1
-        return factors
 
     temp = n
 
@@ -98,7 +95,7 @@ def miller_rabin_test(a, p):
         if a == p - 1:
             return True
         a = pow(a, 2, p)
-    return False
+    return False                                                                      # 36 366 98 989 98989 LL
 
 
 def is_prime(p):
@@ -114,6 +111,8 @@ def pisano_period(n: int) -> int:
 
     def _pisano_period(n_: int) -> int:
 
+        print(f'{n_ = }')
+
         if n_ not in memo_table.keys():
 
             if not is_prime(n_):
@@ -127,11 +126,11 @@ def pisano_period(n: int) -> int:
                 while n_temp % divisor == 0:
                     n_temp, q = n_temp // divisor, q + 1
 
-                print(f'{divisor} divisor found!')
+                print(f'{divisor} divisor of {n} found!')
                 # then apply the property:
                 memo_table[n_] = math.lcm(divisor ** (q - 1) * _pisano_period(divisor), _pisano_period(n_ // divisor ** q))
 
-            else:                                                                     # 36 366 98 989 98989 LL
+            else:
                 # pisano periods has some more good properties:
                 # If n_ > 5 is a prime and n_ = +-1 (mod5) then k(n_) is a divisor of n_ - 1:
                 if n_ % 5 in [1, 4]:
@@ -157,17 +156,17 @@ def find_exact_pisano_period(k_multiple: int, n: int) -> int:  # performance bot
     print(f'{divisors = }')
     # now we should find the least divisor with property: Fib(d) = Fib(0) (modm) and Fib(d + 1) = Fib(1) (modm)
     for divisor in divisors:
-        # print(f'current div: {divisor}')
+        print(f'current div: {divisor}')
         # check:
-        if dijkstra_fib(divisor, n) == 0 and dijkstra_fib(divisor + 1, n) == 1:
+        if dijkstra_fib_mod(divisor, n) == 0 and dijkstra_fib_mod(divisor + 1, n) == 1:
             print(f'{divisor} fib modulo divisor is found!!!')
             return divisor
 
 
-def dijkstra_fib(num: int, modulo: int) -> int:
+def dijkstra_fib_mod(num: int, modulo: int) -> int:
     memo_table = {}
 
-    def _dijkstra_fib(num_: int) -> int:
+    def _dijkstra_fib_mod(num_: int) -> int:
         # print(f'{num_ = }')
 
         if num_ < 3:
@@ -176,18 +175,16 @@ def dijkstra_fib(num: int, modulo: int) -> int:
         if num_ not in memo_table.keys():
             if num_ % 2:
                 n = num_ // 2 + 1
-                memo_table[num_] = (_dijkstra_fib(n - 1) ** 2 + _dijkstra_fib(n) ** 2) % modulo
+                memo_table[num_] = (_dijkstra_fib_mod(n - 1) ** 2 + _dijkstra_fib_mod(n) ** 2) % modulo
             else:
                 n = num_ // 2
-                memo_table[num_] = ((2 * _dijkstra_fib(n - 1) + _dijkstra_fib(n)) * _dijkstra_fib(n)) % modulo
+                memo_table[num_] = ((2 * _dijkstra_fib_mod(n - 1) + _dijkstra_fib_mod(n)) * _dijkstra_fib_mod(n)) % modulo
 
         return memo_table[num_]
 
-    res = _dijkstra_fib(num)
-    # print(f'...calculated FIB({num}) = {res}')
-    # print(f"...fib's length: {int(math.log10(res))}")
-    # print(f'...memo table size: {len(memo_table)}')
-    # print(f'...counter: {counter}')
+    res = _dijkstra_fib_mod(num)
+    print(f'...calculated FIB({num}) = {res}')
+    print(f'...memo table size: {len(memo_table)}')
     return res
 
 
@@ -205,7 +202,7 @@ def rec_permuts(prev_pf: int, prime_factors: d[int, int], divisor_: int, divisor
 # Driver function
 if __name__ == "__main__":
     start = time.time_ns()
-    number = 50550  # 164344833683972779  # 12348  # 10160378359708299757  # 2438389198053  # 1818176898  # 1048576  # 97240  # 5781481422738353023  # 241352627  # 924579049  # 1150327153  # 2754003367  # 1303172509  # 3134333507  # 4909015607083012303  # 10420707937356172139  # 4951130183589719131  # 5159146749091023589  # 2136247641713586911  # 10223948831677521313  # 2996814036509449019  # 2015759243216495053  # 2806901077363576969  # 13050411083573536069  # 1818176898  # 2438389198053  # 2438389198053
+    number = 164344833683972779 * 10160378359708299757  # 50550  # 164344833683972779  # 12348  # 10160378359708299757  # 2438389198053  # 1818176898  # 1048576  # 97240  # 5781481422738353023  # 241352627  # 924579049  # 1150327153  # 2754003367  # 1303172509  # 3134333507  # 4909015607083012303  # 10420707937356172139  # 4951130183589719131  # 5159146749091023589  # 2136247641713586911  # 10223948831677521313  # 2996814036509449019  # 2015759243216495053  # 2806901077363576969  # 13050411083573536069  # 1818176898  # 2438389198053  # 2438389198053
     # print(f'res: {is_prime(1105)}')  # 9746347772161
     # factorize(number)
     print(f'pisano period of ({number}): {pisano_period(number)}')

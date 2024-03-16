@@ -104,8 +104,7 @@ def maze_solver(ar: tuple):
         else:
             res += [interval_res]
             interval_res = ''
-    res += [
-        interval_res]  # TODO: It was a SUBTLE ERROR... there was no BRACKETS around 'interval_res' and the final intervals amount got greater...
+    res += [interval_res]  # TODO: It was a SUBTLE ERROR... there was no BRACKETS around 'interval_res' and the final intervals amount got greater...
 
     return res
 
