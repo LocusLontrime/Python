@@ -5,8 +5,7 @@ import time
 from collections import defaultdict as d
 
 
-MR_THRESHOLD = 2  # only one Miller-Rabin check
-FACTORIZATION_THRESHOLD = 3  # (only 3, 5, 7)
+MR_THRESHOLD = 5  # only one Miller-Rabin check
 
 
 # brent from stackoverflow or smth similar...
@@ -119,9 +118,8 @@ def pisano_period(n: int) -> int:
                 # here we use the property of pisano period -> If m and n are coprime, then k(mn) = lcm(k(m), k(n))
                 # at first, let us find the divisor of n with Pollard rho factorization algo:
                 n_temp, q = n_, 0
-                divisor = 98
-                while not is_prime(divisor):
-                    divisor = brent(n_)
+                while not is_prime(divisor := brent(n_)):
+                    ...
 
                 while n_temp % divisor == 0:
                     n_temp, q = n_temp // divisor, q + 1
@@ -202,10 +200,11 @@ def rec_permuts(prev_pf: int, prime_factors: d[int, int], divisor_: int, divisor
 # Driver function
 if __name__ == "__main__":
     start = time.time_ns()
-    number = 164344833683972779 * 10160378359708299757  # 50550  # 164344833683972779  # 12348  # 10160378359708299757  # 2438389198053  # 1818176898  # 1048576  # 97240  # 5781481422738353023  # 241352627  # 924579049  # 1150327153  # 2754003367  # 1303172509  # 3134333507  # 4909015607083012303  # 10420707937356172139  # 4951130183589719131  # 5159146749091023589  # 2136247641713586911  # 10223948831677521313  # 2996814036509449019  # 2015759243216495053  # 2806901077363576969  # 13050411083573536069  # 1818176898  # 2438389198053  # 2438389198053
+    number = 1000000007 * 1000000007 * 164344833683972779 * 10160378359708299757  # 50550  # 164344833683972779  # 12348  # 10160378359708299757  # 2438389198053  # 1818176898  # 1048576  # 97240  # 5781481422738353023  # 241352627  # 924579049  # 1150327153  # 2754003367  # 1303172509  # 3134333507  # 4909015607083012303  # 10420707937356172139  # 4951130183589719131  # 5159146749091023589  # 2136247641713586911  # 10223948831677521313  # 2996814036509449019  # 2015759243216495053  # 2806901077363576969  # 13050411083573536069  # 1818176898  # 2438389198053  # 2438389198053
     # print(f'res: {is_prime(1105)}')  # 9746347772161
     # factorize(number)
-    print(f'pisano period of ({number}): {pisano_period(number)}')
+    print(f'pisano period of ({number}): {(pp := pisano_period(number))}')
+    print(f'partial coeff: {"%.10f" % (pp / number)}')
     # dijkstra_fib(1_000_000)
     # print(f'res: {fib_steps(0, 1, 36_665)}')
     finish = time.time_ns()

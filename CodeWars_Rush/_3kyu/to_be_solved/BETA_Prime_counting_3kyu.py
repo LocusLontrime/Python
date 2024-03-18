@@ -1,9 +1,63 @@
 import math
+from functools import cache
+
+LIMIT = 13
+
+primes: list[int]
+memo_phi: dict[tuple[int, int], int]
 
 
 def count_primes_less_than(n: int) -> int:
-    #Your code here
-    return 0
+    global primes, memo_phi
+
+    primes = get_primes(1_800_000)
+    primes.sort()
+    memo_phi = {}
+
+    print(f'size of primes: {len(primes)}')
+
+    return pi(n)
+
+
+@cache
+def pi(n: int) -> int:
+    # print(f'{n = }')
+
+    if n <= LIMIT:
+        return count(n)
+    a = pi(int(pow(n, 1 / 4)))
+    b = pi(int(pow(n, 1 / 2)))
+    c = pi(int(pow(n, 1 / 3)))
+
+    sum_ = phi(n, a) + (b + a - 2) * (b - a + 1) // 2
+
+    # print(f'{a, b, c = } | {sum_ = }')
+
+    for i in range(a + 1, b + 1):
+        w = n // primes[i]
+        lim = pi(math.isqrt(w))
+        sum_ -= pi(w)
+        if i <= c:
+            for j in range(i, lim + 1):
+                sum_ -= pi(w // primes[j]) - j + 1
+
+    return sum_
+
+
+def count(n: int) -> int:
+    return [0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6][n]
+
+
+@cache
+def phi(x: int, a: int) -> int:
+
+    res = 0
+    while True:
+        if not a or not x:
+            return x + res
+
+        a -= 1
+        res -= phi(x // primes[a], a)  # partial tail recursion
 
 
 def get_primes(n):  # Eratosthenes' sieve
@@ -35,8 +89,12 @@ def get_primes(n):  # Eratosthenes' sieve
     a = set(a)
     # here we delete the last null
     a.remove(0)
-    return a
+    return list(a)
 
+
+r = count_primes_less_than(666 * 10 ** 8)
+
+print(f'{r = }')
 
 
 
