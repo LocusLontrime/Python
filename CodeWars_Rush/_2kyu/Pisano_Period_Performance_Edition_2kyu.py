@@ -67,8 +67,12 @@ def factorize(n: int) -> d[int, int]:
     print(f'starting brent for {n}')
     while n > 1 and not is_prime(n):
         print(f'...{n = }')
-        factors[f := brent(n)] += 1
-        n //= f
+        divisor = n
+        while not is_prime(divisor := brent(divisor)):
+            ...
+        while n % divisor == 0:
+            factors[divisor] += 1
+            n //= divisor
     if n > 1:
         factors[n] += 1  # 36 366 98 989 98989 LL
 
@@ -118,7 +122,9 @@ def pisano_period(n: int) -> int:
                 # here we use the property of pisano period -> If m and n are coprime, then k(mn) = lcm(k(m), k(n))
                 # at first, let us find the divisor of n with Pollard rho factorization algo:
                 n_temp, q = n_, 0
-                while not is_prime(divisor := brent(n_)):
+                # Brent's method rarely gives some wrong prime factors (compound ones)...
+                divisor = n_
+                while not is_prime(divisor := brent(divisor)):
                     ...
 
                 while n_temp % divisor == 0:
@@ -205,6 +211,7 @@ if __name__ == "__main__":
     # factorize(number)
     print(f'pisano period of ({number}): {(pp := pisano_period(number))}')
     print(f'partial coeff: {"%.10f" % (pp / number)}')
+    # print(f'res: {[brent(99) for _ in range(100)]}')
     # dijkstra_fib(1_000_000)
     # print(f'res: {fib_steps(0, 1, 36_665)}')
     finish = time.time_ns()
