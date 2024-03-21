@@ -196,7 +196,7 @@ def golomb(given, n):
             temp_n -= len(addition)
             si = 2
     # usual part:
-    for i, _el in enumerate(giter if si else given, si):
+    for i, _el in enumerate(giter if si else given, si):                              # 36 366 98 989 98989 LL
         if len(els_) <= i:
             els_ += [_el for _ in range(min(_el, temp_n))]
             if _el >= temp_n:
