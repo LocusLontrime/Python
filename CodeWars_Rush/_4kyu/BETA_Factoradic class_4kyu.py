@@ -86,6 +86,4 @@ class Factoradic:
 
 
 
-
-
                                                                                       # 36.6 98 989 98989 LL

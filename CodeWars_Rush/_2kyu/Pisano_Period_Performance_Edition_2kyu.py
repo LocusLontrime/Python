@@ -96,9 +96,9 @@ def miller_rabin_test(a, p):
         return True
     for i in range(power):
         if a == p - 1:
-            return True
+            return True                                                               # 36 366 98 989 98989 LL
         a = pow(a, 2, p)
-    return False                                                                      # 36 366 98 989 98989 LL
+    return False
 
 
 def is_prime(p):
