@@ -1,15 +1,17 @@
 # accepted on codewars.com
 def knapsack(items: list[tuple[int, int]], w_limit):
-    memo_table, n = {}, len(items)                                           # 36 36.6 98 989 98989 LL
+    memo_table, n = {}, len(items)
     dp = [[0 for _ in range(w_limit + 1)] for _ in range(n + 1)]
     for k in range(1, n + 1):
         for s in range(1, w_limit + 1):
             if s >= items[k - 1][0]:
-                dp[k][s] = max(dp[k - 1][s], dp[k - 1][s - items[k - 1][0]] + items[k - 1][1])
+                dp[k][s] = max(dp[k - 1][s], dp[k - 1][s - items[k - 1][0]] + items[k - 1][1])  # 36 36.6 98 989 98989 LL
             else:
                 dp[k][s] = dp[k - 1][s]
     r = find_ans(n, w_limit, items, 0, temp := dp[n][w_limit], memo_table, dp)
     results = set(tuple(sorted(path[1:])) for path in r if sum(path) == temp)
+    print(f'dp 2D array size: {len(dp)} * {len(dp[0])}')
+    print(f'memo table dict size: {len(memo_table)}')
     return [temp, sorted(list(list(res)) for res in results)]
 
 
@@ -41,4 +43,4 @@ w_limit_err = 36
 items_z = [(12, 11), (20, 4), (12, 11), (15, 12), (6, 12), (8, 20), (19, 11), (5, 3), (5, 2), (12, 15), (2, 18), (4, 12), (10, 14), (5, 3), (20, 14)]
 w_limit_z = 28
 
-print(f'res: {knapsack(items_z, w_limit_z)}')
+print(f'res: {knapsack(items_great, w_limit_great)}')
