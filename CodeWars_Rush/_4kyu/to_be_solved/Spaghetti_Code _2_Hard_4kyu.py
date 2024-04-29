@@ -6,46 +6,41 @@ def spaghetti_code(plate: list[list[str]]):
     # shows the plate:
     for row in plate:
         print(f'{row=}')
-
     j_max, i_max = len(plate), len(plate[0])
-
     # spaghetti counting and visited cells:
     visited = [[False for _ in range(i_max)] for _ in range(j_max)]
     spaghetti = []
-
     # finds all the separate spaghetti:
     for j in range(j_max):
         for i in range(i_max):
-            if not visited[j][i]:
-                if plate[j][i].isalpha() and plate[j][i].isupper():
-                    sp_symbs, sp_length = sep_spaghetti(j, i, plate, visited, spaghetti, j_max, i_max, set())
-
-                    # spaghetti finished:
-                    spaghetti += [(sp_symbs, sp_length)]
-                    print(f'{(sp_symbs, sp_length)} has been finished at {j, i}...')
-
+            sp_symbs, sp_length = sep_spaghetti(j, i, plate, visited, spaghetti, j_max, i_max, set())
+            if sp_length:
+                # spaghetti finished:
+                spaghetti += [(sp_symbs, sp_length)]
+                print(f'{(sp_symbs, sp_length)} has been finished at {j, i}...')
     print(f'{spaghetti=}')
-
+    # sorting in descendant order:
     symb = sorted(spaghetti, key=lambda x: -x[1])[0][0]
-
+    # returns ID:
     return (symb - {'S'}).pop() if len(symb) > 1 else 'S'
 
 
 def sep_spaghetti(j: int, i: int, plate: list[list[str]], visited: list[list[bool]], spaghetti: list, j_max: int,
                   i_max: int, sp_symbs: set):
     """tries to find the whole spaghetti from first visited part"""
-    # visiting:
-    visited[j][i] = True
-    # spaghetti symbols processing:
-    sp_symbs |= {plate[j][i]}
-    # bfs:
-    res = 1
-    for dj, di in walk:
-        if 0 <= (j_ := j + dj) < j_max and 0 <= (i_ := i + di) < i_max:
-            if not visited[j_][i_]:
-                if plate[j_][i_].isalpha() and plate[j_][i_].isupper():
+    res = 0
+    if not visited[j][i]:
+        if plate[j][i].isalpha() and plate[j][i].isupper():
+            # visiting:
+            visited[j][i] = True
+            # spaghetti symbols processing:
+            sp_symbs |= {plate[j][i]}
+            # bfs:
+            res += 1
+            for dj, di in walk:
+                if 0 <= (j_ := j + dj) < j_max and 0 <= (i_ := i + di) < i_max:
                     res += sep_spaghetti(j_, i_, plate, visited, spaghetti, j_max, i_max, sp_symbs)[1]
-
+    # return res:
     return sp_symbs, res
 
 
