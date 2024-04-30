@@ -3,7 +3,7 @@ import sys
 import time
 from functools import lru_cache
 
-sys.set_int_max_str_digits(1_000_000)
+# sys.set_int_max_str_digits(1_000_000)
 
 counter: int
 
