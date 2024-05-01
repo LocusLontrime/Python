@@ -113,13 +113,13 @@ class Blob:
         dy, dx = prey.y - self.y, prey.x - self.x
         return (-1 if dy < 0 else 1) if dy != 0 else 0, (-1 if dx < 0 else 1) if dx != 0 else 0
 
+    # just for testing:
     def __str__(self):
         return f'{self.y, self.x}[{self.size}]'
 
     def __repr__(self):
         return str(self)
 
-    # is it needed?
     def __eq__(self, other):
         return self.y == other.y and self.x == other.x and self.size == other.size
 
