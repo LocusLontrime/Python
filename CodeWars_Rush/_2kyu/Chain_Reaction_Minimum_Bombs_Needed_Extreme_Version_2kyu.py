@@ -288,7 +288,7 @@ grid_z = 'x0000+++x0xxx0xx+++00+0+x++x+0xxxx0000x0x+0+x00+00+00x0xx00x+0+00+000x
 
 
 start = time.time_ns()
-print(f'res: {min_bombs_needed(grid_x)}')
+print(f'res: {min_bombs_needed(grid_z)}')
 finish = time.time_ns()
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
