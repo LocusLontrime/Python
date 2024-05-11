@@ -9,16 +9,18 @@ unique_fold_counter: int
 
 
 class Figure:
-    def __init__(self, symbol: str):
+    def __init__(self, symbol: str, ind: int):
+        # main pars:
         self.name = symbol
         self.cells: set[tuple[int, int]] = set()
+        # coords milestones:
         self.j_max = None
         self.j_min = None
         self.i_max = None
         self.i_min = None
         # auxiliary pars:
         self._hash_ = 0
-        self._ind = None
+        self._ind = ind
         self._moves = []
 
     def add_cell(self, j: int, i: int):
@@ -26,14 +28,17 @@ class Figure:
         self.cells |= {(j, i)}
 
     def add_cells(self, cells: set[tuple[int, int]], powers: list[int], i_max: int) -> int:
-        """appends a set of cell to the list"""
+        """appends a set of cell to the list, redefines max and min coords and recomputes the figure's hash"""
         self.cells |= cells
         self.setup()
         # hash changing:
+        # important! 0 means empty space therefore figures' indices must start from 1, we numerate them starting from 0,
+        # but adding 1 to each of them in the formula below:
         self._hash_ += (dhash := (self._ind + 1) * sum(powers[j_ * i_max + i_] for j_, i_ in cells))
         return dhash
 
     def move(self, dir_: int):
+        """adds the current move to the figure's list of moves"""
         self._moves.append(f'{self.name}{dir_names[dir_]}')
 
     @property
@@ -45,15 +50,8 @@ class Figure:
         return self._hash_
 
     @property
-    def ind(self):
-        return self._ind
-
-    @property
     def size(self):
         return len(self.cells)
-
-    def set_ind(self, ind: int):
-        self._ind = ind
 
     def setup(self):
         """defines j_max, j_min, i_max, i_min"""
@@ -64,19 +62,22 @@ class Figure:
 
     def copy(self) -> 'Figure':
         """makes a copy of Figure"""
-        f_copied = Figure(self.name)
+        # creates a new figure at first:
+        f_copied = Figure(self.name, self._ind)
+        # copies the figure's cells:
         f_copied.cells |= self.cells
+        # then copies coords milestones:
         f_copied.j_max = self.j_max
         f_copied.j_min = self.j_min
         f_copied.i_max = self.i_max
         f_copied.i_min = self.i_min
-        # auxiliary pars:
+        # finally, copies auxiliary pars:
         f_copied._hash_ = self._hash_
-        f_copied._ind = self._ind
         f_copied._moves += self._moves
-        # returns acopy made:
+        # returns the copy made:
         return f_copied
 
+    # for testing and representing:
     def __str__(self):
         return f'<{self.size}>[j:{self.j_max, self.j_min} | i:{self.i_max, self.i_min}]({self.moves})'
 
@@ -85,49 +86,44 @@ class Figure:
 
 
 def solver(grid: tuple[str, ...]):
+    """main method for the task solving"""
     global rec_counter, unique_fold_counter
     print(f'{grid = }')
     # let us reformat the board a bit:
     board = [[ch for ch in s] for s in grid]
-    print(f'board: ')
-    for row in board:
-        print(f'{row}')
-    # searching for all the figures on the board:
+    print_board(grid)
+    # searching for all the figures on the board, shaping visited set:
     visited = set()
     figures: dict[str, Figure] = {}
     j_max, i_max = len(board), len(board[0])
+    f_ind = 0
     for j in range(j_max):
         for i in range(i_max):
             if (ch := board[j][i]).isalpha():
                 visited.add((j, i))
                 if ch not in figures.keys():  # 36 366 98 989 98989 LL
-                    figures[ch] = Figure(ch)
+                    figures[ch] = Figure(ch, f_ind)
+                    f_ind += 1
                 figures[ch].add_cell(j, i)
+    # sets up coords milestones for all the figures found:
     for figure in figures.values():
         figure.setup()
     # figures found showing:
     for k, v in figures.items():
         print(f'Figure: {k}')
         print(f'...pars: {v}')
-    # now starts rec-filling of the board:
+    # recursive methods part:
     rec_counter = 0
     unique_fold_counter = 0
     figs = list(figures.values())
-    figs.sort(key=lambda x: -x.size)  # very important for performance
-    for ind, fig in enumerate(figs):
-        fig.set_ind(ind)
-    print(f'figs = {[f.name for f in figs]}')
-    base = len(figs) + 1
-    powers = [base ** (j * i_max + i) for j in range(j_max) for i in range(i_max)]
+    # sorts figures in descending order (in terms of cells quantity):
+    figs.sort(key=lambda x: -x.size)  # bottleneck of optimisation
+    print(f'sorted figs = {[f.name for f in figs]}')
+    base = len(figs) + 1  # base for hash calculating
+    powers = [base ** (j * i_max + i) for j in range(j_max) for i in range(i_max)]  # precalculated powers for fast hashing
     print(f'{powers = }')
     print(f'{base = }')
-    hashes = set()
-    hash_ = 0
-    for ind, fig in enumerate(figs):
-        for j, i in fig.cells:
-            hash_ += (ind + 1) * base ** (j * i_max + i)
-    hashes.add(hash_)
-    # check for sizes combs:
+    # finds all the possible sizes for every figure (in terms of the only space)
     print(f'initial_size: {j_max * i_max}')
     figs_sizes = []
     for f in figs:
@@ -138,12 +134,11 @@ def solver(grid: tuple[str, ...]):
             size_ *= 2
         figs_sizes += [f_sizes]
     print(f'{figs_sizes = }')
-
+    # check for the possible sizes combs:
     bool_res, res_dict = rec_seeker(initial_size := j_max * i_max, figs_sizes)
     print(f'{res_dict = }')
     print(f'{bool_res = }')
-
-    # figs folding:
+    # figs folding, building shapes list (possible shapes for the every figure):
     shapes = []
     for fig in figs:
         figures_ = d(list)
@@ -155,20 +150,19 @@ def solver(grid: tuple[str, ...]):
         #     for n, shape in enumerate(v):
         #         print(f'...{n + 1} | size: {shape.size}')
         #         print_fig(shape, board, j_max, i_max)
-
+    # now we should connect shapes with space constraints to the possible full placement:
     print(f'rec connecting:')
-
     result = rec_connector(j_max * i_max, 0, shapes, set(), board, res_dict, j_max, i_max, [fig.size for fig in figs],
                            [])
-
+    # result processing:
     if result is None:
         print(f'NO SOLUTION...')
         return None
     else:
         print(f'A SOLUTION EXISTS')
-
+    # showing the result board:
     print_figures(result, board, j_max, i_max)
-
+    # returns the moves:
     return sum([f.moves for f in result], start=[])
 
 
@@ -267,7 +261,8 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
     return None
 
 
-def print_board(board, shift: int):
+def print_board(board, shift: int = 0):
+    print(f'Board: ')
     for row_ in board:
         print(f'{" " * shift}{row_}')
 
@@ -288,9 +283,13 @@ def print_figures(figures: list[Figure], board: list[list[str]], j_max: int, i_m
         for j, i in fig.cells:
             board[j][i] = fig.name
     print(f'result board: ')
+    print(f' ' + f'-' * i_max)
     for row in board:
         string_ = ''.join(row)
-        print(f'{string_}')
+        print(f'|', end='')
+        print(f'{string_}', end='')
+        print(f'|')
+    print(f' ' + f'-' * i_max)
 
 
 s_ = (
