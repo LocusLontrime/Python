@@ -273,7 +273,7 @@ def print_fig(fig: Figure, board: list[list[str]], j_max: int, i_max: int):
     for j in range(j_max):
         print(f'      |', end='')
         for i in range(i_max):
-            print(f'{fig.name if (j, i) in fig.cells else board[j][i]}', end='')
+            print(f'{fig.name if (j, i) in fig.cells else " "}', end='')
         print(f'|')
     print(f'       ' + f'-' * i_max)
 
@@ -437,7 +437,7 @@ s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C 
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
 start = time.time_ns()
-print(f'moves: {solver(s_giga)}')
+print(f'moves: {solver(s_super)}')
 finish = time.time_ns()
 
 # rec_counter = 0
