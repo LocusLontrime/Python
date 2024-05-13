@@ -4,8 +4,15 @@ from collections import defaultdict as d
 
 walk = ((0, 1), (1, 0), (0, -1), (-1, 0))
 dir_names = ['R', 'D', 'L', 'U']
+counter: int
+good_positions: int
+already_hashed_figs_counter: int
 rec_counter: int
 unique_fold_counter: int
+t1: int
+t2: int
+t3: int
+t4: int
 
 
 class Figure:
@@ -87,7 +94,7 @@ class Figure:
 
 def solver(grid: tuple[str, ...]):
     """main method for the task solving"""
-    global rec_counter, unique_fold_counter
+    global rec_counter, unique_fold_counter, counter, good_positions, already_hashed_figs_counter, t1, t2, t3, t4
     print(f'{grid = }')
     # let us reformat the board a bit:
     board = [[ch for ch in s] for s in grid]
@@ -133,13 +140,19 @@ def solver(grid: tuple[str, ...]):
             f_sizes += [size_]
             size_ *= 2
         figs_sizes += [f_sizes]
+    for fig_sizes in figs_sizes:
+        fig_sizes.sort(key=lambda x: -x)
     print(f'{figs_sizes = }')
     # check for the possible sizes combs:
-    bool_res, res_dict = rec_seeker(initial_size := j_max * i_max, figs_sizes)
+    counter = 0
+    good_positions = 0
+    t1 = time.time_ns()
+    res_dict = rec_seeker(initial_size := j_max * i_max, figs_sizes)
+    t2 = time.time_ns()
     print(f'{res_dict = }')
-    print(f'{bool_res = }')
     # figs folding, building shapes list (possible shapes for the every figure):
     shapes = []
+    already_hashed_figs_counter = 0
     for fig in figs:
         figures_ = d(list)
         rec_fig_seeker(initial_size, fig, visited, board, powers, j_max, i_max, set(), figures_)
@@ -150,10 +163,12 @@ def solver(grid: tuple[str, ...]):
         #     for n, shape in enumerate(v):
         #         print(f'...{n + 1} | size: {shape.size}')
         #         print_fig(shape, board, j_max, i_max)
+    t3 = time.time_ns()
     # now we should connect shapes with space constraints to the possible full placement:
     print(f'rec connecting:')
     result = rec_connector(j_max * i_max, 0, shapes, set(), board, res_dict, j_max, i_max, [fig.size for fig in figs],
                            [])
+    t4 = time.time_ns()
     # result processing:
     if result is None:
         print(f'NO SOLUTION...')
@@ -173,7 +188,7 @@ def fold(figure: Figure, visited: set[tuple[int, int]], powers: list[int], j_max
     global unique_fold_counter
     match direction:
         case 0:  # right-folding:
-            new_cells = {(j, 2 * figure.i_max - i + 1) for j, i in
+            new_cells = {(j, 2 * figure.i_max - i + 1) for j, i in                    # 36 366 98 989 98989 LL
                          figure.cells} if 2 * figure.i_max - figure.i_min + 1 < i_max else set()
         case 1:  # down-folding:
             new_cells = {(2 * figure.j_max - j + 1, i) for j, i in
@@ -197,34 +212,36 @@ def fold(figure: Figure, visited: set[tuple[int, int]], powers: list[int], j_max
     return f_copy, new_cells, dhash
 
 
-def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) -> tuple[bool, dict]:
+def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) -> dict:
+    global counter, good_positions
+    counter += 1
     res = {}
-    bool_res = False
     # border case:
     if cells_rem == 0 and fig_ind == len(figs_sizes):
-        # print(f'BINGO!!!')
-        res[0] = True
-        return True, res
-    # print(f'{figs_sizes = }')
+        good_positions += 1
+        return {0: True}
+    # if we still are not out of bounds:
     if fig_ind < len(figs_sizes):
         for size_ in figs_sizes[fig_ind]:
             if cells_rem - size_ >= 0:
-                flag, dict_ = rec_seeker(cells_rem - size_, figs_sizes, fig_ind + 1)
-                if flag:
+                # next fig index recursive call:
+                dict_ = rec_seeker(cells_rem - size_, figs_sizes, fig_ind + 1)
+                if dict_:
                     res[size_] = dict_
-                    bool_res = True
-    return bool_res, res
+    return res
 
 
 def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], board,
                    powers: list[int], j_max: int, i_max: int, hashes: set[int], figures: d[int, list[Figure]]):
+    global already_hashed_figs_counter
     # print(f'{fig}')
-    # print(f'{rem_cells = }')
     # print_fig(fig, board, j_max, i_max)
     if rem_cells >= 0:
-        # adding the figure to the figures list:
+        # if a figure has not been already hashed:
         if fig.hash not in hashes:
+            # hashing figure:
             hashes |= {fig.hash}
+            # adding the figure to the figures list:
             figures[fig.size] += [fig]
             for dir_ in range(4):
                 # tries to fold the figure in the direction chosen:
@@ -233,6 +250,8 @@ def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], b
                     # recursive call:
                     rec_fig_seeker(rem_cells - len(new_cells), fig_, visited | new_cells, board, powers, j_max, i_max,
                                    hashes, figures)
+        else:
+            already_hashed_figs_counter += 1
 
 
 def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], visited, board, res_dict, j_max, i_max,
@@ -250,8 +269,9 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
             print_fig(f, board, j_max, i_max)
         return figs
     if ind < len(shapes):
-        for shape_size in sorted(shapes[ind].keys(), reverse=True):
-            if shape_size in res_dict.keys():
+        # res_dict, then shapes a bit faster than vice versa...
+        for shape_size in sorted(res_dict.keys(), reverse=True):  # we can omit sorting, but dict can violate the order of key-sizes...
+            if shape_size in shapes[ind].keys():  # res_dict.keys():
                 for shape in shapes[ind][shape_size]:
                     if not shape.cells.intersection(visited):
                         interim_res = rec_connector(rem_cells - shape.size, ind + 1, shapes, visited | shape.cells,
@@ -437,7 +457,7 @@ s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C 
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
 start = time.time_ns()
-print(f'moves: {solver(s_super)}')
+print(f'moves: {solver(s_giga)}')
 finish = time.time_ns()
 
 # rec_counter = 0
@@ -446,8 +466,14 @@ finish = time.time_ns()
 # # f_sizes = rec_seeker(120 - 9, [1, 4, 2, 1, 1])
 # f_sizes = rec_seeker(80 - 5, [1, 1, 1, 1, 1])
 # finish = time.time_ns()
-print(f'{rec_counter = }')
+print(f'{counter = }')
+print(f'{good_positions = }')
 print(f'{unique_fold_counter = }')
+print(f'{already_hashed_figs_counter = }')
+print(f'{rec_counter = }')
+print(f'poss ways time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
+print(f'rec figs time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
+print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 #
 # print(f'sizes length: {len(f_sizes)}')
@@ -478,3 +504,6 @@ print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 # print(f'{k_}')
 # array[3].val = 98
 # print(f'{k_}')
+
+# TODO: 1. decide whether figure hashing still needed... verdict: needed +
+# TODO: 2. optimise poss ways and rec connecting methods a bit...
