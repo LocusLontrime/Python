@@ -4,6 +4,8 @@ from collections import defaultdict as d
 
 walk = ((0, 1), (1, 0), (0, -1), (-1, 0))
 dir_names = ['R', 'D', 'L', 'U']
+
+# aux:
 counter: int
 good_positions: int
 already_hashed_figs_counter: int
@@ -16,6 +18,7 @@ t4: int
 
 
 class Figure:
+    """class representing a current figure state"""
     def __init__(self, symbol: str, ind: int):
         # main pars:
         self.name = symbol
@@ -34,15 +37,14 @@ class Figure:
         """appends a cell to the list"""
         self.cells |= {(j, i)}
 
-    def add_cells(self, cells: set[tuple[int, int]], powers: list[int], i_max: int) -> int:
+    def add_cells(self, cells: set[tuple[int, int]], powers: list[int], i_max: int) -> None:
         """appends a set of cell to the list, redefines max and min coords and recomputes the figure's hash"""
         self.cells |= cells
         self.setup()
         # hash changing:
-        # important! 0 means empty space therefore figures' indices must start from 1, we numerate them starting from 0,
-        # but adding 1 to each of them in the formula below:
-        self._hash_ += (dhash := (self._ind + 1) * sum(powers[j_ * i_max + i_] for j_, i_ in cells))
-        return dhash
+        # important! 0 means empty space therefore figures' indices must start from 1; we numerate them starting from 0,
+        # but add 1 to each of them in the formula below:
+        self._hash_ += (self._ind + 1) * sum(powers[j_ * i_max + i_] for j_, i_ in cells)
 
     def move(self, dir_: int):
         """adds the current move to the figure's list of moves"""
@@ -61,14 +63,14 @@ class Figure:
         return len(self.cells)
 
     def setup(self):
-        """defines j_max, j_min, i_max, i_min"""
+        """redefines j_max, j_min, i_max, i_min"""
         self.j_max = max(self.cells, key=lambda k: k[0])[0]
         self.j_min = min(self.cells, key=lambda k: k[0])[0]
         self.i_max = max(self.cells, key=lambda k: k[1])[1]
         self.i_min = min(self.cells, key=lambda k: k[1])[1]
 
     def copy(self) -> 'Figure':
-        """makes a copy of Figure"""
+        """makes a deep copy of the current Figure state"""
         # creates a new figure at first:
         f_copied = Figure(self.name, self._ind)
         # copies the figure's cells:
@@ -84,8 +86,8 @@ class Figure:
         # returns the copy made:
         return f_copied
 
-    # for testing and representing:
-    def __str__(self):
+    # for testing and representing only:
+    def __str__(self):                                                                # 36 366 98 989 98989 LL
         return f'<{self.size}>[j:{self.j_max, self.j_min} | i:{self.i_max, self.i_min}]({self.moves})'
 
     def __repr__(self):
@@ -140,8 +142,6 @@ def solver(grid: tuple[str, ...]):
             f_sizes += [size_]
             size_ *= 2
         figs_sizes += [f_sizes]
-    for fig_sizes in figs_sizes:
-        fig_sizes.sort(key=lambda x: -x)
     print(f'{figs_sizes = }')
     # check for the possible sizes combs:
     counter = 0
@@ -182,34 +182,25 @@ def solver(grid: tuple[str, ...]):
 
 
 def fold(figure: Figure, visited: set[tuple[int, int]], powers: list[int], j_max: int, i_max: int,
-         direction: int):
+         dir_: int) -> tuple:
     """tries to fold the figure in the direction chosen"""
+    def dist(x):
+        return 2 * f_maxes[dir_] - x + (1 if dir_ < 2 else -1)
     # print(f'folding figure {figure.name} in the dir of {direction}')
     global unique_fold_counter
-    match direction:
-        case 0:  # right-folding:
-            new_cells = {(j, 2 * figure.i_max - i + 1) for j, i in                    # 36 366 98 989 98989 LL
-                         figure.cells} if 2 * figure.i_max - figure.i_min + 1 < i_max else set()
-        case 1:  # down-folding:
-            new_cells = {(2 * figure.j_max - j + 1, i) for j, i in
-                         figure.cells} if 2 * figure.j_max - figure.j_min + 1 < j_max else set()
-        case 2:  # left-folding:
-            new_cells = {(j, 2 * figure.i_min - i - 1) for j, i in
-                         figure.cells} if 0 <= 2 * figure.i_min - figure.i_max - 1 else set()
-        case 3:  # up_folding:
-            new_cells = {(2 * figure.j_min - j - 1, i) for j, i in
-                         figure.cells} if 0 <= 2 * figure.j_min - figure.j_max - 1 else set()
-        case _:
-            raise Exception(f'WRONG direction!!! {direction} is not 0, 1, 2 or 3...')
+    f_maxes = [figure.i_max, figure.j_max, figure.i_min, figure.j_min]
+    maxes = [i_max, j_max]
+    new_cells = {(k := (coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])))[dir_ % 2:] + k[:dir_ % 2]
+                 for coords in figure.cells} if (0 <= dist(f_maxes[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
     # validation:
     if len(figure.cells) != len(new_cells) or new_cells.intersection(visited):
         # empty set for the case of invalid move:
-        return None
+        return ()
     unique_fold_counter += 1
     f_copy = figure.copy()
-    dhash = f_copy.add_cells(new_cells, powers, i_max)
-    f_copy.move(direction)
-    return f_copy, new_cells, dhash
+    f_copy.add_cells(new_cells, powers, i_max)
+    f_copy.move(dir_)
+    return f_copy, new_cells
 
 
 def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) -> dict:
@@ -245,8 +236,8 @@ def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], b
             figures[fig.size] += [fig]
             for dir_ in range(4):
                 # tries to fold the figure in the direction chosen:
-                if (info := fold(fig, visited, powers, j_max, i_max, dir_)) is not None:
-                    fig_, new_cells, dhash = info
+                if info := fold(fig, visited, powers, j_max, i_max, dir_):
+                    fig_, new_cells = info
                     # recursive call:
                     rec_fig_seeker(rem_cells - len(new_cells), fig_, visited | new_cells, board, powers, j_max, i_max,
                                    hashes, figures)
@@ -310,6 +301,20 @@ def print_figures(figures: list[Figure], board: list[list[str]], j_max: int, i_m
         print(f'{string_}', end='')
         print(f'|')
     print(f' ' + f'-' * i_max)
+
+
+def print_res_dict(res_dict: dict):
+    """a very suspicious method..."""
+    def print_res_dict_(res_dict_: dict, shift: int = 0):
+        if isinstance(res_dict_, dict):
+            for k, dict_ in res_dict_.items():
+                print(f' ' * shift + f'{{{k}: ')
+                print_res_dict_(dict_, shift + 2)
+                print(f' ' * shift + f'}}')
+        else:
+            print(f' ' * shift + f'{res_dict_}')
+
+    print_res_dict_(res_dict)
 
 
 s_ = (
@@ -451,13 +456,18 @@ s_zero = '    FF  BB\n JJ F   BB\n  JC     B\nJ CC      \n V        \nVV   VV   
 s_zero = tuple(s for s in s_zero.split('\n') if s)
 
 s_none = '   O  MMM   \n   O        \n            \n KK         \nRR        RR\n     V      \n  CC        \n  CCCC      '
-s_none = tuple(s for s in s_none.split('\n') if s)                                    # 36 366 98 989 98989 LL 
+s_none = tuple(s for s in s_none.split('\n') if s)                                    # 36 366 98 989 98989 LL
 
 s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C \n L   O    \n          '
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
 start = time.time_ns()
-print(f'moves: {solver(s_giga)}')
+print(f'moves: {solver(s_super)}')
+# counter = 0
+# good_positions = 0
+# result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
+# print(f'{result_d = }')
+# print_res_dict(result_d)
 finish = time.time_ns()
 
 # rec_counter = 0
@@ -466,14 +476,14 @@ finish = time.time_ns()
 # # f_sizes = rec_seeker(120 - 9, [1, 4, 2, 1, 1])
 # f_sizes = rec_seeker(80 - 5, [1, 1, 1, 1, 1])
 # finish = time.time_ns()
-print(f'{counter = }')
-print(f'{good_positions = }')
-print(f'{unique_fold_counter = }')
-print(f'{already_hashed_figs_counter = }')
-print(f'{rec_counter = }')
-print(f'poss ways time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
-print(f'rec figs time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
-print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
+# print(f'{counter = }')
+# print(f'{good_positions = }')
+# print(f'{unique_fold_counter = }')                                                    # 36 366 98 989 98989 LL
+# print(f'{already_hashed_figs_counter = }')
+# print(f'{rec_counter = }')
+# print(f'poss ways time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
+# print(f'rec figs time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
+# print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 #
 # print(f'sizes length: {len(f_sizes)}')
