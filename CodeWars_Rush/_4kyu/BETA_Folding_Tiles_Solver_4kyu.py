@@ -19,6 +19,7 @@ t4: int
 
 class Figure:
     """class representing a current figure state"""
+
     def __init__(self, symbol: str, ind: int):
         # main pars:
         self.name = symbol
@@ -87,7 +88,7 @@ class Figure:
         return f_copied
 
     # for testing and representing only:
-    def __str__(self):                                                                # 36 366 98 989 98989 LL
+    def __str__(self):  # 36 366 98 989 98989 LL
         return f'<{self.size}>[j:{self.j_max, self.j_min} | i:{self.i_max, self.i_min}]({self.moves})'
 
     def __repr__(self):
@@ -95,7 +96,7 @@ class Figure:
 
 
 def solver(grid: tuple[str, ...]):
-    """main method for the task solving"""
+    """main method for the task solving"""                                            # 36 366 98 989 98989 LL
     global rec_counter, unique_fold_counter, counter, good_positions, already_hashed_figs_counter, t1, t2, t3, t4
     print(f'{grid = }')
     # let us reformat the board a bit:
@@ -129,7 +130,8 @@ def solver(grid: tuple[str, ...]):
     figs.sort(key=lambda x: -x.size)  # bottleneck of optimisation
     print(f'sorted figs = {[f.name for f in figs]}')
     base = len(figs) + 1  # base for hash calculating
-    powers = [base ** (j * i_max + i) for j in range(j_max) for i in range(i_max)]  # precalculated powers for fast hashing
+    powers = [base ** (j * i_max + i) for j in range(j_max) for i in
+              range(i_max)]  # precalculated powers for fast hashing
     print(f'{powers = }')
     print(f'{base = }')
     # finds all the possible sizes for every figure (in terms of the only space)
@@ -184,8 +186,10 @@ def solver(grid: tuple[str, ...]):
 def fold(figure: Figure, visited: set[tuple[int, int]], powers: list[int], j_max: int, i_max: int,
          dir_: int) -> tuple:
     """tries to fold the figure in the direction chosen"""
+
     def dist(x):
         return 2 * f_maxes[dir_] - x + (1 if dir_ < 2 else -1)
+
     # print(f'folding figure {figure.name} in the dir of {direction}')
     global unique_fold_counter
     f_maxes = [figure.i_max, figure.j_max, figure.i_min, figure.j_min]
@@ -261,7 +265,8 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
         return figs
     if ind < len(shapes):
         # res_dict, then shapes a bit faster than vice versa...
-        for shape_size in sorted(res_dict.keys(), reverse=True):  # we can omit sorting, but dict can violate the order of key-sizes...
+        for shape_size in sorted(res_dict.keys(),
+                                 reverse=True):  # we can omit sorting, but dict can violate the order of key-sizes...
             if shape_size in shapes[ind].keys():  # res_dict.keys():
                 for shape in shapes[ind][shape_size]:
                     if not shape.cells.intersection(visited):
@@ -275,7 +280,7 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
 def print_board(board, shift: int = 0):
     print(f'Board: ')
     for row_ in board:
-        print(f'{" " * shift}{row_}')
+        print(f'|{" " * shift}{row_}|')
 
 
 def print_fig(fig: Figure, board: list[list[str]], j_max: int, i_max: int):
@@ -305,6 +310,7 @@ def print_figures(figures: list[Figure], board: list[list[str]], j_max: int, i_m
 
 def print_res_dict(res_dict: dict):
     """a very suspicious method..."""
+
     def print_res_dict_(res_dict_: dict, shift: int = 0):
         if isinstance(res_dict_, dict):
             for k, dict_ in res_dict_.items():
@@ -419,6 +425,17 @@ s_super = (
     '                ',
     'AA              ',)
 
+s_susp = (
+    '        X ',
+    '          ',
+    'Y  Z  W  W',
+    '  ZZ      ',
+    '          ',
+    '      W  W',
+    '     U    ',
+    '          '
+)
+
 s_mega = tuple(s for s in s_mega.split('\n') if s)
 
 s_g = '      FF\n        \n P   S Y\n     S Y\n H S Z  '
@@ -456,13 +473,13 @@ s_zero = '    FF  BB\n JJ F   BB\n  JC     B\nJ CC      \n V        \nVV   VV   
 s_zero = tuple(s for s in s_zero.split('\n') if s)
 
 s_none = '   O  MMM   \n   O        \n            \n KK         \nRR        RR\n     V      \n  CC        \n  CCCC      '
-s_none = tuple(s for s in s_none.split('\n') if s)                                    # 36 366 98 989 98989 LL
+s_none = tuple(s for s in s_none.split('\n') if s)  # 36 366 98 989 98989 LL
 
 s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C \n L   O    \n          '
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
 start = time.time_ns()
-print(f'moves: {solver(s_super)}')
+print(f'moves: {solver(s_susp)}')
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
@@ -476,14 +493,14 @@ finish = time.time_ns()
 # # f_sizes = rec_seeker(120 - 9, [1, 4, 2, 1, 1])
 # f_sizes = rec_seeker(80 - 5, [1, 1, 1, 1, 1])
 # finish = time.time_ns()
-# print(f'{counter = }')
-# print(f'{good_positions = }')
-# print(f'{unique_fold_counter = }')                                                    # 36 366 98 989 98989 LL
-# print(f'{already_hashed_figs_counter = }')
-# print(f'{rec_counter = }')
-# print(f'poss ways time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
-# print(f'rec figs time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
-# print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
+print(f'{counter = }')
+print(f'{good_positions = }')
+print(f'{unique_fold_counter = }')  # 36 366 98 989 98989 LL
+print(f'{already_hashed_figs_counter = }')
+print(f'{rec_counter = }')
+print(f'poss ways time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
+print(f'rec figs time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
+print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 #
 # print(f'sizes length: {len(f_sizes)}')
