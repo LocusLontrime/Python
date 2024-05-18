@@ -1,5 +1,5 @@
 # Dynamic programming -> accepted on codewars.com
-def count(matrix):
+def count(matrix: list[list[int]]) -> dict | int:
     squares_dictionary = {}
     # case of matrix with side.len = 0
     if len(matrix) == 0 or len(matrix[0]) == 0:
@@ -25,7 +25,6 @@ def count(matrix):
                         squares_dictionary[k] = 1
 
     return squares_dictionary
-
 
 chess_board = [
             [0, 1, 1, 1, 1],

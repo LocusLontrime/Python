@@ -38,30 +38,17 @@ class Boggle:
                 self.board[j][i] = self.word[k]
         return False
 
+
 def find_word(board: list[list[str]], word: str):
     return Boggle(board, word).check()
 
 
-
-
-
-
-
-
 board_to_solve = [
-      ["E","A","R","A"],
-      ["N","L","E","C"],
-      ["I","A","I","S"],
-      ["B","Y","O","R"]
-    ]
+    ["E", "A", "R", "A"],
+    ["N", "L", "E", "C"],
+    ["I", "A", "I", "S"],
+    ["B", "Y", "O", "R"]
+]
 
 print(find_word(board_to_solve, 'RSCAREIOYBAILNEA'))
 print(find_word(board_to_solve, 'BAILER'))
-
-
-
-
-
-
-
-

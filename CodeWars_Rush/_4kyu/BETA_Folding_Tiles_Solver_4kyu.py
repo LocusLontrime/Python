@@ -96,7 +96,7 @@ class Figure:
 
 
 def solver(grid: tuple[str, ...]):
-    """main method for the task solving"""                                            # 36 366 98 989 98989 LL
+    """main method for the task solving"""  # 36 366 98 989 98989 LL
     global rec_counter, unique_fold_counter, counter, good_positions, already_hashed_figs_counter, t1, t2, t3, t4
     print(f'{grid = }')
     # let us reformat the board a bit:
@@ -188,14 +188,17 @@ def fold(figure: Figure, visited: set[tuple[int, int]], powers: list[int], j_max
     """tries to fold the figure in the direction chosen"""
 
     def dist(x):
-        return 2 * f_maxes[dir_] - x + (1 if dir_ < 2 else -1)
+        return 2 * f_borders[dir_] - x + (1 if dir_ < 2 else -1)
+
+    def cyclic_shift_left(arr_, delta: int) -> list:
+        return arr_[delta:] + arr_[:delta]
 
     # print(f'folding figure {figure.name} in the dir of {direction}')
     global unique_fold_counter
-    f_maxes = [figure.i_max, figure.j_max, figure.i_min, figure.j_min]
+    f_borders = [figure.i_max, figure.j_max, figure.i_min, figure.j_min]
     maxes = [i_max, j_max]
-    new_cells = {(k := (coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])))[dir_ % 2:] + k[:dir_ % 2]
-                 for coords in figure.cells} if (0 <= dist(f_maxes[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
+    new_cells = {cyclic_shift_left((coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])), dir_ % 2)
+                 for coords in figure.cells} if (0 <= dist(f_borders[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
     # validation:
     if len(figure.cells) != len(new_cells) or new_cells.intersection(visited):
         # empty set for the case of invalid move:
@@ -479,7 +482,7 @@ s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C 
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
 start = time.time_ns()
-print(f'moves: {solver(s_susp)}')
+print(f'moves: {solver(s_giga)}')
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
