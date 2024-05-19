@@ -137,34 +137,29 @@ def solver(grid: tuple[str, ...]):
     # finds all the possible sizes for every figure (in terms of the only space)
     print(f'initial_size: {j_max * i_max}')
     figs_sizes = []
-    for f in figs:
-        f_sizes = []
-        size_ = f.size
-        while size_ <= j_max * i_max:
-            f_sizes += [size_]
-            size_ *= 2
-        figs_sizes += [f_sizes]
-    print(f'{figs_sizes = }')
-    # check for the possible sizes combs:
-    counter = 0
-    good_positions = 0
-    t1 = time.time_ns()
-    res_dict = rec_seeker(initial_size := j_max * i_max, figs_sizes)
-    t2 = time.time_ns()
-    print(f'{res_dict = }')
+    initial_size = j_max * i_max
     # figs folding, building shapes list (possible shapes for the every figure):
     shapes = []
     already_hashed_figs_counter = 0
+    t1 = time.time_ns()
     for fig in figs:
         figures_ = d(list)
         rec_fig_seeker(initial_size, fig, visited - fig.cells, board, powers, j_max, i_max, set(), figures_)
         shapes.append(figures_)
+        figs_sizes += [[k for k in figures_.keys()]]
         # print(f'{fig.name} shapes quantity: {len(figures_)}')
         # for k, v in figures_.items():
         #     print(f'->shapes of a size {k}')
         #     for n, shape in enumerate(v):
         #         print(f'...{n + 1} | size: {shape.size}')
         #         print_fig(shape, board, j_max, i_max)
+    t2 = time.time_ns()
+    print(f'possible {figs_sizes = }')
+    # check for the possible sizes combs:
+    counter = 0
+    good_positions = 0
+    res_dict = rec_seeker(initial_size, figs_sizes)
+    print(f'{res_dict = }')
     t3 = time.time_ns()
     # now we should connect shapes with space constraints to the possible full placement:
     print(f'rec connecting:')
@@ -481,7 +476,7 @@ s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C 
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
 start = time.time_ns()
-print(f'moves: {solver(s_super)}')
+print(f'moves: {solver(s_giga)}')
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
@@ -500,8 +495,8 @@ print(f'{good_positions = }')
 print(f'{unique_fold_counter = }')  # 36 366 98 989 98989 LL
 print(f'{already_hashed_figs_counter = }')
 print(f'{rec_counter = }')
-print(f'poss ways time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
-print(f'rec figs time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
+print(f'rec figs time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
+print(f'poss ways time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
 print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 #
