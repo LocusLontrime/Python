@@ -1,7 +1,6 @@
 # accepted on codewars.com
 import time
 from collections import defaultdict as d
-
 walk = ((0, 1), (1, 0), (0, -1), (-1, 0))
 dir_names = ['R', 'D', 'L', 'U']
 
@@ -34,6 +33,7 @@ COLOURS = [BLACK, RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, X]
 
 class Figure:
     """class representing a current figure state"""
+    attrs = ['i_max', 'j_max', 'i_min', 'j_min']
 
     def __init__(self, symbol: str, ind: int):
         # main pars:
@@ -54,7 +54,7 @@ class Figure:
         self.cells |= {(j, i)}
 
     def add_cells(self, cells: set[tuple[int, int]], powers: list[int], i_max: int) -> None:
-        """appends a set of cell to the list, redefines max and min coords and recomputes the figure's hash"""
+        """appends a set of cell to the list and recomputes the figure's hash"""
         self.cells |= cells
         # hash changing:
         # important! 0 means empty space therefore figures' indices must start from 1; we numerate them starting from 0,
@@ -66,18 +66,16 @@ class Figure:
         """tries to fold the figure in the direction chosen and returns a copy of the figure folded and new cells
          if possible and empty tuple otherwise"""
         def dist(x):
-            return 2 * f_borders[dir_] - x + (1 if dir_ < 2 else -1)
+            return 2 * self.f_borders[dir_] - x + (1 if dir_ < 2 else -1)
 
         def cyclic_shift_left(arr_, delta: int) -> list:
             return arr_[delta:] + arr_[:delta]
 
         # print(f'folding figure {figure.name} in the dir of {direction}')
         global unique_fold_counter
-        f_borders = [self.i_max, self.j_max, self.i_min, self.j_min]
-        attrs = ['i_max', 'j_max', 'i_min', 'j_min']
         maxes = [i_max, j_max]
         new_cells = {cyclic_shift_left((coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])), dir_ % 2)
-                     for coords in self.cells} if (0 <= dist(f_borders[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
+                     for coords in self.cells} if (0 <= (new_extremum := dist(self.f_borders[(dir_ + 2) % 4])) < maxes[dir_ % 2]) else set()
         # validation:
         if len(self.cells) != len(new_cells) or new_cells.intersection(visited):
             # empty set for the case of invalid move:
@@ -86,7 +84,7 @@ class Figure:
         f_copy = self.copy()
         f_copy.add_cells(new_cells, powers, i_max)
         # setup:
-        f_copy.__setattr__(attrs[dir_], dist(f_borders[(dir_ + 2) % 4]))
+        f_copy.__setattr__(Figure.attrs[dir_], new_extremum)                                 # 36 366 98 989 98989 LL
         f_copy.move(dir_)
         # print(f'{f_copy.hash = }')
         return f_copy, new_cells
@@ -106,13 +104,17 @@ class Figure:
     @property
     def size(self):
         return len(self.cells)
+    
+    @property
+    def f_borders(self):
+        return [self.i_max, self.j_max, self.i_min, self.j_min]
 
     def setup(self):
         """redefines j_max, j_min, i_max, i_min"""
-        self.j_max = max(self.cells, key=lambda k: k[0])[0]
-        self.j_min = min(self.cells, key=lambda k: k[0])[0]
-        self.i_max = max(self.cells, key=lambda k: k[1])[1]
-        self.i_min = min(self.cells, key=lambda k: k[1])[1]
+        extrema = [max, min]
+        for q in range(4):
+            i1, i2 = q // 2, (q + 1) % 2
+            self.__setattr__(Figure.attrs[q], extrema[i1](self.cells, key=lambda k: k[i2])[i2])
 
     def copy(self) -> 'Figure':
         """makes a deep copy of the current Figure state"""
@@ -190,7 +192,7 @@ def solver(grid: tuple[str, ...]):
         figures_ = d(list)
         rec_fig_seeker(initial_size, fig, visited - fig.cells, board, powers, j_max, i_max, set(), figures_)
         shapes.append(figures_)
-        figs_sizes += [[k for k in figures_.keys()]]
+        figs_sizes += [[_ for _ in figures_.keys()]]
         # print(f'{fig.name} shapes quantity: {len(figures_)}')
         # for k, v in figures_.items():
         #     print(f'->shapes of a size {k}')
