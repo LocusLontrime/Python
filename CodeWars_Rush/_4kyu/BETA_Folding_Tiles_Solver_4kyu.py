@@ -56,7 +56,6 @@ class Figure:
     def add_cells(self, cells: set[tuple[int, int]], powers: list[int], i_max: int) -> None:
         """appends a set of cell to the list, redefines max and min coords and recomputes the figure's hash"""
         self.cells |= cells
-        self.setup()
         # hash changing:
         # important! 0 means empty space therefore figures' indices must start from 1; we numerate them starting from 0,
         # but add 1 to each of them in the formula below:
@@ -64,8 +63,8 @@ class Figure:
 
     def fold(self, visited: set[tuple[int, int]], powers: list[int], j_max: int, i_max: int,
              dir_: int) -> tuple:
-        """tries to fold the figure in the direction chosen"""
-
+        """tries to fold the figure in the direction chosen and returns a copy of the figure folded and new cells
+         if possible and empty tuple otherwise"""
         def dist(x):
             return 2 * f_borders[dir_] - x + (1 if dir_ < 2 else -1)
 
@@ -75,6 +74,7 @@ class Figure:
         # print(f'folding figure {figure.name} in the dir of {direction}')
         global unique_fold_counter
         f_borders = [self.i_max, self.j_max, self.i_min, self.j_min]
+        attrs = ['i_max', 'j_max', 'i_min', 'j_min']
         maxes = [i_max, j_max]
         new_cells = {cyclic_shift_left((coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])), dir_ % 2)
                      for coords in self.cells} if (0 <= dist(f_borders[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
@@ -85,6 +85,8 @@ class Figure:
         unique_fold_counter += 1
         f_copy = self.copy()
         f_copy.add_cells(new_cells, powers, i_max)
+        # setup:
+        f_copy.__setattr__(attrs[dir_], dist(f_borders[(dir_ + 2) % 4]))
         f_copy.move(dir_)
         # print(f'{f_copy.hash = }')
         return f_copy, new_cells
