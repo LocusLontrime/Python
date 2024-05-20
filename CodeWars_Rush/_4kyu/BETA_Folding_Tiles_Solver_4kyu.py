@@ -16,6 +16,21 @@ t2: int
 t3: int
 t4: int
 
+# styles:
+BOLD = "\033[1m"
+# colours:
+BLACK = "\033[30m{}"
+RED = "\033[31m{}"
+GREEN = "\033[32m{}"
+YELLOW = "\033[33m{}"
+BROWN = "\033[34m{}"
+PURPLE = "\033[35m{}"
+CYAN = "\033[36m{}"
+LIGHT_GREEN = "\033[1;32m{}"
+X = "\033[37m{}"
+END = "\033[0m"
+COLOURS = [BLACK, RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, X]
+
 
 class Figure:
     """class representing a current figure state"""
@@ -46,6 +61,33 @@ class Figure:
         # important! 0 means empty space therefore figures' indices must start from 1; we numerate them starting from 0,
         # but add 1 to each of them in the formula below:
         self._hash_ += (self._ind + 1) * sum(powers[j_ * i_max + i_] for j_, i_ in cells)
+
+    def fold(self, visited: set[tuple[int, int]], powers: list[int], j_max: int, i_max: int,
+             dir_: int) -> tuple:
+        """tries to fold the figure in the direction chosen"""
+
+        def dist(x):
+            return 2 * f_borders[dir_] - x + (1 if dir_ < 2 else -1)
+
+        def cyclic_shift_left(arr_, delta: int) -> list:
+            return arr_[delta:] + arr_[:delta]
+
+        # print(f'folding figure {figure.name} in the dir of {direction}')
+        global unique_fold_counter
+        f_borders = [self.i_max, self.j_max, self.i_min, self.j_min]
+        maxes = [i_max, j_max]
+        new_cells = {cyclic_shift_left((coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])), dir_ % 2)
+                     for coords in self.cells} if (0 <= dist(f_borders[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
+        # validation:
+        if len(self.cells) != len(new_cells) or new_cells.intersection(visited):
+            # empty set for the case of invalid move:
+            return ()
+        unique_fold_counter += 1
+        f_copy = self.copy()
+        f_copy.add_cells(new_cells, powers, i_max)
+        f_copy.move(dir_)
+        # print(f'{f_copy.hash = }')
+        return f_copy, new_cells
 
     def move(self, dir_: int):
         """adds the current move to the figure's list of moves"""
@@ -96,7 +138,7 @@ class Figure:
 
 
 def solver(grid: tuple[str, ...]):
-    """main method for the task solving"""                                            # 36 366 98 989 98989 LL
+    """main method for the task solving"""  # 36 366 98 989 98989 LL
     global rec_counter, unique_fold_counter, counter, good_positions, already_hashed_figs_counter, t1, t2, t3, t4
     print(f'{grid = }')
     # let us reformat the board a bit:
@@ -178,34 +220,6 @@ def solver(grid: tuple[str, ...]):
     return sum([f.moves for f in result], start=[])
 
 
-def fold(figure: Figure, visited: set[tuple[int, int]], powers: list[int], j_max: int, i_max: int,
-         dir_: int) -> tuple:
-    """tries to fold the figure in the direction chosen"""
-
-    def dist(x):
-        return 2 * f_borders[dir_] - x + (1 if dir_ < 2 else -1)
-
-    def cyclic_shift_left(arr_, delta: int) -> list:
-        return arr_[delta:] + arr_[:delta]
-
-    # print(f'folding figure {figure.name} in the dir of {direction}')
-    global unique_fold_counter
-    f_borders = [figure.i_max, figure.j_max, figure.i_min, figure.j_min]
-    maxes = [i_max, j_max]
-    new_cells = {cyclic_shift_left((coords[dir_ % 2], dist(coords[(dir_ + 1) % 2])), dir_ % 2)
-                 for coords in figure.cells} if (0 <= dist(f_borders[(dir_ + 2) % 4]) < maxes[dir_ % 2]) else set()
-    # validation:
-    if len(figure.cells) != len(new_cells) or new_cells.intersection(visited):
-        # empty set for the case of invalid move:
-        return ()
-    unique_fold_counter += 1
-    f_copy = figure.copy()
-    f_copy.add_cells(new_cells, powers, i_max)
-    f_copy.move(dir_)
-    # print(f'{f_copy.hash = }')
-    return f_copy, new_cells
-
-
 def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) -> dict:
     global counter, good_positions
     counter += 1
@@ -238,7 +252,7 @@ def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], b
             figures[fig.size] += [fig]
             for dir_ in range(4):
                 # tries to fold the figure in the direction chosen:
-                if info := fold(fig, visited, powers, j_max, i_max, dir_):
+                if info := fig.fold(visited, powers, j_max, i_max, dir_):
                     fig_, new_cells = info
                     # recursive call:
                     rec_fig_seeker(rem_cells - len(new_cells), fig_, visited, board, powers, j_max, i_max,
@@ -274,10 +288,26 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
     return None
 
 
+# colour printing/returning and colour reset methods:
+def colour_print(char, colour):
+    print((BOLD + colour.format(char) + END), end=' ')
+
+
+def colour_str(char, colour):
+    return (BOLD + colour + END).format(char)
+
+
+def colour_str_inv(char, colour):
+    return char + (BOLD + colour).format('')
+
+
 def print_board(board, shift: int = 0):
+    i_max = len(board[0])
     print(f'Board: ')
+    print(f' ' + f'-' * i_max)
     for row_ in board:
         print(f'|{" " * shift}{row_}|')
+    print(f' ' + f'-' * i_max)
 
 
 def print_fig(fig: Figure, board: list[list[str]], j_max: int, i_max: int):
@@ -292,13 +322,14 @@ def print_fig(fig: Figure, board: list[list[str]], j_max: int, i_max: int):
 
 
 def print_figures(figures: list[Figure], board: list[list[str]], j_max: int, i_max: int):
+    colour_dict = {fig.name: COLOURS[i] for i, fig in enumerate(figures)}
     for fig in figures:
         for j, i in fig.cells:
             board[j][i] = fig.name
     print(f'result board: ')
     print(f' ' + f'-' * i_max)
     for row in board:
-        string_ = ''.join(row)
+        string_ = ''.join((ch if ch == ' ' else colour_str(ch, colour_dict[ch])) for ch in row)
         print(f'|', end='')
         print(f'{string_}', end='')
         print(f'|')
@@ -475,8 +506,35 @@ s_none = tuple(s for s in s_none.split('\n') if s)  # 36 366 98 989 98989 LL
 s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C \n L   O    \n          '
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
+s_hell = (
+    'X X                     ',
+    ' X                      ',
+    'X X                     ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                        ',
+    '                      Y ',
+    '                     Y Y',
+    '                      Y ',
+)
+
 start = time.time_ns()
-print(f'moves: {solver(s_giga)}')
+print(f'moves: {solver(s_super)}')
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
@@ -498,6 +556,7 @@ print(f'{rec_counter = }')
 print(f'rec figs time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
 print(f'poss ways time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
 print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
+print(f'algo section time elapsed: {(t4 - t1) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 #
 # print(f'sizes length: {len(f_sizes)}')
@@ -510,7 +569,6 @@ print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
 # 295220129939960414271
 # 2804589813513781821503
-
 
 # class F:
 #     def __init__(self, val: int):

@@ -37,7 +37,7 @@ def rec_tree_builder(starting_x, starting_y, line_length, line_width, prev_angle
             rec_tree_builder(new_x, new_y, line_length // k, line_width, prev_angle - 2 * delta_angle, delta_angle)
 
 
-rec_tree_builder(960, 0, 256, 2, 0, math.pi * 1.5 * 2 * 15 / 180)
+rec_tree_builder(960, 0, 256, 2, 0, math.pi * 1.25 * 2 * 15 / 180)
 
 
 # Finishing rendering and showing the result:
