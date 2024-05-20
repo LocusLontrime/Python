@@ -49,7 +49,7 @@ class Figure:
         self._ind = ind
         self._moves = []
 
-    def add_cell(self, j: int, i: int):
+    def add_cell(self, j: int, i: int) -> None:
         """appends a cell to the list"""
         self.cells |= {(j, i)}
 
@@ -65,10 +65,10 @@ class Figure:
              dir_: int) -> tuple:
         """tries to fold the figure in the direction chosen and returns a copy of the figure folded and new cells
          if possible and empty tuple otherwise"""
-        def dist(x):
+        def dist(x: int) -> int:
             return 2 * self.f_borders[dir_] - x + (1 if dir_ < 2 else -1)
 
-        def cyclic_shift_left(arr_, delta: int) -> list:
+        def cyclic_shift_left(arr_: tuple | list, delta: int) -> tuple | list:
             return arr_[delta:] + arr_[:delta]
 
         # print(f'folding figure {figure.name} in the dir of {direction}')
@@ -81,15 +81,17 @@ class Figure:
             # empty set for the case of invalid move:
             return ()
         unique_fold_counter += 1
+        # creates a copy of the figure and adds new cells to it:
         f_copy = self.copy()
         f_copy.add_cells(new_cells, powers, i_max)
-        # setup:
+        # setup milestones:
         f_copy.__setattr__(Figure.attrs[dir_], new_extremum)                                 # 36 366 98 989 98989 LL
+        # makes a move:
         f_copy.move(dir_)
         # print(f'{f_copy.hash = }')
         return f_copy, new_cells
 
-    def move(self, dir_: int):
+    def move(self, dir_: int) -> None:
         """adds the current move to the figure's list of moves"""
         self._moves.append(f'{self.name}{dir_names[dir_]}')
 
@@ -109,7 +111,7 @@ class Figure:
     def f_borders(self):
         return [self.i_max, self.j_max, self.i_min, self.j_min]
 
-    def setup(self):
+    def setup(self) -> None:
         """redefines j_max, j_min, i_max, i_min"""
         extrema = [max, min]
         for q in range(4):
@@ -141,7 +143,7 @@ class Figure:
         return str(self)
 
 
-def solver(grid: tuple[str, ...]):
+def solver(grid: tuple[str, ...]) -> list[str] | None:
     """main method for the task solving"""  # 36 366 98 989 98989 LL
     global rec_counter, unique_fold_counter, counter, good_positions, already_hashed_figs_counter, t1, t2, t3, t4
     print(f'{grid = }')
@@ -219,7 +221,7 @@ def solver(grid: tuple[str, ...]):
     else:
         print(f'A SOLUTION EXISTS')
     # showing the result board:
-    print_figures(result, board, j_max, i_max)
+    print_figures(result, board, i_max)
     # returns the moves:
     return sum([f.moves for f in result], start=[])
 
@@ -242,7 +244,7 @@ def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) ->
     return res
 
 
-def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], board,
+def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], board: list[list[str]],
                    powers: list[int], j_max: int, i_max: int, hashes: set[int], figures: d[int, list[Figure]]):
     global already_hashed_figs_counter
     # print(f'{fig}')
@@ -265,8 +267,8 @@ def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], b
             already_hashed_figs_counter += 1
 
 
-def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], visited, board, res_dict, j_max, i_max,
-                  sizes, figs):
+def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], visited: set[tuple[int, int]],
+                  board: list[list[str]], res_dict: dict, j_max: int, i_max: int, sizes: list[int], figs: list[Figure]):
     global rec_counter
     rec_counter += 1
     if rec_counter % 100_000 == 0:
@@ -277,7 +279,7 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
         print(f'resulted figs: ')
         for f in figs:
             print(f'{f.name} -> {f.moves = }')
-            print_fig(f, board, j_max, i_max)
+            print_fig(f, j_max, i_max)
         return figs
     if ind < len(shapes):
         # res_dict, then shapes a bit faster than vice versa...
@@ -293,19 +295,19 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
 
 
 # colour printing/returning and colour reset methods:
-def colour_print(char, colour):
+def colour_print(char: str, colour: str):
     print((BOLD + colour.format(char) + END), end=' ')
 
 
-def colour_str(char, colour):
+def colour_str(char: str, colour: str):
     return (BOLD + colour + END).format(char)
 
 
-def colour_str_inv(char, colour):
+def colour_str_inv(char: str, colour: str):
     return char + (BOLD + colour).format('')
 
 
-def print_board(board, shift: int = 0):
+def print_board(board: tuple[str, ...], shift: int = 0):
     i_max = len(board[0])
     print(f'Board: ')
     print(f' ' + f'-' * i_max)
@@ -314,7 +316,7 @@ def print_board(board, shift: int = 0):
     print(f' ' + f'-' * i_max)
 
 
-def print_fig(fig: Figure, board: list[list[str]], j_max: int, i_max: int):
+def print_fig(fig: Figure, j_max: int, i_max: int):
     # print(f'fig -> {fig.name}')
     print(f'       ' + f'-' * i_max)
     for j in range(j_max):
@@ -325,7 +327,7 @@ def print_fig(fig: Figure, board: list[list[str]], j_max: int, i_max: int):
     print(f'       ' + f'-' * i_max)
 
 
-def print_figures(figures: list[Figure], board: list[list[str]], j_max: int, i_max: int):
+def print_figures(figures: list[Figure], board: list[list[str]], i_max: int):
     colour_dict = {fig.name: COLOURS[i] for i, fig in enumerate(figures)}
     for fig in figures:
         for j, i in fig.cells:
