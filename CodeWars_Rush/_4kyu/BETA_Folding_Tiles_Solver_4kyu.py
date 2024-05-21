@@ -89,7 +89,7 @@ class Figure:
         # makes a move:
         f_copy.move(dir_)
         # print(f'{f_copy.hash = }')
-        return f_copy, new_cells
+        return f_copy, len(new_cells)
 
     def move(self, dir_: int) -> None:
         """adds the current move to the figure's list of moves"""
@@ -219,6 +219,10 @@ def solver(grid: tuple[str, ...]) -> list[str] | None:
         print(f'NO SOLUTION...')
         return None
     else:
+        print(f'resulted figs: ')
+        for f in result:
+            print(f'{f.name} -> {f.moves = }')
+            print_fig(f, j_max, i_max)
         print(f'A SOLUTION EXISTS')
     # showing the result board:
     print_figures(result, board, i_max)
@@ -247,8 +251,6 @@ def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) ->
 def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], board: list[list[str]],
                    powers: list[int], j_max: int, i_max: int, hashes: set[int], figures: d[int, list[Figure]]):
     global already_hashed_figs_counter
-    # print(f'{fig}')
-    # print_fig(fig, board, j_max, i_max)
     if rem_cells >= 0:
         # if a figure has not been already hashed:
         if fig.hash not in hashes:
@@ -259,10 +261,9 @@ def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], b
             for dir_ in range(4):
                 # tries to fold the figure in the direction chosen:
                 if info := fig.fold(visited, powers, j_max, i_max, dir_):
-                    fig_, new_cells = info
+                    fig_, n = info
                     # recursive call:
-                    rec_fig_seeker(rem_cells - len(new_cells), fig_, visited, board, powers, j_max, i_max,
-                                   hashes, figures)
+                    rec_fig_seeker(rem_cells - n, fig_, visited, board, powers, j_max, i_max, hashes, figures)
         else:
             already_hashed_figs_counter += 1
 
@@ -271,20 +272,12 @@ def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], 
                   board: list[list[str]], res_dict: dict, j_max: int, i_max: int, sizes: list[int], figs: list[Figure]):
     global rec_counter
     rec_counter += 1
-    if rec_counter % 100_000 == 0:
-        print(f'{rec_counter = }')
-    # print(f'{rem_cells = } | {ind = }')
     # base case:
     if rem_cells == 0:
-        print(f'resulted figs: ')
-        for f in figs:
-            print(f'{f.name} -> {f.moves = }')
-            print_fig(f, j_max, i_max)
         return figs
     if ind < len(shapes):
         # res_dict, then shapes a bit faster than vice versa...
-        for shape_size in sorted(res_dict.keys(),
-                                 reverse=True):  # we can omit sorting, but dict can violate the order of key-sizes...
+        for shape_size in sorted(res_dict.keys(), reverse=True):  # sorting, dict can violate the order of key-sizes...
             for shape in shapes[ind][shape_size]:
                 if not shape.cells.intersection(visited):
                     interim_res = rec_connector(rem_cells - shape.size, ind + 1, shapes, visited | shape.cells,
