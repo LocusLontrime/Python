@@ -63,8 +63,8 @@ class Figure:
 
     def fold(self, visited: set[tuple[int, int]], powers: list[int], j_max: int, i_max: int,
              dir_: int) -> tuple:
-        """tries to fold the figure in the direction chosen and returns a copy of the figure folded and new cells
-         if possible and empty tuple otherwise"""
+        """tries to fold the figure in the direction chosen and returns a copy of the figure folded and the length of
+        new_cells set if possible or empty tuple otherwise"""
         def dist(x: int) -> int:
             return 2 * self.f_borders[dir_] - x + (1 if dir_ < 2 else -1)
 
@@ -134,6 +134,10 @@ class Figure:
         f_copied._moves += self._moves
         # returns the copy made:
         return f_copied
+
+    # for compatibility with hashed structures like set and dict...
+    def __hash__(self):
+        return self.hash
 
     # for testing and representing only:
     def __str__(self):  # 36 366 98 989 98989 LL
@@ -223,6 +227,7 @@ def solver(grid: tuple[str, ...]) -> list[str] | None:
         for f in result:
             print(f'{f.name} -> {f.moves = }')
             print_fig(f, j_max, i_max)
+            print(f"... fig's hash: {hash(f)}")
         print(f'A SOLUTION EXISTS')
     # showing the result board:
     print_figures(result, board, i_max)
@@ -557,6 +562,8 @@ print(f'poss ways time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
 print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
 print(f'algo section time elapsed: {(t4 - t1) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
+
+print(f'info: {help(Figure)}')
 #
 # print(f'sizes length: {len(f_sizes)}')
 
