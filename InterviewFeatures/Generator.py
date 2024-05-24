@@ -6,7 +6,7 @@ def flatten(seq: Iterable):
     for element in seq:
         if isinstance(element, Iterable):
             yield from flatten(element)
-        else:
+        else:                                                                         # 36 366 98 989 98989 LL
             yield element
 
 

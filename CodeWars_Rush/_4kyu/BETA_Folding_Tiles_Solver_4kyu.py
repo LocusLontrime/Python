@@ -1,6 +1,9 @@
 # accepted on codewars.com
+import functools
 import time
 from collections import defaultdict as d
+
+is_debug = True
 walk = ((0, 1), (1, 0), (0, -1), (-1, 0))
 dir_names = ['R', 'D', 'L', 'U']
 
@@ -25,15 +28,63 @@ YELLOW = "\033[33m{}"
 BROWN = "\033[34m{}"
 PURPLE = "\033[35m{}"
 CYAN = "\033[36m{}"
-LIGHT_GREEN = "\033[1;32m{}"
 X = "\033[37m{}"
 END = "\033[0m"
 COLOURS = [BLACK, RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, X]
 
 
+# non_recursive timer decorator:
+def timer(func):
+    @functools.wraps(func)
+    def _wrapper(*args, **kwargs):
+        start_ = time.perf_counter()
+        f = func(*args, **kwargs)
+        runtime = round(1000 * (time.perf_counter() - start_), 2)
+        # print(f'{_wrapper.__name__} time elapsed: {runtime} milliseconds')
+        _wrapper.time_elapsed = runtime
+        return f
+
+    return _wrapper
+
+
+# depth and calls for recursive function:
+def counted(func):
+    def reset():
+        _wrapper.rec_depth = 0
+        _wrapper.rec_calls = 0
+
+    @functools.wraps(func)
+    def _wrapper(*args, **kwargs):
+        nonlocal _depth
+        # depth and calls incrementation:
+        _depth += 1
+        _wrapper.rec_calls += 1
+        # max depth defining:
+        _wrapper.rec_depth = max(_wrapper.rec_depth, _depth)
+        f = func(*args, **kwargs)
+        # depth backtracking:
+        _depth -= 1
+        return f
+
+    # starts a wrapper:
+    _depth = 0
+    reset()
+    return _wrapper if is_debug else func
+
+
+def get_rec_counter(func) -> tuple[int, int] | str:
+    return (func.rec_calls, func.rec_depth) if 'rec_calls' in func.__dict__.keys() else '(->not in debug mode<-)'
+
+
 class Figure:
     """class representing a current figure state"""
     attrs = ['i_max', 'j_max', 'i_min', 'j_min']
+
+    # a bit of optimisation...
+    __slots__ = ['name', '_ind', 'j_max', 'j_min', 'i_max', 'i_min', '_hash_', 'cells', '_moves']
+
+    # for copy section:
+    _copyable = __slots__[2:-2]
 
     def __init__(self, symbol: str, ind: int):
         # main pars:
@@ -44,7 +95,7 @@ class Figure:
         self.j_min = None
         self.i_max = None
         self.i_min = None
-        # auxiliary pars:
+        # auxiliary pars:                                                             # 36 366 98 989 98989 LL
         self._hash_ = 0
         self._ind = ind
         self._moves = []
@@ -66,7 +117,7 @@ class Figure:
         """tries to fold the figure in the direction chosen and returns a copy of the figure folded and the length of
         new_cells set if possible or empty tuple otherwise"""
         def dist(x: int) -> int:
-            return 2 * self.f_borders[dir_] - x + (1 if dir_ < 2 else -1)
+            return 2 * self.f_borders[dir_] - x + (1 if dir_ < 2 else -1)             # 36 366 98 989 98989 LL
 
         def cyclic_shift_left(arr_: tuple | list, delta: int) -> tuple | list:
             return arr_[delta:] + arr_[:delta]
@@ -122,18 +173,18 @@ class Figure:
         """makes a deep copy of the current Figure state"""
         # creates a new figure at first:
         f_copied = Figure(self.name, self._ind)
-        # copies the figure's cells:
+        # copies usual attrs:
+        self.smart_core(f_copied, Figure._copyable)
+        # a bit subtler copying:
         f_copied.cells |= self.cells
-        # then copies coords milestones:
-        f_copied.j_max = self.j_max
-        f_copied.j_min = self.j_min
-        f_copied.i_max = self.i_max
-        f_copied.i_min = self.i_min
-        # finally, copies auxiliary pars:
-        f_copied._hash_ = self._hash_
         f_copied._moves += self._moves
         # returns the copy made:
         return f_copied
+
+    def smart_core(self, other: 'Figure', attributes: list[str]):
+        """core for copying and restoring"""
+        for attribute in attributes:
+            setattr(other, attribute, getattr(self, attribute))
 
     # for compatibility with hashed structures like set and dict...
     def __hash__(self):
@@ -235,9 +286,9 @@ def solver(grid: tuple[str, ...]) -> list[str] | None:
     return sum([f.moves for f in result], start=[])
 
 
+@counted
 def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) -> dict:
-    global counter, good_positions
-    counter += 1
+    global good_positions
     res = {}
     # border case:
     if cells_rem == 0 and fig_ind == len(figs_sizes):
@@ -253,6 +304,7 @@ def rec_seeker(cells_rem: int, figs_sizes: list[list[int]], fig_ind: int = 0) ->
     return res
 
 
+@counted
 def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], board: list[list[str]],
                    powers: list[int], j_max: int, i_max: int, hashes: set[int], figures: d[int, list[Figure]]):
     global already_hashed_figs_counter
@@ -273,10 +325,9 @@ def rec_fig_seeker(rem_cells: int, fig: Figure, visited: set[tuple[int, int]], b
             already_hashed_figs_counter += 1
 
 
+@counted
 def rec_connector(rem_cells: int, ind: int, shapes: list[d[int, list[Figure]]], visited: set[tuple[int, int]],
                   board: list[list[str]], res_dict: dict, j_max: int, i_max: int, sizes: list[int], figs: list[Figure]):
-    global rec_counter
-    rec_counter += 1
     # base case:
     if rem_cells == 0:
         return figs
@@ -552,18 +603,21 @@ finish = time.time_ns()
 # # f_sizes = rec_seeker(120 - 9, [1, 4, 2, 1, 1])
 # f_sizes = rec_seeker(80 - 5, [1, 1, 1, 1, 1])
 # finish = time.time_ns()
-print(f'{counter = }')
+print(f'rec seeker counter/depth: {get_rec_counter(rec_seeker)}')
 print(f'{good_positions = }')
+print(f'rec fig seeker counter/depth: {get_rec_counter(rec_fig_seeker)}')
 print(f'{unique_fold_counter = }')  # 36 366 98 989 98989 LL
 print(f'{already_hashed_figs_counter = }')
-print(f'{rec_counter = }')
+print(f'rec connector counter/depth {get_rec_counter(rec_connector)}')
 print(f'rec figs time elapsed: {(t2 - t1) // 10 ** 6} milliseconds')
 print(f'poss ways time elapsed: {(t3 - t2) // 10 ** 6} milliseconds')
 print(f'rec connecting time elapsed: {(t4 - t3) // 10 ** 6} milliseconds')
 print(f'algo section time elapsed: {(t4 - t1) // 10 ** 6} milliseconds')
 print(f'time elapsed: {(finish - start) // 10 ** 6} milliseconds')
 
-print(f'info: {help(Figure)}')
+# print(f'rec_counter_: {rec_seeker.rec_counter}')
+
+# print(f'info: {help(Figure)}')
 #
 # print(f'sizes length: {len(f_sizes)}')
 
@@ -595,3 +649,50 @@ print(f'info: {help(Figure)}')
 
 # TODO: 1. decide whether figure hashing still needed... verdict: needed +
 # TODO: 2. optimise poss ways and rec connecting methods a bit...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
