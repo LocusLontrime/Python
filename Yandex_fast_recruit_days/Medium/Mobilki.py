@@ -91,7 +91,7 @@ class BIST:
                 # if the node has two children, then we locate the centred successor
                 # at the place of the current node...
                 temp = root.right_node.get_min_node()
-                root.a = temp.a
+                root.a = temp.f_set
                 root.b = temp.b
                 root.id = temp.id
                 # removing the inorder-successor:
