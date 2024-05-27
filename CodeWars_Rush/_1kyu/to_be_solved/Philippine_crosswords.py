@@ -425,13 +425,13 @@ mega_board = [
     [0, 5, 7, 0, 0, 3, 0, 3, 0, 5, 3, 0, 3, 4, 0, 0, 4, 0, 3, 0, 6, 4, 4, 0, 3, 13, 0, 0, 3, 4, 0, 0, 2, 2, 5, 3, 3, 0,
      2, 2, 3, 0, 3, 3, 0, 3, 1]
 ]
-# data = get_board_from_site(56076)
+data = get_board_from_site()
 start_ = time.time_ns()
-# solve(*data)  # 56076, 55825, 54510 ?, 54891, 55032, 54524 ?, 54527, 335091, 329092, 55980, 56987, 55863, 56898, 56834, 55910, 55846
+solve(*data)  # 56076, 55825, 54510 ?, 54891, 55032, 54524 ?, 54527, 335091, 329092, 55980, 56987, 55863, 56898, 56834, 55910, 55846
 # solve(mega_board, 45, 47)
 # solve(parse_board(board_), 10, 25)
 # solve(mini_board, 3, 3, 2)
-solve(cute_board, 5, 5, 2)
+# solve(cute_board, 5, 5, 2)
 # solve(no_path_board, 4, 4, 2)
 finish_ = time.time_ns()
 print(f'time elapsed str: {(finish_ - start_) // 10 ** 6} milliseconds')

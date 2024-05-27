@@ -3,7 +3,7 @@ import functools
 import time
 from collections import defaultdict as d
 
-is_debug = True
+is_debug = False
 
 # styles:
 BOLD = "\033[1m"
@@ -299,17 +299,20 @@ class Board:
     @counted
     def rec_tree_cutter(self, cells_rem: int, fig_ind: int = 0) -> dict:
         res = {}
-        # border case:
-        if cells_rem == 0 and fig_ind == len(self.figs_sizes):
-            self.good_positions += 1
-            return {0: True}
+        # if cells_rem == 0 and fig_ind == len(self.figs_sizes):
+        #     self.good_positions += 1
+        #     return {0: True}
         # if we still are not out of bounds:
         if fig_ind < len(self.figs_sizes):
             for size_ in self.figs_sizes[fig_ind]:
-                if cells_rem - size_ >= 0:
+                if cells_rem - size_ > 0:
                     # next fig index recursive call:
                     if dict_ := self.rec_tree_cutter(cells_rem - size_, fig_ind + 1):
                         res[size_] = dict_
+                # border case (slightly faster than upper one variation):
+                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
+                    self.good_positions += 1
+                    res[size_] = {0: True}
         return res
 
     @counted
@@ -342,10 +345,8 @@ class Board:
             # res_dict, then shapes a bit faster than vice versa...
             for shape_size in sorted(res_dict.keys(), reverse=True):  # dict can violate the order of key-sizes...
                 for shape in self.shapes[ind][shape_size]:
-                    if not shape.cells.intersection(visited):
-                        interim_res = self.rec_shapes_connector(rem_cells - shape.size, ind + 1, visited | shape.cells,
-                                                                res_dict[shape_size], figs + [shape])
-                        if interim_res is not None:
+                    if all(cell not in visited for cell in shape.cells):  # all instead of sets intersection -> 2 times faster...
+                        if interim_res := self.rec_shapes_connector(rem_cells - shape.size, ind + 1, visited | shape.cells, res_dict[shape_size], figs + [shape]):
                             return interim_res
         return None
 
