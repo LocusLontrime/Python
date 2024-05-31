@@ -298,12 +298,12 @@ class Board:
     # recursive part:
     @counted
     def rec_tree_cutter(self, cells_rem: int, fig_ind: int = 0) -> dict:
-        res = {}
         # if cells_rem == 0 and fig_ind == len(self.figs_sizes):
         #     self.good_positions += 1
         #     return {0: True}
         # if we still are not out of bounds:
         if fig_ind < len(self.figs_sizes):
+            res = {}
             for size_ in self.figs_sizes[fig_ind]:
                 if cells_rem - size_ > 0:
                     # next fig index recursive call:
@@ -313,7 +313,7 @@ class Board:
                 elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
                     self.good_positions += 1
                     res[size_] = {0: True}
-        return res
+            return res
 
     @counted
     def rec_fig_seeker(self, rem_cells: int, fig: Figure, visited: set[tuple[int, int]], hashes: set[int],
@@ -345,10 +345,12 @@ class Board:
             # res_dict, then shapes a bit faster than vice versa...
             for shape_size in sorted(res_dict.keys(), reverse=True):  # dict can violate the order of key-sizes...
                 for shape in self.shapes[ind][shape_size]:
-                    if all(cell not in visited for cell in shape.cells):  # all instead of sets intersection -> 2 times faster...
-                        if interim_res := self.rec_shapes_connector(rem_cells - shape.size, ind + 1, visited | shape.cells, res_dict[shape_size], figs + [shape]):
+                    if all(cell not in visited for cell in
+                           shape.cells):  # all instead of sets intersection -> 2 times faster...
+                        if interim_res := self.rec_shapes_connector(rem_cells - shape.size, ind + 1,
+                                                                    visited | shape.cells, res_dict[shape_size],
+                                                                    figs + [shape]):
                             return interim_res
-        return None
 
     def print(self):
         print(f'rec tree cutter counter/depth: {get_rec_counter(self.rec_tree_cutter)}')
@@ -430,6 +432,10 @@ def print_res_dict(res_dict: dict):
             print(f' ' * shift + f'{res_dict_}')
 
     print_res_dict_(res_dict)
+
+
+def find_initial_figs_placement(j_max: int, i_max: int, pieces_q: int) -> tuple[str, ...]:
+    ...
 
 
 s_ = (
@@ -516,7 +522,7 @@ s_mega_ = (
     '  A         ',
 )
 
-s_super = (
+s_super = (  # 16 * 16 [8 pieces]
     '       X    JJ  ',
     '            JJ  ',
     'FFF             ',
@@ -587,7 +593,7 @@ s_none = tuple(s for s in s_none.split('\n') if s)  # 36 366 98 989 98989 LL
 s_smth = '          \n Q    M   \nKQ    M   \nKK        \n          \n        C \n L   O    \n          '
 s_smth = tuple(s for s in s_smth.split('\n') if s)
 
-s_hell = (
+s_hell = (  # 24 * 24 [4 pieces]
     'X X                   W ',
     ' X                   W W',
     'X X                   W ',
@@ -612,6 +618,41 @@ s_hell = (
     'Z Z                   Y ',
     ' Z                   Y Y',
     'Z Z                   Y ',
+)
+
+s_hells = (  # 32 * 32 [8 pieces]
+    ' X                             W',
+    'X                             W ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    'F                             R ',
+    ' F                             R',
+    ' F                              ',
+    'F                               ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                              S ',
+    '                               S',
+    ' Q                             S',
+    'Q                             S ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    'Z                             Y ',
+    ' Z                             Y',
 )
 
 print(f'moves: {solver(s_super)}')
@@ -661,4 +702,7 @@ print(f'moves: {solver(s_super)}')
 # print(f'{k_}')
 
 # TODO: 1. decide whether figure hashing still needed... verdict: needed +
-# TODO: 2. optimise poss ways and rec connecting methods a bit...
+# TODO: 2. optimise poss ways and rec connecting methods a bit... + (addition try to use all() instead of sets intersection in rec connector) +
+# TODO: 3. implement res dict building for recursive tree cutting +
+# TODO: 4. class Board for OOP design +
+# TODO: 5. test section via decorators... + (debug flag) +
