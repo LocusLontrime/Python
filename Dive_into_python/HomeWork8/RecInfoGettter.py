@@ -64,8 +64,15 @@ def rec_info_getter(path: str):
     return general_size_
 
 
-s = get_info('D:\\Хранилище')
-print(f'Gen size = {s} bytes')
+def to_giga_bytes(bytes_q: int) -> int:
+    return bytes_q // 1024 ** 3
+
+
+path1 = 'D:\\Хранилище'
+path11 = 'D:\\python\\zalizniak-2010-master\\zalizniak-2010-master\\dictionary'
+
+s = get_info(path11)
+print(f'Gen size = {to_giga_bytes(s)} GIGA bytes')
 
 
 

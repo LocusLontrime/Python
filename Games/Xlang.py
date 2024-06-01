@@ -1,29 +1,34 @@
-# éàçûãã ïàäîíêàôô (ïðàñòèòè (íåò) )
+# Ð¹Ð°Ð·Ñ‹Ð³Ð³ Ð¿Ð°Ð´Ð¾Ð½ÐºÐ°Ñ„Ñ„ (Ð¿Ñ€Ð°ÑÑ‚Ð¸Ñ‚Ð¸ (Ð½ÐµÑ‚) )
+# -*- coding: utf-8 -*-
+import csv
+import os
+import json
+import pickle
 
 
 doubleable = []
 
 # vowels:
-prime_vowels = ['à', 'è', 'î', 'ó', 'û', 'ý']
-vowels_pairs = {'à': 'î', 'î': 'à', 'è': 'å', 'å': 'è'}
-composite_vowels = {'å': 'éý', '¸': 'éî', 'þ': 'éó', 'ÿ': 'éà'}
+prime_vowels = ['Ð°', 'Ð¸', 'Ð¾', 'Ñƒ', 'Ñ‹', 'Ñ']
+vowels_pairs = {'Ð°': 'Ð¾', 'Ð¾': 'Ð°', 'Ð¸': 'Ðµ', 'Ðµ': 'Ð¸'}
+composite_vowels = {'Ðµ': 'Ð¹Ñ', 'Ñ‘': 'Ð¹Ð¾', 'ÑŽ': 'Ð¹Ñƒ', 'Ñ': 'Ð¹Ð°'}
 
 # consonants:
-voiced_consonants = {'á', 'â', 'ã', 'ä', 'æ', 'ç', 'ë', 'ì', 'í', 'ð'}  # [á], [â], [ã], [ä], [æ], [ç], [ë], [ì], [í], [ð]
-voiceless_consonants = {'ê', 'ï', 'c', 'ò', 'ô', 'x', 'ö', '÷', 'ø', 'ù'}  # [ê], [ï], [ñ], [ò], [ô], [õ], [ö], [÷], [ø], [ù]
+voiced_consonants = {'Ð±', 'Ð²', 'Ð³', 'Ð´', 'Ð¶', 'Ð·', 'Ð»', 'Ð¼', 'Ð½', 'Ñ€'}  # [Ð±], [Ð²], [Ð³], [Ð´], [Ð¶], [Ð·], [Ð»], [Ð¼], [Ð½], [Ñ€]
+voiceless_consonants = {'Ðº', 'Ð¿', 'c', 'Ñ‚', 'Ñ„', 'x', 'Ñ†', 'Ñ‡', 'Ñˆ', 'Ñ‰'}  # [Ðº], [Ð¿], [Ñ], [Ñ‚], [Ñ„], [Ñ…], [Ñ†], [Ñ‡], [Ñˆ], [Ñ‰]
 consonants_pairs = {
-    'ã': 'ê', 'á': 'ï', 'â': 'ô', 'ä': 'ò', 'ç': 'c', 'æ': 'ø',
-    'ê': 'ã', 'ï': 'á', 'ô': 'â', 'ò': 'ä', 'c': 'ç', 'ø': 'æ'
+    'Ð³': 'Ðº', 'Ð±': 'Ð¿', 'Ð²': 'Ñ„', 'Ð´': 'Ñ‚', 'Ð·': 'c', 'Ð¶': 'Ñˆ',
+    'Ðº': 'Ð³', 'Ð¿': 'Ð±', 'Ñ„': 'Ð²', 'Ñ‚': 'Ð´', 'c': 'Ð·', 'Ñˆ': 'Ð¶'
 }
 
 # doubling:
-doubleables = {'ô', 'ã', 'ö'}
+doubleables = {'Ñ„', 'Ð³', 'Ñ†'}
 
 # replacements:
-replaceables = {'òñ': 'ö', 'ö': 'òñ'}
+replaceables = {'Ñ‚Ñ': 'Ñ†', 'Ñ†': 'Ñ‚Ñ'}
 
 # omits:
-omittables = {'é'}
+omittables = {'Ð¹'}
 
 
 # TODO: words dictionary is badly needed...
@@ -42,7 +47,6 @@ omittables = {'é'}
 #
 
 
-
 class Word:
     def __init__(self):
         ...
@@ -54,7 +58,50 @@ class Mutation:
 
 
 def translate(word: str) -> str:
-    ...
+    # dictionaries loading:
+    stress_dict = {}
+    path_ = 'D:\\python\\zalizniak-2010-master\\zalizniak-2010-master\\dictionary'
+    gen_size = rec_info_getter(path_)
+
+
+def rec_info_getter(path: str):
+    """"""
+    files_n_dirs = os.listdir(path)
+    print(f'files_n_dirs: {files_n_dirs}')
+    type_: str
+    general_size_ = 0
+
+    for file_or_dir in files_n_dirs:
+        file_or_dir_ = os.path.join(path, file_or_dir)
+        if os.path.isdir(file_or_dir_):
+            # recursion
+            size_ = rec_info_getter(file_or_dir_)
+            ...
+        elif os.path.isfile(file_or_dir_):
+            size_ = os.path.getsize(file_or_dir_)
+            ...
+        else:
+            try:
+                size_ = os.path.getsize(file_or_dir_)
+            except Exception:
+                size_ = 0
+                print(f'Congratulations, you found an unbeknown object in your OS!!!')
+
+        print(f'size: {size_}')
+
+        general_size_ += size_
+
+    return general_size_
+
+
+def to_giga_bytes(bytes_q: int) -> int:
+    return bytes_q // 1024 ** 3
+
+
+path1 = 'D:\\Ð¥Ñ€Ð°Ð½Ð¸Ð»Ð¸Ñ‰Ðµ'
+
+# s = get_info(path98)
+# print(f'Gen size = {to_giga_bytes(s)} GIGA bytes')
 
 
 
