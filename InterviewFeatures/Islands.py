@@ -13,7 +13,7 @@ walk = ((0, 1), (1, 0), (0, -1), (-1, 0))
 
 def find_islands(islands_map: list[str]):
     islands_map_ = [[_ for _ in row] for row in islands_map]
-    # print(f'initial islands map: ')
+    print(f'initial islands map: ')
     # print_map(islands_map_)
     counter = 0
     hashed_islands = set()
