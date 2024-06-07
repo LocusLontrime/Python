@@ -1,5 +1,6 @@
 # accepted
 import random
+import time
 
 
 def solve(nums: list[int], k: int) -> tuple:
@@ -7,8 +8,9 @@ def solve(nums: list[int], k: int) -> tuple:
     result = ()
     if not nums or len(nums) < k:
         return result
-    # Defining precision for the binary search result
-    precision = 1e-5
+    # Defining precision for the binary search result (defined by nums' elements quantity...):
+    precision = 10 ** -len(str(len(nums)))  # 1e-5
+    print(f'{precision = }')
     n = len(nums)
     # Setting the lower and upper bounds of binary search to the min and max of nums
     left, right = min(nums), max(nums)
@@ -61,9 +63,12 @@ def can_be_average(nums: list[int], v: float, k: int) -> tuple:
     return res
 
 
-arr_great, k_great = [random.randint(0, 1) for _ in range(50_000)], 36_665
+arr_great, k_great = [random.randint(0, 1) for _ in range(1_000_000)], 366_665
 
+start_ = time.perf_counter()
 print(f'avg, rpi, max_len: {solve(arr_great, k_great)}')
+runtime = round(1000 * (time.perf_counter() - start_), 2)
+print(f'time elapsed: {runtime} milliseconds')
 # print(f'res: {longest_sub(arr_xxx[::], 95, 0.8, 63)}')
 
 # print(f'{sum(arr_xxx[22: 22 + 70]) / 70}')
