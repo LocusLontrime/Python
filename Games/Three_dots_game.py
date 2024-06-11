@@ -246,7 +246,8 @@ class Triplet:
         new_dots = list(self.move_dot(self.dots[i], game, move) for i in range(len(self.dots)))
         collision_counter = 0
         for new_dot in new_dots:
-            if new_dot in self.dots: collision_counter += 1
+            if new_dot in self.dots:
+                collision_counter += 1
         if collision_counter < len(self.dots):
             for j in range(len(self.dots) - 1):
                 for i in range(j + 1, len(self.dots)):

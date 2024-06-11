@@ -3,6 +3,8 @@ import functools
 import time
 from collections import defaultdict as d
 
+# need to be arcaded!!!
+
 is_debug = False
 
 # styles:
@@ -16,8 +18,9 @@ BROWN = "\033[34m{}"
 PURPLE = "\033[35m{}"
 CYAN = "\033[36m{}"
 X = "\033[37m{}"
+Z = "\033[38m{}"
 END = "\033[0m"
-COLOURS = [BLACK, RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, X]
+COLOURS = [BLACK, RED, GREEN, YELLOW, BROWN, PURPLE, CYAN, X, Z]
 
 
 # non_recursive timer decorator:
@@ -728,7 +731,109 @@ s_hell_ = (  # 32 * 32 [8 pieces]
     'Z                               ',
 )
 
-print(f'moves: {solver(s_hell_)}')  # 36 366 98 989 98989 LL
+s_super_hell_ = (  # 64 * 64 [9 pieces]
+    'X                                                              W',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                              RR',
+    '                                                              RR',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                S                               ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    'Q                                                               ',
+    'Q                                                               ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                J                               ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    'U                                                               ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    '                                                                ',
+    'Z                                                               ',
+    '                                                               Y',
+)
+
+s_super_hellish_hell_ = (  # 32 * 256 [9 pieces]
+    'X                                                                                                                                                                                                                                                              W',
+    '                                                                                                                                                                                                                                                               W',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    ' F                                                                                                                                                                                                                                                            RR',
+    '                                                                                                                                                                                                                                                              RR',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                               Q                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                               S',
+    'U                                                                                                                                                                                                                                                               ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                                ',
+    '                                                                                                                                                                                                                                                               Y',
+    'Z                                                                                                                                                                                                                                                               ',
+)
+
+print(f'moves: {solver(s_super)}')  # 36 366 98 989 98989 LL
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
