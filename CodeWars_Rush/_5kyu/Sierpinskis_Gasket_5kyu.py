@@ -18,3 +18,6 @@ print(f'Sierpinski({k})\n{sierpinski(k)}')
 
 
 
+
+
+

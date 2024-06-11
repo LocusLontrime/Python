@@ -259,7 +259,8 @@ class Board:
             figures_ = d(list)
             self.rec_fig_seeker(self.j_max * self.i_max - n, fig, self.visited - fig.cells, set(), figures_)
             self.shapes.append(figures_)
-            self.figs_sizes += [[_ for _ in figures_.keys()]]
+            # reversed sorting for fast rec seeking and consequently performance:
+            self.figs_sizes += [[_ for _ in sorted(figures_.keys(), reverse=True)]]
             # print(f'{fig.name} shapes quantity: {len(figures_)}')
             # for k, v in figures_.items():
             #     print(f'->shapes of a size {k}')
@@ -269,13 +270,14 @@ class Board:
         self.t2 = time.time_ns()
         print(f'possible {self.figs_sizes = }')
         # check for the possible sizes combs:
-        self.res_dict = self.rec_tree_cutter(self.j_max * self.i_max)
-        print(f'{self.res_dict = }')
+        # self.res_dict = self.rec_tree_cutter(self.j_max * self.i_max)
+        # print(f'{self.res_dict = }')
+        result = self.new_rec_tree_cutter(self.j_max * self.i_max, [])
         self.t3 = time.time_ns()
         # now we should connect shapes with space constraints to the possible full placement:
-        print(f'rec connecting:')
-        print(f'{len(self.shapes) = }')
-        result = self.rec_shapes_connector(self.j_max * self.i_max, 0, set(), self.res_dict, [])
+        # print(f'rec connecting:')
+        # print(f'{len(self.shapes) = }')
+        # result = self.rec_shapes_connector(self.j_max * self.i_max, 0, set(), self.res_dict, [])
         self.t4 = time.time_ns()
         # result processing:
         if result is None:
@@ -298,6 +300,7 @@ class Board:
     # recursive part:
     @counted
     def rec_tree_cutter(self, cells_rem: int, fig_ind: int = 0) -> dict:
+        # TODO: outdated by new_rec_tree_cutter...
         # if cells_rem == 0 and fig_ind == len(self.figs_sizes):
         #     self.good_positions += 1
         #     return {0: True}
@@ -314,6 +317,21 @@ class Board:
                     self.good_positions += 1
                     res[size_] = {0: True}
             return res
+
+    @counted
+    def new_rec_tree_cutter(self, cells_rem: int, sizes: list[int], fig_ind: int = 0) -> list[Figure] | None:
+        if fig_ind < len(self.figs_sizes):
+            for size_ in self.figs_sizes[fig_ind]:
+                # print(f'{self.figs_sizes[fig_ind] = }')
+                if cells_rem - size_ > 0:
+                    # next fig index recursive call:
+                    if res := self.new_rec_tree_cutter(cells_rem - size_, sizes + [size_], fig_ind + 1):
+                        return res
+                # border case (slightly faster than upper one variation):
+                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
+                    self.good_positions += 1
+                    if figs := self.mini_rec_shapes_connector(self.j_max * self.i_max, 0, set(), sizes + [size_], []):
+                        return figs
 
     @counted
     def rec_fig_seeker(self, rem_cells: int, fig: Figure, visited: set[tuple[int, int]], hashes: set[int],
@@ -338,6 +356,7 @@ class Board:
     @counted
     def rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], res_dict: dict,
                              figs: list[Figure]) -> list[Figure] | None:
+        # TODO: outdated by mini_rec_shapes_connector...
         # base case:
         if rem_cells == 0:
             return figs
@@ -351,6 +370,21 @@ class Board:
                                                                     visited | shape.cells, res_dict[shape_size],
                                                                     figs + [shape]):
                             return interim_res
+
+    @counted
+    def mini_rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], sizes: list[int],
+                                  figs: list[Figure]) -> list[Figure] | None:
+        # base case:
+        if rem_cells == 0:
+            return figs
+        if ind < len(sizes):
+            for shape in self.shapes[ind][sizes[ind]]:
+                # all instead of sets intersection -> 2 times faster...
+                if all(cell not in visited for cell in shape.cells):
+                    if interim_res := self.mini_rec_shapes_connector(rem_cells - sizes[ind], ind + 1,
+                                                                     visited | shape.cells, sizes,
+                                                                     figs + [shape]):
+                        return interim_res
 
     def print(self):
         print(f'rec tree cutter counter/depth: {get_rec_counter(self.rec_tree_cutter)}')
@@ -655,7 +689,42 @@ s_hells = (  # 32 * 32 [8 pieces]
     ' Z                             Y',
 )
 
-print(f'moves: {solver(s_hells)}')                                                    # 36 366 98 989 98989 LL
+s_hell_ = (  # 32 * 32 [8 pieces]
+    'X                              W',
+    '                               W',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    ' F                            RR',
+    '                              RR',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '               Q                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                               S',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                                ',
+    '                             Y  ',
+    'Z                               ',
+)
+
+print(f'moves: {solver(s_hell_)}')  # 36 366 98 989 98989 LL
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)

@@ -309,7 +309,7 @@ game_map_z = [
 
 
 def main():
-    game = ThreeDotsGame(SCREEN_WIDTH, SCREEN_HEIGHT, game_map_x[0])
+    game = ThreeDotsGame(SCREEN_WIDTH, SCREEN_HEIGHT, game_map_z[0])
     game.setup()
     arcade.run()
 
