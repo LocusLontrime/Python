@@ -300,6 +300,7 @@ class Board:
     # recursive part:
     @counted
     def rec_tree_cutter(self, cells_rem: int, fig_ind: int = 0) -> dict:
+        """builds rec_dict"""
         # TODO: outdated by new_rec_tree_cutter...
         # if cells_rem == 0 and fig_ind == len(self.figs_sizes):
         #     self.good_positions += 1
@@ -320,6 +321,7 @@ class Board:
 
     @counted
     def new_rec_tree_cutter(self, cells_rem: int, sizes: list[int], fig_ind: int = 0) -> list[Figure] | None:
+        """now checks valid combs on the fly, not building full rec_dict beforehand (this required too much time)"""
         if fig_ind < len(self.figs_sizes):
             for size_ in self.figs_sizes[fig_ind]:
                 # print(f'{self.figs_sizes[fig_ind] = }')
@@ -356,6 +358,7 @@ class Board:
     @counted
     def rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], res_dict: dict,
                              figs: list[Figure]) -> list[Figure] | None:
+        """seeks for full figures' placement among all the good sizes combs via res_dict rec's tree cutter"""
         # TODO: outdated by mini_rec_shapes_connector...
         # base case:
         if rem_cells == 0:
@@ -374,6 +377,7 @@ class Board:
     @counted
     def mini_rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], sizes: list[int],
                                   figs: list[Figure]) -> list[Figure] | None:
+        """seeks for full figures' placement among the current good sizes comb"""
         # base case:
         if rem_cells == 0:
             return figs
