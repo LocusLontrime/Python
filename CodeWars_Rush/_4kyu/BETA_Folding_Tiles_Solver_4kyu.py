@@ -833,7 +833,7 @@ s_super_hellish_hell_ = (  # 32 * 256 [9 pieces]
     'Z                                                                                                                                                                                                                                                               ',
 )
 
-print(f'moves: {solver(s_super)}')  # 36 366 98 989 98989 LL
+print(f'moves: {solver(s_mega_)}')  # 36 366 98 989 98989 LL
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)

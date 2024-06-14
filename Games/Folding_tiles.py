@@ -285,26 +285,10 @@ class Board:
         # returns the moves:
         return result
 
-    # recursive part:
-    @counted
-    def rec_tree_cutter(self, cells_rem: int, sizes: list[int], fig_ind: int = 0) -> list[Figure] | None:
-        """now checks valid combs on the fly, not building full rec_dict beforehand (this required too much time)"""
-        if fig_ind < len(self.figs_sizes):
-            for size_ in self.figs_sizes[fig_ind]:
-                # print(f'{self.figs_sizes[fig_ind] = }')
-                if cells_rem - size_ > 0:
-                    # next fig index recursive call:
-                    if res := self.rec_tree_cutter(cells_rem - size_, sizes + [size_], fig_ind + 1):
-                        return res
-                # border case (slightly faster than upper one variation):
-                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
-                    self.good_positions += 1
-                    if figs := self.rec_shapes_connector(self.j_max * self.i_max, 0, set(), sizes + [size_], []):
-                        return figs
-
     @counted
     def rec_fig_seeker(self, rem_cells: int, fig: Figure, visited: set[tuple[int, int]], hashes: set[int],
                        figures: d[int, list[Figure]]) -> None:
+        """seeks for all the possible figures' shapes on the board separately..."""
         if rem_cells >= 0:
             # if a figure has not been already hashed:
             if hash(fig) not in hashes:
@@ -321,6 +305,23 @@ class Board:
                         self.rec_fig_seeker(rem_cells - n, fig_, visited, hashes, figures)
             else:
                 self.already_hashed_figs_counter += 1
+
+    # recursive part:
+    @counted
+    def rec_tree_cutter(self, cells_rem: int, sizes: list[int], fig_ind: int = 0) -> list[Figure] | None:
+        """now checks valid combs on the fly, not building full rec_dict beforehand (this required too much time)"""
+        if fig_ind < len(self.figs_sizes):
+            for size_ in self.figs_sizes[fig_ind]:
+                # print(f'{self.figs_sizes[fig_ind] = }')
+                if cells_rem - size_ > 0:
+                    # next fig index recursive call:
+                    if res := self.rec_tree_cutter(cells_rem - size_, sizes + [size_], fig_ind + 1):
+                        return res
+                # border case (slightly faster than upper one variation):
+                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
+                    self.good_positions += 1
+                    if figs := self.rec_shapes_connector(self.j_max * self.i_max, 0, set(), sizes + [size_], []):
+                        return figs
 
     @counted
     def rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], sizes: list[int],
@@ -594,7 +595,7 @@ s_super_hell_ = (  # 64 * 128 [9 pieces]
 
 
 def main():
-    game = FoldingTilesGame(SCREEN_WIDTH, SCREEN_HEIGHT, s_super_hell_)
+    game = FoldingTilesGame(SCREEN_WIDTH, SCREEN_HEIGHT, s_hells)
     game.setup()
     arcade.run()
 
