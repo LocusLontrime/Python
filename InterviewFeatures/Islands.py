@@ -96,7 +96,7 @@ map1 = [
     'xx   xxx',
     'xx   xx ',
     'x       ',
-    ' xx     ',
+    ' xx     ',                                                                       # 36 366 98 989 98989 LL                   
     '   x    ',
     'x  x  xx',
     'xx      ',
