@@ -595,7 +595,7 @@ s_super_hell_ = (  # 64 * 128 [9 pieces]
 
 
 def main():
-    game = FoldingTilesGame(SCREEN_WIDTH, SCREEN_HEIGHT, s_hells)
+    game = FoldingTilesGame(SCREEN_WIDTH, SCREEN_HEIGHT, s_super_hell_)
     game.setup()
     arcade.run()
 
