@@ -94,7 +94,7 @@ def brent(n: int):
             k = k + m
         r = r * 2
     if g == n:
-        while 1:
+        while 1:                                                                      # 36 366 98 989 98989 LL
             ys = ((ys * ys) % n + c) % n
             g = math.gcd(abs(x - ys), n)
             if g > 1:
