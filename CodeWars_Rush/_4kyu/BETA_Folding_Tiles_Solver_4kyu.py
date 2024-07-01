@@ -5,7 +5,7 @@ from collections import defaultdict as d
 
 # need to be arcaded!!!
 
-is_debug = False
+is_debug = True
 
 # styles:
 BOLD = "\033[1m"
@@ -206,7 +206,7 @@ class Board:
         self.base = len(self.figures) + 1  # base for hash calculating
         # ...precalculated powers for fast hashing:
         self.powers = [self.base ** (j * self.i_max + i) for j in range(self.j_max) for i in range(self.i_max)]
-        print(f'{self.powers = }')
+        # print(f'{self.powers = }')
         print(f'{self.base = }')
         # 5. figs sizes:
         self.figs_sizes = []
@@ -275,7 +275,7 @@ class Board:
         # check for the possible sizes combs:
         # self.res_dict = self.rec_tree_cutter(self.j_max * self.i_max)
         # print(f'{self.res_dict = }')
-        result = self.new_rec_tree_cutter(self.j_max * self.i_max, [])
+        result = self.fly_rec_tree_cutter(self.j_max * self.i_max, [])
         self.t3 = time.time_ns()
         # now we should connect shapes with space constraints to the possible full placement:
         # print(f'rec connecting:')
@@ -301,43 +301,47 @@ class Board:
         return sum([f.moves for f in result], start=[])
 
     # recursive part:
-    @counted
-    def rec_tree_cutter(self, cells_rem: int, fig_ind: int = 0) -> dict:
-        """builds rec_dict"""
-        # TODO: outdated by new_rec_tree_cutter...
-        # if cells_rem == 0 and fig_ind == len(self.figs_sizes):
-        #     self.good_positions += 1
-        #     return {0: True}
-        # if we still are not out of bounds:
-        if fig_ind < len(self.figs_sizes):
-            res = {}
-            for size_ in self.figs_sizes[fig_ind]:
-                if cells_rem - size_ > 0:
-                    # next fig index recursive call:
-                    if dict_ := self.rec_tree_cutter(cells_rem - size_, fig_ind + 1):
-                        res[size_] = dict_
-                # border case (slightly faster than upper one variation):
-                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
-                    self.good_positions += 1
-                    res[size_] = {0: True}
-            return res
+    # @counted
+    # def rec_tree_cutter(self, cells_rem: int, fig_ind: int = 0) -> dict:
+    #     """builds rec_dict"""
+    #     # TODO: outdated by fly_rec_tree_cutter...
+    #     # if cells_rem == 0 and fig_ind == len(self.figs_sizes):
+    #     #     self.good_positions += 1
+    #     #     return {0: True}
+    #     # if we still are not out of bounds:
+    #     if fig_ind < len(self.figs_sizes):
+    #         res = {}
+    #         for size_ in self.figs_sizes[fig_ind]:
+    #             if cells_rem - size_ > 0:
+    #                 # next fig index recursive call:
+    #                 if dict_ := self.rec_tree_cutter(cells_rem - size_, fig_ind + 1):
+    #                     res[size_] = dict_
+    #             # border case (slightly faster than upper one variation):
+    #             elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
+    #                 self.good_positions += 1
+    #                 res[size_] = {0: True}
+    #         return res
+    #
+    # @counted
+    # def rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], res_dict: dict,
+    #                          figs: list[Figure]) -> list[Figure] | None:
+    #     """seeks for full figures' placement among all the good sizes combs via res_dict rec's tree cutter"""
+    #     # TODO: outdated by mini_rec_shapes_connector...
+    #     # base case:
+    #     if rem_cells == 0:
+    #         return figs
+    #     if ind < len(self.shapes):
+    #         # res_dict, then shapes a bit faster than vice versa...
+    #         for shape_size in sorted(res_dict.keys(), reverse=True):  # dict can violate the order of key-sizes...
+    #             for shape in self.shapes[ind][shape_size]:
+    #                 if all(cell not in visited for cell in
+    #                        shape.cells):  # all instead of sets intersection -> 2 times faster...
+    #                     if interim_res := self.rec_shapes_connector(rem_cells - shape.size, ind + 1,
+    #                                                                 visited | shape.cells, res_dict[shape_size],
+    #                                                                 figs + [shape]):
+    #                         return interim_res
 
-    @counted
-    def new_rec_tree_cutter(self, cells_rem: int, sizes: list[int], fig_ind: int = 0) -> list[Figure] | None:
-        """now checks valid combs on the fly, not building full rec_dict beforehand (this required too much time)"""
-        if fig_ind < len(self.figs_sizes):
-            for size_ in self.figs_sizes[fig_ind]:
-                # print(f'{self.figs_sizes[fig_ind] = }')
-                if cells_rem - size_ > 0:
-                    # next fig index recursive call:
-                    if res := self.new_rec_tree_cutter(cells_rem - size_, sizes + [size_], fig_ind + 1):
-                        return res
-                # border case (slightly faster than upper one variation):
-                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
-                    self.good_positions += 1
-                    if figs := self.mini_rec_shapes_connector(self.j_max * self.i_max, 0, set(), sizes + [size_], []):
-                        return figs
-
+    # fast recursive part:
     @counted
     def rec_fig_seeker(self, rem_cells: int, fig: Figure, visited: set[tuple[int, int]], hashes: set[int],
                        figures: d[int, list[Figure]]) -> None:
@@ -359,23 +363,20 @@ class Board:
                 self.already_hashed_figs_counter += 1
 
     @counted
-    def rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], res_dict: dict,
-                             figs: list[Figure]) -> list[Figure] | None:
-        """seeks for full figures' placement among all the good sizes combs via res_dict rec's tree cutter"""
-        # TODO: outdated by mini_rec_shapes_connector...
-        # base case:
-        if rem_cells == 0:
-            return figs
-        if ind < len(self.shapes):
-            # res_dict, then shapes a bit faster than vice versa...
-            for shape_size in sorted(res_dict.keys(), reverse=True):  # dict can violate the order of key-sizes...
-                for shape in self.shapes[ind][shape_size]:
-                    if all(cell not in visited for cell in
-                           shape.cells):  # all instead of sets intersection -> 2 times faster...
-                        if interim_res := self.rec_shapes_connector(rem_cells - shape.size, ind + 1,
-                                                                    visited | shape.cells, res_dict[shape_size],
-                                                                    figs + [shape]):
-                            return interim_res
+    def fly_rec_tree_cutter(self, cells_rem: int, sizes: list[int], fig_ind: int = 0) -> list[Figure] | None:
+        """now checks valid combs on the fly, not building full rec_dict beforehand (this required too much time)"""
+        if fig_ind < len(self.figs_sizes):
+            for size_ in self.figs_sizes[fig_ind]:
+                # print(f'{self.figs_sizes[fig_ind] = }')
+                if cells_rem - size_ > 0:
+                    # next fig index recursive call:
+                    if res := self.fly_rec_tree_cutter(cells_rem - size_, sizes + [size_], fig_ind + 1):
+                        return res
+                # border case (slightly faster than upper one variation):
+                elif cells_rem - size_ == 0 and fig_ind == len(self.figs_sizes) - 1:
+                    self.good_positions += 1
+                    if figs := self.mini_rec_shapes_connector(self.j_max * self.i_max, 0, set(), sizes + [size_], []):
+                        return figs
 
     @counted
     def mini_rec_shapes_connector(self, rem_cells: int, ind: int, visited: set[tuple[int, int]], sizes: list[int],
@@ -394,12 +395,12 @@ class Board:
                         return interim_res
 
     def print(self):
-        print(f'rec tree cutter counter/depth: {get_rec_counter(self.rec_tree_cutter)}')
+        print(f'rec tree cutter counter/depth: {get_rec_counter(self.fly_rec_tree_cutter)}')
         print(f'{self.good_positions = }')
         print(f'rec fig seeker counter/depth: {get_rec_counter(self.rec_fig_seeker)}')
         print(f'{self.unique_fold_counter = }')  # 36 366 98 989 98989 LL
         print(f'{self.already_hashed_figs_counter = }')
-        print(f'rec shapes connector counter/depth {get_rec_counter(self.rec_shapes_connector)}')
+        print(f'rec shapes connector counter/depth {get_rec_counter(self.mini_rec_shapes_connector)}')
         print(f'rec figs seeker time elapsed: {(self.t2 - self.t1) // 10 ** 6} milliseconds')
         print(f'rec tree cutter time elapsed: {(self.t3 - self.t2) // 10 ** 6} milliseconds')
         print(f'rec shapes connector time elapsed: {(self.t4 - self.t3) // 10 ** 6} milliseconds')
@@ -833,7 +834,74 @@ s_super_hellish_hell_ = (  # 32 * 256 [9 pieces]
     'Z                                                                                                                                                                                                                                                               ',
 )
 
-print(f'moves: {solver(s_mega_)}')  # 36 366 98 989 98989 LL
+s_super_hell_xxx = (  # 64 * 128 [9 pieces]
+    'X                                                                                                                              W',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                              RR',
+    '                                                                                                                              RR',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                S                                                               ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    'Q                                                                                                                               ',
+    'Q                                                                                                                               ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                         J                                      ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    'U                                                                                                                               ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    '                                                                                                                                ',
+    'Z                                                                                                                               ',
+    '                                                                                                                              YY',
+)
+
+print(f'moves: {solver(s_super_hell_xxx)}')  # 36 366 98 989 98989 LL
 # counter = 0
 # good_positions = 0
 # result_d = rec_seeker(100, [[9, 18, 36, 72], [1, 2, 4, 8, 16, 32, 64], [25, 50, 100], [1, 2, 4, 8, 16, 32, 64]], 0)
