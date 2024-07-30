@@ -355,7 +355,7 @@ class Board:
                 for dir_ in range(4):
                     # tries to fold the figure in the direction chosen:
                     if info := fig.fold(visited, self.powers, self.j_max, self.i_max, dir_):
-                        self.unique_fold_counter += 1
+                        self.unique_fold_counter += 1                                 # 36 366 98 989 98989 LL
                         fig_, n = info
                         # recursive call:
                         self.rec_fig_seeker(rem_cells - n, fig_, visited, hashes, figures)

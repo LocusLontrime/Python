@@ -132,10 +132,7 @@ class ConwaysGameOfLife(arcade.Window):
 
     @staticmethod
     def get_moores_neighs(j: int, i: int) -> set[tuple[int, int]]:
-        moores_neighs = set()
-        for dj, di in moore_walk:
-            moores_neighs |= {(j + dj, i + di)}
-        return moores_neighs
+        return {(j + dj, i + di) for dj, di in moore_walk}
 
     def get_shape(self, j: int, i: int) -> arcade.Shape:
         # center of coords moved to the center of the display...
@@ -175,10 +172,6 @@ def read(_id: str):
             raise
 
     raise PbnNotFoundError(_id)
-
-
-def decode_rle(rle_str: str) -> ...:
-    ...
 
 
 def parse(_id: str) -> list[list[int]]:
