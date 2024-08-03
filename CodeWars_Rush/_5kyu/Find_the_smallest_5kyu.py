@@ -14,10 +14,12 @@ def smallest(n: int) -> tuple[int, int, int]:
         print(f'{j = } -> {num_ = }')
         for i in range(size):
             num__ = num_[:i] + n_str[j] + num_[i:]
-            print(f'...{j}|{i} -> {num__ = }')
+            print(f'...{j}|{i} -> {num__ = }', end='')
             if int(num__) < best_num:
                 best_num = int(num__)
                 res = best_num, j, i
+                print(f' is best for now!', end='')
+            print()
 
     return res
 
