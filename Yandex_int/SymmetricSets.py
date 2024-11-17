@@ -7,8 +7,8 @@
 # Задача повышенной сложности из АА (алгоритмического) собеседования в Яндекс.
 
 def check(points: list[tuple[int, int]]):
-    # 1. let us find the x median of set given:
-    x_median = get_median_x(points)
+    # 1. let us find the x median of the set given:
+    x_median = get_median_x(points)  # we can also use statistics' mean module...
     print(f'{x_median = }')
 
     # 2. now we can check the symmetry of left and right set:
