@@ -3,11 +3,13 @@ import decimal
 
 from decimal import Decimal
 
-PRECISION = Decimal(f'1E-1000')  # 1 * 10 ^ -1000
+PREC_POWER = 1000
+
+PRECISION = Decimal(f'1E-{PREC_POWER}')  # 1 * 10 ^ -1000
 
 print(f'{PRECISION = }')                                                              # 36 36.6 366 98 989 98989 LL
 
-decimal.getcontext().prec = 1000
+decimal.getcontext().prec = PREC_POWER
 
 
 def at_least_n_copies_per_m_summons_chance(n: int, m: int, base_chance: float = 1.6) -> float:
@@ -109,7 +111,24 @@ def main():
         print(f'...math expectation of artefact tickets -> {n__ * 0.2 * coeff_:.{0}f} / 3900')
 
     print(f'\n----------------------------------<Usual summon>--------------------------------------------------------')
-    print(f'chance of getting at least 1 copy per 10 summons -> {at_least_n_copies_per_m_summons_chance(1, 10, 4) * 100:.{3}f} %')
+    for i in range(1, 4 + 1 + 1):
+        print(f'chance of getting at least {i} copy per 10 summons -> {(res_ := at_least_n_copies_per_m_summons_chance(i, 10, 4)) * 100:.{3}f} %')
+        print(f'-> approx {1 / res_:.{0}f} summons for 1 encounter...')
+
+    print(f'\n----------------------------------<Pick-up summon>--------------------------------------------------------')
+    for i in range(1, 4 + 1 + 1):
+        print(f'chance of getting at least {i} featured copy per 10 summons -> {(res_ := at_least_n_copies_per_m_summons_chance(i, 10, 1.6)) * 100:.{3}f} %')
+        print(f'-> approx {1 / res_:.{0}f} summons for 1 encounter...')
+
+    print(f'\n----------------------------------<Alchemy summon>--------------------------------------------------------')
+    for i in range(1, 4 + 1 + 1):
+        print(f'chance of getting at least {i} featured copy per 10 summons -> {(res_ := at_least_n_copies_per_m_summons_chance(i, 10, 2)) * 100:.{3}f} %')
+        print(f'-> approx {1 / res_:.{0}f} summons for 1 encounter...')
+
+    print(f'\n----------------------------------<Friendship summon>--------------------------------------------------------')
+    for i in range(1, 4 + 1 + 1):
+        print(f'chance of getting at least {i} copy per 10 summons -> {(res_ := at_least_n_copies_per_m_summons_chance(i, 10, 1)) * 100:.{3}f} %')
+        print(f'-> approx {1 / res_:.{0}f} summons for 1 encounter...')
 
     # print(f'res O+2 -> {at_least_n_copies_per_m_summons_chance(6, 500)}')
 
