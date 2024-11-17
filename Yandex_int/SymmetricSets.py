@@ -7,16 +7,12 @@
 # Задача повышенной сложности из АА (алгоритмического) собеседования в Яндекс.
 
 def check(points: list[tuple[int, int]]):
-    # 1. checks if the number of set's elements divisible by 2:
-    if len(points) % 2:
-        return False
-
-    # 2. let us find the x median of set given:
+    # 1. let us find the x median of set given:
     x_median = get_median_x(points)
     print(f'{x_median = }')
 
-    # 3. now we can check the symmetry of left and right set:
-    # 3.1 if the point is on the x = x_median line -> it is symmetric to itself by default:
+    # 2. now we can check the symmetry of left and right set:
+    # 2.1 if the point is on the x = x_median line -> it is symmetric to itself by default:
     points_set: set[tuple[int, int]] = set(point for point in points if point[0] != int(x_median))
 
     iteration = 0
