@@ -132,6 +132,11 @@ def main():
 
     # print(f'res O+2 -> {at_least_n_copies_per_m_summons_chance(6, 500)}')
 
+    print(f'\n----------------------------------<Demiurge summon>--------------------------------------------------------')
+    for i in range(1, 3 + 1):
+        print(f'chance of getting at least {i} copy per 10 summons -> {(res_ := at_least_n_copies_per_m_summons_chance(i, 10, 1.25)) * 100:.{3}f} %')
+        print(f'-> approx {1 / res_:.{0}f} summons for 1 encounter...')
+
 
 if __name__ == '__main__':
     main()
