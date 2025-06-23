@@ -15,7 +15,7 @@ def min_earnings(arr: list[int]) -> int:
             return num_, f'{num_}'
         if start_ind_ == n - 1:
             print(f'border case 2: {num_, arr[-1]}')
-            return max(num_, arr[-1]), f'{max(num_, arr[-1])}'
+            return max(num_, arr[-1]), f'{num_, arr[-1]}'
 
         # body of rec:
         if (num_, start_ind_) not in memo_table.keys():
@@ -54,4 +54,6 @@ test_case = [i for i in range(100)]  # res -> 22
 test_case_ = [9, 5, 7, 8, 6, 3, 6, 17, 89, 8, 3, 6, 98]
 test_case__ = [9, 5, 7, 8, 6, 13, 2, 7, 5]
 
-print(f'res -> {min_earnings(test_case__)}')
+test = [98, 9, 5, 7, 8, 6]
+
+print(f'res -> {min_earnings(test)}')

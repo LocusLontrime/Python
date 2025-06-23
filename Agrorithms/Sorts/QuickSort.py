@@ -73,7 +73,7 @@ print(arr)
 arr = [1, 1, 0, 1, 0, 98, 989, 1, 1, 3, 36, 78, 11, 101, 98989]
 print(quick(arr))
 
-arr_x = [int(10000000 * random()) for _ in range(10000000 * 2)]
+arr_x = [int(10_000_000 * random()) for _ in range(1_000_000)]
 
 start = time.time_ns()
 quick_sort(arr_x.copy())
