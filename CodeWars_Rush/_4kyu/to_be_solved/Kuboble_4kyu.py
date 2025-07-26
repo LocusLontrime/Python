@@ -9,6 +9,7 @@ bfs_steps: int
 def move(k: int, dj: int, di: int, board: list[list[str]], rows: int, cols: int, _coords: list) -> list:
     j_, i_ = _coords[k]
     coords_ = [[el for el in pair] for pair in _coords]
+    # move cycle:
     while 0 <= j_ + dj < rows and 0 <= i_ + di < cols:
         cell = board[j_ + dj][i_ + di]
         # break-condition
@@ -28,8 +29,11 @@ def stringify(coords_: list):
 def parse_board(map_: str):
     # searching for pieces:
     pieces = re.findall(r"[A-WYZ]", map_)
+    print(f'{pieces = }')
     # convenient board type:
     board = [[el for el in row.split(' ') if el] for row in map_.split(';')]
+    for row in board:
+        print(f'{row}')
     # other pars:
     rows, cols = len(board), len(board[0])
     pieces_n = len(pieces)
@@ -78,9 +82,12 @@ def kuboble(map_: str) -> tuple[int, str]:
 
 
 map_55 = ". X . . ;a X b . ;. C cB A"
-map_3 = "a b . ;A B . ;X . ."
+map_3 = "A B . ;a b . ;X . ."
 map_23 = "X . X . ;. . . . ;. . b . ;a X B A"
 map_10 = "X . X b ;. a . . ;X . B A"
+
+map_13 = "X . Ba A ;X X . . ;. b . ."
+map_15 = "A Ba . . ;X . X . ;. . b ."
 
 map_long = "X . . aC B A ;. b . . . . ;X . X . X X ;. c . . . . ;. . X . . . "
 

@@ -82,7 +82,7 @@ class ConwaysGameOfLife(arcade.Window):
         self.shapes_list.draw()
 
     def update(self, delta_time: float):
-        # game logic and movement mechanics lies here:
+        # game logic and movement mechanics lie here:
         if not self.stop and time.time_ns() // 10 ** 6 - self._time > self.time_step:
             self.evolve()
             print(f'ShapeList size -> {len(self.shapes_list)}')
@@ -319,7 +319,7 @@ def main():
 
     gens_ = 16
 
-    board_ = parse("p67snarkloop.rle")  # 22cellquadraticgrowth.rle breeder1.rle "6bits.rle" piorbital.rle karelsp177.rle p172piheptominoshuttle.rle
+    board_ = perpetuum_mobile  # parse("p67snarkloop.rle")  # 22cellquadraticgrowth.rle breeder1.rle "6bits.rle" piorbital.rle karelsp177.rle p172piheptominoshuttle.rle
 
     # print(f'board: ')
     # for row_ in board_:
