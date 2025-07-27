@@ -24,18 +24,14 @@ def count_subseqs(array: list[int]):
     # array's length:
     n = len(array)
     # the core algo:
-    dig_dict = {}
+    dig_dict = def_dict(int)
     shifts = def_dict(list)
     element_to_shift_ind = n - 1
     for i in range(n - 1, -1, -1):
         el = array[i]
         new_digs = get_digs(el)
         for dig, quantity in new_digs.items():
-            if dig in dig_dict.keys():
-                dig_dict[dig] += quantity
-            else:
-                dig_dict[dig] = quantity
-        # print(f'{dig_dict = }')
+            dig_dict[dig] += quantity
         # all digits are done:
         while len(dig_dict) == 10:
             shifts[i] += [element_to_shift_ind]
@@ -47,7 +43,6 @@ def count_subseqs(array: list[int]):
                     del dig_dict[dig]
             # let us move to the next left element:
             element_to_shift_ind -= 1
-    # print(f'{shifts = }')
     # prefix sums building:
     prefix_sums = [0 for i in range(n + 1)]
     for i, el in enumerate(array):
@@ -56,16 +51,11 @@ def count_subseqs(array: list[int]):
     res = 0
     memoized_sums = def_dict(int)
     for i, el in enumerate(prefix_sums):
-        # print(f'{memoized_sums = }')
         if i - 1 in shifts.keys():
-            # print(f'i - 1 -> { i - 1}')
             for ind in shifts[i - 1]:
-                # print(f'...{ind = }')
                 delta = memoized_sums[prefix_sums[ind + 1]]
-                # print(f'{delta = }')
                 res += delta
         memoized_sums[el] += 1
-    # print(f'{prefix_sums}')
     return res
 
 
