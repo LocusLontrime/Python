@@ -31,11 +31,11 @@ def calculate_volumes(array: list[int]) -> list[int]:
     TIME_DELAY = 5
     # array's length:
     n = len(array)
-    # left_volume, right_volume = 0, 0
+    # left water volume, right water volume = 0, 0
     volumes = [0, 0]
     volume_remained = sum(array)
     # the core algo:
-    # left_ind, right_ind = 0, n - 1
+    # left ind, right ind = 0, n - 1
     indices = [0, n - 1]
     # time_elapsed:
     times_elapsed = [0, 0]
@@ -44,8 +44,7 @@ def calculate_volumes(array: list[int]) -> list[int]:
         ind_, time_elapsed = indices[turn], times_elapsed[turn]
         # check for time remained:
         time_delay_ = TIME_DELAY * abs(indices[(turn + 1) % 2] - ind_)
-        rem_litres = times_elapsed[turn] + array[ind_] - (times_elapsed[(turn + 1) % 2] + volume_remained - array[ind_] + time_delay_)
-        # print(f'...{rem_litres, volume_remained, array[ind_] = }')
+        rem_litres = time_elapsed + array[ind_] - (times_elapsed[(turn + 1) % 2] + volume_remained - array[ind_] + time_delay_)
         if rem_litres > 0:
             # final volumes computation:
             volumes[(turn + 1) % 2] += volume_remained - array[ind_]
