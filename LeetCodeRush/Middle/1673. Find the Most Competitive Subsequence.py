@@ -1,3 +1,7 @@
+# accepted on leetcode.com
+from collections import deque
+
+
 # Given an integer array nums and a positive integer k, return the most competitive subsequence of nums of size k.
 
 # An array's subsequence is a resulting sequence obtained by erasing some (possibly zero) elements from the array.
@@ -29,7 +33,7 @@ def most_competitive(nums: list[int], k: int) -> list[int]:
     # result array:
     res = []
     # decreasing monotonic stack:
-    m_stack = []
+    m_stack = deque()
     # the core cycle:
     i = 0
     while i < n:
@@ -37,13 +41,13 @@ def most_competitive(nums: list[int], k: int) -> list[int]:
         append_an_el_to_mono_d_stack(m_stack, nums[i])
         if i >= n - k:
             res += [m_stack[0]]
-            m_stack.pop(0)
+            m_stack.popleft()
         i += 1
     # returns res:
     return res
 
 
-def append_an_el_to_mono_d_stack(m_stack: list[int], el: int) -> None:
+def append_an_el_to_mono_d_stack(m_stack: deque, el: int) -> None:
     while len(m_stack) > 0 and m_stack[-1] > el:
         m_stack.pop()
     m_stack += [el]
@@ -54,4 +58,4 @@ test_ex = [2, 7, 3, 6, 8, 5, 2, 6, 4], 6
 test_ex_1 = [2, 4, 3, 3, 5, 4, 9, 6], 4
 
 print(f'test ex res -> {most_competitive(*test_ex)}')
-print(f'test ex 1 res -> {most_competitive(*test_ex_1)}')
+print(f'test ex 1 res -> {most_competitive(*test_ex_1)}')                             # 36 366 98 989 98989 LL

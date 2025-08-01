@@ -1,7 +1,7 @@
+# accepted on leetcode.com
+
 # You are given two integer arrays nums1 and nums2 of lengths m and n respectively.
 # nums1 and nums2 represent the digits o two numbers.You are also given an integer k.
-from collections import deque
-
 
 # Create the maximum number of length k <= m + n from digits of the two numbers.
 # The relative order of the digits from the same array must be preserved.
@@ -28,88 +28,60 @@ from collections import deque
 # 1 <= k <= m + n
 # nums1 and nums2 do not have leading zeros.
 
-def max_number(nums1: list[int], nums2: list[int], k: int) -> list[int]:
+def max_number(self, nums1: list[int], nums2: list[int], k: int) -> list[int]:
     print(f'{nums1 = }')
     print(f'{nums2 = }')
-    nums1_ = [(el, i) for i, el in enumerate(nums1)]
-    nums2_ = [(el, i) for i, el in enumerate(nums2)]
-    seq_len = 0
-    iteration = 0
-    indices_1_to_merge = set()
-    indices_2_to_merge = set()
-    # let use some monotonic deque tactics:
-    while nums1_ and nums2_:
-        print(f'{iteration} step ->')
-        q1 = monotonic_deque(nums1_)
-        q2 = monotonic_deque(nums2_)
-        seq_len += len(q1) + len(q2)
-        # new nums1 and nums 2:
-        set1 = {i for _, i in q1}
-        set2 = {i for _, i in q2}
-        indices_1_to_merge |= set1
-        indices_2_to_merge |= set2
-        print(f'{set1 = }')
-        print(f'{set2 = }')
-        print(f'{indices_1_to_merge = }')
-        print(f'{indices_2_to_merge = }')
-        # check for k:
-        if k <= seq_len:
-            # let us merge this:
-            arr1_to_merge = [_ for i, _ in enumerate(nums1) if i in indices_1_to_merge]
-            arr2_to_merge = [_ for i, _ in enumerate(nums2) if i in indices_2_to_merge]
-            print(f'{arr1_to_merge = }')
-            print(f'{arr2_to_merge = }')
-            return merge(arr1_to_merge, arr2_to_merge, k)
-        nums1_ = [(_, i) for _, i in nums1_ if i not in set1]
-        nums2_ = [(_, i) for _, i in nums2_ if i not in set2]
-        print(f'nums1 after -> {nums1_}')
-        print(f'nums2 after -> {nums2_}')
+    # arrays' lengths:
+    n1, n2 = len(nums1), len(nums2)
+    # the core cycle (let k1 + k2 = k):
+    max_num = []
+    for k1 in range(max(0, k - n2), min(k, n1) + 1):
+        k2 = k - k1
+        print(f'{k1, k2 = }')
+        num1_most_comp_subseq_k1_length = self.most_competitive(nums1, k1)
+        num2_most_comp_subseq_k2_length = self.most_competitive(nums2, k2)
+        print(f'...{num1_most_comp_subseq_k1_length = }')
+        print(f'...{num2_most_comp_subseq_k2_length = }')
+        interim_res = self.largest_merge(num1_most_comp_subseq_k1_length, num2_most_comp_subseq_k2_length)
+        print(f'---> {interim_res = }')
+        max_num = max(max_num, interim_res)
+    return max_num
+
+    # 1673 the most competitive subseq leetcode.com
 
 
-def monotonic_deque(arr: list[tuple[int, int]]) -> deque:
+def most_competitive(self, nums: list[int], k: int) -> list[int]:
     # array's length:
-    n = len(arr)
-    q = deque()
-    for i in range(n):
-        while len(q) > 0 and q[-1][0] < arr[i][0]:
-            q.pop()
-        q.append(arr[i])
-    print(f'{q = }')
-    return q
+    n = len(nums)
+    # decreasing monotonic stack:
+    m_stack = []
+    # the core cycle:
+    i = 0
+    drops_rem = n - k
+    while i < n:
+        # appends an element to the monotonic stack:
+        while drops_rem and len(m_stack) > 0 and m_stack[-1] < nums[i]:
+            m_stack.pop()
+            drops_rem -= 1
+        m_stack += [nums[i]]
+        i += 1
+    # returns res:
+    return m_stack[:k]
 
 
-def merge(arr1: list[int], arr2: list[int]) -> list[int]:
+# 1754 largest merge of 2 strs leetcode.com
+def largest_merge(self, num1: list[int], num2: list[int]) -> list[int]:
+    a = list(num1)
+    b = list(num2)
     res = []
-    i1, i2 = 0, 0
-    # common merging:
-    while i1 < len(arr1) and i2 < len(arr2):
-        nums1_el_greater, d = step_up(arr1, arr2, i1, i2)
-        if nums1_el_greater:
-            res += [arr1[_] for _ in range(i1, i1 + d)]
-            i1 += d
+    while a and b:
+        if a > b:
+            res.append(a[0])
+            a.pop(0)
         else:
-            res += [arr2[_] for _ in range(i2, i2 + d)]
-            i2 += d
-    # rem merging:
-    while i1 < len(arr1):
-        res += [arr1[i1]]
-        i1 += 1
-
-    while i2 < len(arr2):
-        res += [arr2[i2]]
-        i2 += 1
-
-    return res
-
-
-def step_up(arr1: list[int], arr2: list[int], i1, i2) -> tuple[bool, int]:
-    delta = 0
-    res = None
-    while i1 + delta < len(arr1) and i2 + delta < len(arr2):
-        if arr1[i1 + delta] == arr2[i2 + delta]:
-            delta += 1
-        else:
-            return arr1[i1 + delta] > arr2[i2 + delta], delta + 1
+            res.append(b[0])
+            b.pop(0)
+    return res + a + b
 
 
 test_ex = [3, 4, 6, 5], [9, 1, 2, 5, 8, 3], 5 + 1
