@@ -25,14 +25,8 @@
 # 1 <= n <= 2 * 10 ** 4
 # 0 <= ratings[i] <= 2 * 10 ** 4
 
-import heapq
-
 
 def candy(ratings: list[int]) -> int:
-    heap = []
-    heapq.heapify(heap)
-    heapq.heappop(heap)
-    heapq.heappush()
     # array's length:
     n = len(ratings)
     candies = [1] * n
