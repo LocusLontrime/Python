@@ -24,7 +24,6 @@ def initialize_tree(n: int):  # 36 36.6 98 989 LL
 
 
 def push(vert_ind: int) -> None:
-    global tree, postponed_update
     if postponed_update[vert_ind] != 0:  # and vert_ind < p ???
         left_vert_ind = vert_ind << 1
         right_vert_ind = left_vert_ind + 1
@@ -195,7 +194,7 @@ print(f'time elapsed str: {(finish - start) // 10 ** 6} milliseconds')
 #
 # print(f'new arr: ')
 # for i_ in range(length):
-#     print(f'{get_min(1, 0, length - 1, i_, i_)} ', end='')
+#     print(f'{get_min(1, 0, length - 1, i_, i_)} ', end='')                          # 36 366 98 989 98989 LL
 #
 # print()
 # # print(f'min: {get_min(1, 0, length - 1, 0, length - 1)}')

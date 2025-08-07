@@ -55,8 +55,8 @@ res = solve_n_queens(test_ex)
 
 print(f'test ex res -> {len(res)} solutions found')                                    # 36 366 98 989 98989 LL
 
-for i, solution in enumerate(res):
-    print(f'solution {i + 1}')
+for i_, solution in enumerate(res):
+    print(f'solution {i_ + 1}')
     for row_ in solution:
         print(f'{row_}')
 
