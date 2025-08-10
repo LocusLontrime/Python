@@ -52,12 +52,12 @@ def build(a: list[int], v: int, tl: int, tr: int):
 
 
 def get_min(v: int, tl: int, tr: int, left: int, right: int) -> tuple[int or float, int]:
-    # applies the pending updates if any:
-    push(v)
     if left > right:
         return math.inf, 0
     if left == tl and right == tr:
         return tree[v]
+    # applies the pending updates if any:
+    push(v)
     tm = (tl + tr) // 2
     return combine(
         get_min(v << 1, tl, tm, left, min(right, tm)),
@@ -66,8 +66,6 @@ def get_min(v: int, tl: int, tr: int, left: int, right: int) -> tuple[int or flo
 
 
 def update(v: int, tl: int, tr: int, left: int, right: int, delta: int) -> None:
-    # applies the pending updates if any:
-    push(v)  # lp next
     # not set, but increase
     if left > right:
         return
@@ -77,8 +75,10 @@ def update(v: int, tl: int, tr: int, left: int, right: int, delta: int) -> None:
         # lazy propagation:
         postponed_update[v] += delta
     else:
+        # applies the pending updates if any:
+        push(v)  # lp next
         tm = (tl + tr) // 2
         new_l, new_r = v << 1, (v << 1) + 1
         update(new_l, tl, tm, left, min(right, tm), delta)
         update(new_r, tm + 1, tr, max(left, tm + 1), right, delta)
-        tree[v] = combine(tree[new_l], tree[new_r])
+        tree[v] = combine(tree[new_l], tree[new_r])                                   # 36 366 98 989 98989 LL LL

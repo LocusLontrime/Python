@@ -30,26 +30,26 @@ def push(vert_ind: int) -> None:
     postponed_update[vert_ind] = 0
 
 
-def build(v: int, tl: int, tr: int):
+def build(array: list[int], v: int, tl: int, tr: int):
     if tl == tr:
-        # decompressing coords:
-        tree[v] = 0
+        # assignment:
+        tree[v] = array[tl]
     else:
         tm = (tl + tr) // 2
         new_l, new_r = v << 1, (v << 1) + 1
-        build(new_l, tl, tm)
-        build(new_r, tm + 1, tr)
+        build(array, new_l, tl, tm)
+        build(array, new_r, tm + 1, tr)
         tree[v] = min(tree[new_l], tree[new_r])
 
 
 def get_min(v: int, tl: int, tr: int, left: int, right: int) -> int or float:
-    # apply the pending updates if any:
-    if postponed_update[v]:
-        push(v)
     if left > right:
         return math.inf
     if left == tl and right == tr:
         return tree[v]
+    # apply the pending updates if any:
+    if postponed_update[v]:
+        push(v)
     # middle point:
     tm = (tl + tr) // 2
     # the minimum of the queries on the children:
@@ -60,9 +60,6 @@ def get_min(v: int, tl: int, tr: int, left: int, right: int) -> int or float:
 
 
 def update(v: int, tl: int, tr: int, left: int, right: int, delta: int) -> None:
-    # here we apply pending updates if any:
-    if postponed_update[v]:
-        push(v)
     # set, not increase
     if left > right:
         return
@@ -72,6 +69,9 @@ def update(v: int, tl: int, tr: int, left: int, right: int, delta: int) -> None:
         # lazy propagation:
         postponed_update[v] = delta
     else:
+        # here we apply pending updates if any:
+        if postponed_update[v]:
+            push(v)
         tm = (tl + tr) // 2
         new_l, new_r = v << 1, (v << 1) + 1
         update(new_l, tl, tm, left, min(right, tm), delta)
@@ -80,9 +80,10 @@ def update(v: int, tl: int, tr: int, left: int, right: int, delta: int) -> None:
 
 
 m = 10
+array = [0 for _ in range(m)]
 
 initialize_tree(m)
-build(1, 0, m - 1)
+build(array, 1, 0, m - 1)                                                             # 36 366 98 989 98989 LL
 update(1, 0, m - 1, 4, 8, -9)
 
 print(f'{tree = }')

@@ -1,3 +1,5 @@
+# accepted on leetcode.com
+
 import math
 from typing import Optional
 
