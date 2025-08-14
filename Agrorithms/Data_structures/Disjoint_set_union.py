@@ -35,6 +35,16 @@ class DSU:
             # move i-th node directly under the representative of the set...
         return self.dsu_tree[x]
 
+    def change_repr(self, new_repr: int):
+        # changes the representative of the union to the new one from it
+        # parental links:
+        old_repr = self.find(new_repr)
+        self.dsu_tree[old_repr] = new_repr
+        self.dsu_tree[new_repr] = new_repr
+        # sizes:
+        self.sizes[old_repr] -= self.sizes[new_repr]
+        self.sizes[new_repr] += self.sizes[old_repr]
+
     def connectivity_components_q(self):
         ...
 
